@@ -1,5 +1,7 @@
 #include <bitset>
 #include <vector>
+
+#include "DLX.h"
 struct Cell {
     bool given;
     int value;
@@ -56,21 +58,22 @@ class Grid {
         }
     }
 
-    bool checkWrongValues(){
-        for(int i = 0; i < 9; i++){
-            for(int j = 0; j < 9; j++){
-                if(grid[i][j].value!=0 &&grid[i][j].value != grid[i][j].ans) return false;
+    bool checkWrongValues() {
+        for (int i = 0; i < 9; i++) {
+            for (int j = 0; j < 9; j++) {
+                if (grid[i][j].value != 0 && grid[i][j].value != grid[i][j].ans)
+                    return false;
             }
         }
         return true;
     }
 
-
-    bool checkMissingCandidates(){
-        for(int i = 0; i < 9; i++){
-            for(int j = 0; j < 9; j++){
-                if(grid[i][j].value==0){
-                    if(!grid[i][j].candidates[grid[i][j].ans-1]) return false;
+    bool checkMissingCandidates() {
+        for (int i = 0; i < 9; i++) {
+            for (int j = 0; j < 9; j++) {
+                if (grid[i][j].value == 0) {
+                    if (!grid[i][j].candidates[grid[i][j].ans - 1])
+                        return false;
                 }
             }
         }
@@ -96,7 +99,7 @@ class Grid {
         }
         return std::make_pair(-1, -1);
     }
-    
+
     bool checkWrongCandidates() {
         for (int houseType = 0; houseType < 3; houseType++) {
             for (int i = 0; i < 9; i++) {
@@ -117,20 +120,44 @@ class Grid {
         return true;
     }
 
-    bool uniqueness(){
-        //TODO: use DLX to determine if the solution is unique
-        return true;
+    void uniqueness() {
+        std::string compressed = "";
+        for (int i = 0; i < 9; i++) {
+            for (int j = 0; j < 9; j++) {
+                if (grid[i][j].given) {
+                    compressed += grid[i][j].value + '0';
+                } else {
+                    compressed += '0';
+                }
+            }
+        }
+
+        std::string res;
+        try {
+            // will throw exception if there are more than one solution
+            res = solve(compressed);
+        } catch (std::invalid_argument &e) {
+            throw;
+        }
+        for (int i = 0; i < 9; i++) {
+            for (int j = 0; j < 9; j++) {
+                if (grid[i][j].ans != res[i * 9 + j] - '0')
+                    throw std::invalid_argument("Invalid Sudoku: provided answer doesn't match");
+            }
+        }
     }
 
    public:
     Grid(std::string gridPattern) {
         try {
             checkAndFill(gridPattern);
+            uniqueness();
         } catch (const std::invalid_argument &e) {
             throw;
         }
-        //TODO:  uniqueness check and sanity check
-        // do the uniqueness check first so we can check the ans from the pattern is correct or not
+        if(!checkWrongValues())throw std::invalid_argument("Wrong cell values");
+        if(!checkWrongCandidates())throw std::invalid_argument("Wrong candidates");
+        if(!checkMissingCandidates())throw std::invalid_argument("Missing candidates");
     }
 
     Grid(int difficulty) {
@@ -140,24 +167,24 @@ class Grid {
         // TODO: generate sudoku of given difficulty
     }
 
-    std::string toString(){
+    std::string toString() {
         std::string res = "";
-        for(int i = 0; i < 9; i++){
-            for(int j = 0; j < 9; j++){
+        for (int i = 0; i < 9; i++) {
+            for (int j = 0; j < 9; j++) {
                 res += grid[i][j].value + '0';
             }
         }
-        for(int i = 0; i < 9; i++){
-            for(int j = 0; j < 9; j++){
+        for (int i = 0; i < 9; i++) {
+            for (int j = 0; j < 9; j++) {
                 res += grid[i][j].ans + '0';
             }
         }
         return res;
     }
 
-    std::string nextStep(){
-        //TODO: call solvers in sequence from easy to hard;
-        //once find a solution, return it;
+    std::string nextStep() {
+        // TODO: call solvers in sequence from easy to hard;
+        // once find a solution, return it;
         return "";
     }
 };
