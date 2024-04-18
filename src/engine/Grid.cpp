@@ -1,7 +1,7 @@
 #include <bitset>
 #include <vector>
 
-#include "DLX.h"
+#include "solvers/DLX.h"
 struct Cell {
     bool given;
     int value;
