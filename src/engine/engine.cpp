@@ -1,3 +1,5 @@
+#include "engine.h"
+
 #include "Grid.h"
 
 std::string generate(int difficulty){

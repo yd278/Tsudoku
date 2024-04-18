@@ -1,24 +1,45 @@
 cmake_minimum_required(VERSION 3.15)
-cmake_policy(SET CMP0091 NEW)
-cmake_policy(SET CMP0042 NEW)
-
-project (tsudoku-engine)
+project(tsudoku-engine)
 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
-
 add_definitions(-DNAPI_VERSION=8)
 set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
-include_directories(${CMAKE_JS_INC})
 
-file(GLOB SOURCE_FILES "src/engine/*.cpp")
+# Include directories
+include_directories(
+    ${CMAKE_JS_INC}                   # Include node-addon headers
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/engine  # Include your project headers
+)
 
-add_library(${PROJECT_NAME} SHARED ${SOURCE_FILES} ${CMAKE_JS_SRC})
+# Source files
+set(SOURCE_FILES
+    src/engine/engine.cpp
+    src/engine/engineAPI.cpp
+    src/engine/Grid.cpp
+    src/engine/util.cpp;
+
+    #Solvers
+    src/engine/solvers/DLX.cpp
+    src/engine/solvers/fullHouse.cpp
+)
+
+# Header files are listed for better project management in some IDEs
+set(HEADER_FILES
+    src/engine/engine.h
+    src/engine/Grid.h
+    src/engine/util.h
+
+    #solvers
+    src/engine/solvers/DLX.h
+    src/engine/solvers/fullHouse.h
+)
+
+add_library(${PROJECT_NAME} SHARED ${SOURCE_FILES} ${HEADER_FILES} ${CMAKE_JS_SRC})
 set_target_properties(${PROJECT_NAME} PROPERTIES PREFIX "" SUFFIX ".node")
 target_link_libraries(${PROJECT_NAME} ${CMAKE_JS_LIB})
 
 if(MSVC AND CMAKE_JS_NODELIB_DEF AND CMAKE_JS_NODELIB_TARGET)
-  # Generate node.lib
-  execute_process(COMMAND ${CMAKE_AR} /def:${CMAKE_JS_NODELIB_DEF} /out:${CMAKE_JS_NODELIB_TARGET} ${CMAKE_STATIC_LINKER_FLAGS})
+    execute_process(COMMAND ${CMAKE_AR} /def:${CMAKE_JS_NODELIB_DEF} /out:${CMAKE_JS_NODELIB_TARGET} ${CMAKE_STATIC_LINKER_FLAGS})
 endif()
