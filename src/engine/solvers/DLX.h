@@ -1,3 +1,6 @@
+#ifndef DLX_H
+#define DLX_H
+
 #include <stack>
 #include <string>
 #include <vector>
@@ -28,3 +31,5 @@ class DLX {
 int getId(int row, int col, int num);
 void init(DLX &dlx, std::string &puzzle);
 std::string format(DLX &dlx);
+
+#endif // DLX_H

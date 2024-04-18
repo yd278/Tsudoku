@@ -1,3 +1,6 @@
+#ifndef GRID_H
+#define GRID_H
+
 #include <bitset>
 #include <string>
 #include <vector>
@@ -25,3 +28,5 @@ class Grid {
     std::string toString();
     std::string nextStep();
 };
+
+#endif // GRID_H
