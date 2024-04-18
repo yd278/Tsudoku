@@ -40,6 +40,19 @@ add_library(${PROJECT_NAME} SHARED ${SOURCE_FILES} ${HEADER_FILES} ${CMAKE_JS_SR
 set_target_properties(${PROJECT_NAME} PROPERTIES PREFIX "" SUFFIX ".node")
 target_link_libraries(${PROJECT_NAME} ${CMAKE_JS_LIB})
 
+enable_testing()
+add_subdirectory(extern/googletest)
+include_directories(${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})
+
+set(TEST_SOURCES
+    tests/test_main.cpp
+    tests/solvers/test_DLX.cpp
+    tests/solvers/test_fullHouse.cpp
+)
+
+add_executable(runTests ${TEST_SOURCES})
+target_link_libraries(runTests gtest gtest_main ${PROJECT_NAME})
+
 if(MSVC AND CMAKE_JS_NODELIB_DEF AND CMAKE_JS_NODELIB_TARGET)
     execute_process(COMMAND ${CMAKE_AR} /def:${CMAKE_JS_NODELIB_DEF} /out:${CMAKE_JS_NODELIB_TARGET} ${CMAKE_STATIC_LINKER_FLAGS})
 endif()
