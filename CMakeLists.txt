@@ -46,6 +46,7 @@ include_directories(${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})
 
 set(TEST_SOURCES
     tests/test_main.cpp
+    tests/test_Grid.cpp
     tests/solvers/test_DLX.cpp
     tests/solvers/test_fullHouse.cpp
 )

@@ -112,9 +112,11 @@ void Grid::uniqueness() {
     }
     for (int i = 0; i < 9; i++) {
         for (int j = 0; j < 9; j++) {
-            if (grid[i][j].ans != res[i * 9 + j] - '0')
+            if(!grid[i][j].ans) grid[i][j].ans = res[i*9+j] - '0';
+            else if(grid[i][j].ans != res[i * 9 + j] - '0')
                 throw std::invalid_argument(
                     "Invalid Sudoku: provided answer doesn't match");
+
         }
     }
 }

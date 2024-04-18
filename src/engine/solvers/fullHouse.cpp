@@ -7,7 +7,7 @@ std::pair<bool, std::string> findFullHouse(const Grid &grid){
             int valCount = 0;
             std::pair<int,int> res;
             char resVal;
-            for(int j = 0; j < 0; j++){
+            for(int j = 0; j < 9; j++){
                 std::pair<int,int> tmp = convert(i, j, houseType);
                 auto c = grid.getCell(tmp.first, tmp.second);
                 if(c.value!=0){
