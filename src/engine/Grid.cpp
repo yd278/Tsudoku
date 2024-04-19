@@ -133,6 +133,12 @@ Grid::Grid(std::string gridPattern) {
         throw std::invalid_argument("Wrong candidates");
     if (!checkMissingCandidates())
         throw std::invalid_argument("Missing candidates");
+    for(int i = 0; i < 9; i++){
+        for(int j = 0; j < 9; j++){
+            grid[i][j].x = i;
+            grid[i][j].y = j;
+        }
+    }
 }
 
 Grid::Grid(int difficulty) {

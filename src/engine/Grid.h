@@ -10,6 +10,7 @@ struct Cell {
     int value;
     std::bitset<9> candidates;
     int ans;
+    int x,y;
 };
 class Grid {
    private:
