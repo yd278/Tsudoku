@@ -90,7 +90,7 @@ boxIntersection(int boxIndex, int lineType, int lineIndex, const Grid &grid) {
     std::vector<std::reference_wrapper<const Cell>> boxRemaining;
     std::vector<std::reference_wrapper<const Cell>> lineRemaining;
 
-    int boxSubIndex = lineType ? boxIndex % 3 : boxIndex / 3;
+    int boxSubIndex = lineType ? (boxIndex / 3) : (boxIndex % 3);
     for (int seg = 0; seg < 3; seg++) {
         for (int i = 0; i < 3; i++) {
             auto coord = convert(lineIndex, i + seg * 3, lineType);
