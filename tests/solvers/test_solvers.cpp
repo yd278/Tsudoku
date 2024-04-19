@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include <solvers/fullHouse.h>
+#include <solvers/simpleSolvers.h>
 
 TEST(TestFullHouse, FullHouseFound) {
     std::pair<bool, std::string> res =
