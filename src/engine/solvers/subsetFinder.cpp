@@ -28,6 +28,7 @@ bool findNakedSubsetRec(Grid &grid, int cnt, int dep, int first, int houseType,
             }
 
             // eliminations
+
             bool flag = false;
             int ptr = 0;
             for (int i = 0; i < 9; i++) {
@@ -73,22 +74,31 @@ void findNakedSubset(Grid &grid, int cnt) {
     grid.instructions.clear();
     for (int houseType = 0; houseType < 3; houseType++) {
         for (int i = 0; i < 9; i++) {
+
             std::vector<std::bitset<9>> candidateList(9);
             std::bitset<9> options;
             for (int j = 0; j < 9; j++) {
+
                 auto pos = convert(i, j, houseType);
                 auto c = grid.getCell(pos.first, pos.second);
+
+
                 if (c.value == 0) {
                     options.set(j);
                     candidateList[j] =
                         grid.getCell(pos.first, pos.second).candidates;
                 }
             }
+
             if (options.size() <= cnt) continue;
             std::vector<int> selectCell;
             if (findNakedSubsetRec(grid, cnt, 0, 0, houseType, i, candidateList,
                                    options, std::bitset<9>(), selectCell))
                 return;
+            else {
+                grid.execution.executees.clear();
+                grid.instructions.clear();
+            }
         }
     }
 }
@@ -182,6 +192,10 @@ void findHiddenSubset(Grid &grid, int cnt) {
                                     options, std::bitset<9>(),
                                     selectCandidates))
                 return;
+            else {
+                grid.execution.executees.clear();
+                grid.instructions.clear();
+            }
         }
     }
 }
