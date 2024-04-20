@@ -22,6 +22,7 @@ set(SOURCE_FILES
     #Solvers
     src/engine/solvers/DLX.cpp
     src/engine/solvers/simpleSolvers.cpp
+    src/engine/solvers/subsetFinder.cpp
 )
 
 # Header files are listed for better project management in some IDEs
@@ -32,6 +33,7 @@ set(HEADER_FILES
     #solvers
     src/engine/solvers/DLX.h
     src/engine/solvers/simpleSolvers.h
+    src/engine/solvers/subsetFinder.h
 )
 
 add_library(${PROJECT_NAME} SHARED ${SOURCE_FILES} ${HEADER_FILES} ${CMAKE_JS_SRC})
@@ -47,6 +49,7 @@ set(TEST_SOURCES
     tests/test_Grid.cpp
     tests/solvers/test_DLX.cpp
     tests/solvers/test_solvers.cpp
+    tests/solvers/test_subset.cpp
 )
 
 add_executable(runTests ${TEST_SOURCES})

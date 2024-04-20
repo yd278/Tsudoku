@@ -21,52 +21,9 @@ std::pair<int, int> convert(int house, int index, int houseType) {
     return std::make_pair(-1, -1);
 }
 
-std::string formater(int x, int y) {
-    std::string s = "r";
-    s += (x + '1');
-    s += "c";
-    s += (y + '1');
-    return s;
-}
 
-std::string formater(const Cell &c) { return formater(c.x, c.y); }
-
-std::string formater(std::vector<std::reference_wrapper<const Cell>> line) {
-    if (line.size() == 1) return formater(line[0]);
-    std::string s = "r";
-    if (line[0].get().x == line[1].get().x) {
-        s += (line[0].get().x + '1');
-        std::bitset<9> tmp;
-        for (auto c : line) {
-            tmp.set(c.get().y);
-        }
-
-        s += "c";
-        for (int i = 0; i < 9; i++) {
-            if (tmp[i]) s += char(i + '1');
-        }
-    } else {
-        std::bitset<9> tmp;
-        for (auto c : line) {
-            tmp.set(c.get().x);
-        }
-        for (int i = 0; i < 9; i++) {
-            if (tmp[i]) s += char(i + '1');
-        }
-        s+="c";
-        s+=char(line[9].get().y + '1');
-    }
-    return s;
-}
-
-
-std::string formater(std::vector<std::vector<std::reference_wrapper<const Cell>>> lines){
-    std::string res = "";
-    for(auto &line : lines){
-        if(!line.empty()) res += formater(line) + ",";
-    }
-    if(res.length()>1)res.pop_back();
-    return res;
+uint8_t encodePos(std::pair<int,int> pos){
+    return encodePos(pos.first,pos.second);
 }
 
 std::tuple<std::vector<std::reference_wrapper<const Cell>>,
