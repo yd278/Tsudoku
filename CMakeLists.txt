@@ -15,7 +15,6 @@ include_directories(
 
 # Source files
 set(SOURCE_FILES
-    src/engine/engine.cpp
     src/engine/engineAPI.cpp
     src/engine/Grid.cpp
     src/engine/util.cpp;
@@ -27,7 +26,6 @@ set(SOURCE_FILES
 
 # Header files are listed for better project management in some IDEs
 set(HEADER_FILES
-    src/engine/engine.h
     src/engine/Grid.h
     src/engine/util.h
 
