@@ -6,6 +6,8 @@
 
 #include "Grid.h"
 
+uint8_t encodePos(int x, int y);
+
 std::pair<int, int> convert(int house, int index, int houseType);
 std::string formater(int x, int y);
 std::string formater(const Cell &c);

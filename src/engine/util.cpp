@@ -118,3 +118,7 @@ bool targetIn(int target,
     }
     return false;
 }
+
+uint8_t encodePos(int x, int y){
+    return x<<4|y;
+}
