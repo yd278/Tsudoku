@@ -163,10 +163,10 @@ std::string Grid::toString() {
     return res;
 }
 
-std::string Grid::nextStep() {
+Inst& Grid::nextStep() {
     // TODO: call solvers in sequence from easy to hard;
     // once find a solution, return it;
-    return "";
+    return instructions;
 }
 
 

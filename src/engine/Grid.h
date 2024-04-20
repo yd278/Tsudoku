@@ -1,16 +1,21 @@
 #ifndef GRID_H
 #define GRID_H
 
+#include <_types/_uint16_t.h>
 #include <bitset>
 #include <string>
 #include <vector>
-
+typedef std::vector<uint8_t> Inst;
 struct Cell {
     bool given;
     int value;
     std::bitset<9> candidates;
     int ans;
     int x,y;
+};
+struct Exec{
+    bool mood; //true: set, false eliminate;
+    std::vector<uint16_t> executees;
 };
 class Grid {
    private:
@@ -20,6 +25,8 @@ class Grid {
     bool checkMissingCandidates();
     bool checkWrongCandidates();
     void uniqueness();
+    Inst instructions;
+    Exec execution;
 
    public:
     
@@ -27,7 +34,7 @@ class Grid {
     Grid(std::string gridPattern);
     const Cell & getCell(int x, int y) const;
     std::string toString();
-    std::string nextStep();
+    Inst& nextStep();
 };
 
 #endif // GRID_H
