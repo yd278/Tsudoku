@@ -1,51 +1,35 @@
 #include "simpleSolvers.h"
+#include <_types/_uint16_t.h>
+#include <_types/_uint8_t.h>
 
 #include <iostream>
 
 #include "util.h"
 
-std::pair<bool, std::string> findFullHouse(const Grid &grid) {
-    for (int houseType = 0; houseType < 3; houseType++) {
-        for (int i = 0; i < 9; i++) {
-            int valCount = 0;
-            std::pair<int, int> res;
-            char resVal;
-            for (int j = 0; j < 9; j++) {
-                std::pair<int, int> tmp = convert(i, j, houseType);
-                auto c = grid.getCell(tmp.first, tmp.second);
-                if (c.value != 0) {
-                    valCount++;
-                } else {
-                    res = tmp;
-                    for (int i = 0; i < 9; i++)
-                        if (c.candidates[i]) resVal = i + '1';
-                }
-            }
-            if (valCount == 8) {
-                std::string prompt =
-                    "Full House: " + formater(res.first, res.second) + "=" +
-                    resVal;
-                return std::make_pair(true, prompt);
-            }
-        }
-    }
-    return std::make_pair(false, "");
-}
 
-std::pair<bool, std::string> findNakedSingle(const Grid &grid) {
+void findNakedSingle(Grid &grid) {
+    auto &instruction =  grid.instructions;
+    auto &execution = grid.execution;
+    instruction.clear();
+    execution.mode=false;
+    execution.executees.clear();
     for (int i = 0; i < 9; i++) {
         for (int j = 0; j < 9; j++) {
             auto &c = grid.getCell(i, j);
             if (c.candidates.count() == 1) {
-                int pos = 0;
-                while (!c.candidates[pos]) pos++;
-                std::string prompt =
-                    "Naked Single: " + formater(i, j) + "=" + char(pos + '1');
-                return std::make_pair(true, prompt);
+                int tar = 0;
+                while (!c.candidates[tar]) tar++;
+                instruction.push_back(0x00);
+                uint8_t bPos = i<<4|j;
+                uint8_t bTar = tar;
+                instruction.push_back(bPos);
+                instruction.push_back(bTar);
+                execution.mode = true;
+                uint16_t executee = (bPos<<8) | bTar;
+                execution.executees.push_back(executee);
             }
         }
     }
-    return std::make_pair(false, "");
 }
 std::pair<bool, std::string> findHiddenSingle(const Grid &grid) {
     for (int target = 0; target < 9; target++) {

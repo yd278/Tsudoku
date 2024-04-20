@@ -2,9 +2,8 @@
 #define FULLHOUSE_H
 
 #include "Grid.h"
-std:: pair<bool,std::string> findFullHouse(const Grid &grid);
-std::pair<bool,std::string> findNakedSingle(const Grid &grid);
-std::pair<bool,std::string> findHiddenSingle(const Grid &grid);
-std::pair<bool,std::string> findLockedCandidates(const Grid &grid);
+void findNakedSingle(Grid &grid);
+void findHiddenSingle(Grid &grid);
+void findLockedCandidates(Grid &grid);
 
 #endif // FULLHOUSE_H

@@ -14,7 +14,7 @@ struct Cell {
     int x,y;
 };
 struct Exec{
-    bool mood; //true: set, false eliminate;
+    bool mode; //true: set, false eliminate;
     std::vector<uint16_t> executees;
 };
 class Grid {
@@ -25,10 +25,11 @@ class Grid {
     bool checkMissingCandidates();
     bool checkWrongCandidates();
     void uniqueness();
-    Inst instructions;
-    Exec execution;
 
    public:
+
+    Inst instructions;
+    Exec execution;
     
     Grid(int difficulty);
     Grid(std::string gridPattern);
