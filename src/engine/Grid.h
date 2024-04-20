@@ -16,6 +16,9 @@ struct Cell {
 struct Exec{
     bool mode; //true: set, false eliminate;
     std::vector<uint16_t> executees;
+    bool operator==(const Exec& other) const {
+        return mode == other.mode && executees == other.executees;
+    }
 };
 class Grid {
    private:

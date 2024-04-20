@@ -1,4 +1,5 @@
 #include "simpleSolvers.h"
+
 #include <_types/_uint16_t.h>
 #include <_types/_uint8_t.h>
 
@@ -6,12 +7,11 @@
 
 #include "util.h"
 
-
 void findNakedSingle(Grid &grid) {
-    auto &instruction =  grid.instructions;
+    auto &instruction = grid.instructions;
     auto &execution = grid.execution;
     instruction.clear();
-    execution.mode=false;
+    execution.mode = false;
     execution.executees.clear();
     for (int i = 0; i < 9; i++) {
         for (int j = 0; j < 9; j++) {
@@ -24,17 +24,18 @@ void findNakedSingle(Grid &grid) {
                 instruction.push_back(bPos);
                 instruction.push_back(tar);
                 execution.mode = true;
-                uint16_t executee = (bPos<<8) | tar;
+                uint16_t executee = (bPos << 8) | tar;
                 execution.executees.push_back(executee);
+                return;
             }
         }
     }
 }
 void findHiddenSingle(Grid &grid) {
-    auto &instruction =  grid.instructions;
+    auto &instruction = grid.instructions;
     auto &execution = grid.execution;
     instruction.clear();
-    execution.mode=false;
+    execution.mode = false;
     execution.executees.clear();
     for (int target = 0; target < 9; target++) {
         for (int houseType = 0; houseType < 3; houseType++) {
@@ -51,13 +52,13 @@ void findHiddenSingle(Grid &grid) {
                     }
                 }
                 if (cnt == 1) {
-
-                instruction.push_back(0x01);
-                auto bPos = encodePos(res.first, res.second);
-                instruction.push_back(bPos);
-                instruction.push_back(target);
-                execution.mode=true;
-                execution.executees.push_back((bPos<<8)|target);
+                    instruction.push_back(0x01);
+                    auto bPos = encodePos(res.first, res.second);
+                    instruction.push_back(bPos);
+                    instruction.push_back(target);
+                    execution.mode = true;
+                    execution.executees.push_back((bPos << 8) | target);
+                    return;
                 }
             }
         }
@@ -65,10 +66,10 @@ void findHiddenSingle(Grid &grid) {
 }
 
 void findLockedCandidates(Grid &grid) {
-    auto &instruction =  grid.instructions;
+    auto &instruction = grid.instructions;
     auto &execution = grid.execution;
     instruction.clear();
-    execution.mode=false;
+    execution.mode = false;
     execution.executees.clear();
     for (int lineType : {0, 1}) {
         for (int box = 0; box < 9; box++) {
@@ -84,38 +85,39 @@ void findLockedCandidates(Grid &grid) {
                     if (!targetIn(target, boxRemaining) &&
                         targetIn(target, lineRemaining)) {
                         instruction.push_back(0x10);
-                        for(auto &c : intersection){
+                        for (auto &c : intersection) {
                             auto bPos = encodePos(c.get().x, c.get().y);
                             instruction.push_back(bPos);
                             instruction.push_back(target);
                         }
                         execution.mode = false;
                         for (auto &c : lineRemaining) {
-                            if (c.get().candidates[target]){
+                            if (c.get().candidates[target]) {
                                 auto bPos = encodePos(c.get().x, c.get().y);
                                 instruction.push_back(bPos);
                                 instruction.push_back(target);
-                                execution.executees.push_back((bPos<<8)|target);
+                                execution.executees.push_back((bPos << 8) |
+                                                              target);
                             }
                         }
                         return;
                     }
                     if (!targetIn(target, lineRemaining) &&
                         targetIn(target, boxRemaining)) {
-
                         instruction.push_back(0x11);
-                        for(auto &c : intersection){
+                        for (auto &c : intersection) {
                             auto bPos = encodePos(c.get().x, c.get().y);
                             instruction.push_back(bPos);
                             instruction.push_back(target);
                         }
                         execution.mode = false;
                         for (auto c : boxRemaining) {
-                            if (c.get().candidates[target]){
+                            if (c.get().candidates[target]) {
                                 auto bPos = encodePos(c.get().x, c.get().y);
                                 instruction.push_back(bPos);
                                 instruction.push_back(target);
-                                execution.executees.push_back((bPos<<8)|target);
+                                execution.executees.push_back((bPos << 8) |
+                                                              target);
                             }
                         }
                         return;
