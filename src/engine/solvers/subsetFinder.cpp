@@ -1,7 +1,5 @@
 #include "subsetFinder.h"
 
-#include <iostream>
-
 #include "util.h"
 
 bool findNakedSubsetRec(Grid &grid, int cnt, int dep, int first, int houseType,
@@ -22,23 +20,6 @@ bool findNakedSubsetRec(Grid &grid, int cnt, int dep, int first, int houseType,
                 }
             }
 
-            // DEBUG
-            std::cout<<"accumulator:\n"<<acc.to_string()<<"\n";
-
-            std::cout << "HouseType: " << houseType << " HouseID: " << houseID
-                      << "\n"<<selectedCell.size()<<"SelectCells:\n";
-
-            for (int i = 0; i < cnt; i++) {
-                std::cout << selectedCell[i] << "\n";
-                std::cout << "the cell's candidate is: "<<candidateList[selectedCell[i]]<<"\n";
-            }
-            std::cout << selectedCandidates.size()<<" SelectCandidates:\n";
-
-            for (int i = 0; i < cnt; i++) {
-                std::cout << selectedCandidates[i] << "\n";
-            }
-            // END DEBUG
-
             for (int i = 0; i < cnt; i++) {
                 int cellID = selectedCell[i];
                 auto pos = convert(houseID, cellID, houseType);
@@ -46,7 +27,7 @@ bool findNakedSubsetRec(Grid &grid, int cnt, int dep, int first, int houseType,
                 grid.instructions.push_back(selectedCandidates[i]);
             }
 
-            //eliminations
+            // eliminations
             bool flag = false;
             int ptr = 0;
             for (int i = 0; i < 9; i++) {
@@ -68,7 +49,7 @@ bool findNakedSubsetRec(Grid &grid, int cnt, int dep, int first, int houseType,
                     }
                 }
             }
-            
+
             return flag;
         }
         return false;
@@ -177,46 +158,24 @@ void findHiddenSubset(Grid &grid, int cnt) {
     grid.execution.mode = false;
     grid.execution.executees.clear();
     grid.instructions.clear();
-    // ///DEBUG
-    // std::cout<<"init done\n";
-    // //END DEBUG
     for (int houseType = 0; houseType < 3; houseType++) {
-        // //DEBUG
-
-        // std::cout<<"housetype: "<<houseType<<"\n";
-        // //END DEBUG
         for (int i = 0; i < 9; i++) {
             std::vector<std::bitset<9>> cellList(9);
             std::bitset<9> options("111111111");
-            // //DEBUG
 
-            //         std::cout<<"houseID: "<<i<<"\n";
-            // //END DEBUG
             for (int j = 0; j < 9; j++) {
-                //         //DEBUG
-                // std::cout<<"cellID: "<<j<<"\n";
-
-                //         //END DEBUG
                 auto pos = convert(i, j, houseType);
                 auto c = grid.getCell(pos.first, pos.second);
-                // //DEBUG
-                // std::cout<<"value: "<<c.value<<"\n";
-                // //END DEBUG
+
                 if (c.value != 0) {
                     options[c.value - 1] = false;
                     continue;
                 }
                 for (int tar = 0; tar < 9; tar++) {
-                    // //DEBUG
-                    // std::cout<<"target: "<<tar<<"\n";
-                    // //END DEBUG
                     if (c.candidates[tar]) cellList[tar][j] = true;
                 }
             }
             std::vector<int> selectCandidates;
-            // //DEBUG
-            // std::cout<<"Ready for dfs\n";
-            // //END DEBUG
 
             if (options.size() <= cnt) continue;
             if (findHiddenSubsetRec(grid, cnt, 0, 0, houseType, i, cellList,
