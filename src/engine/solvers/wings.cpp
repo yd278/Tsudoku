@@ -1,5 +1,6 @@
 #include "wings.h"
 
+
 #include "util.h"
 inline bool checkBiValue(std::reference_wrapper<const Cell> cell, int x,
                          int y) {
@@ -126,18 +127,23 @@ void findXYZWing(Grid &grid) {
     }
 }
 
+
 void findWWing(Grid &grid) {
+
     FOR_ALL(bridge) {
         for (auto link : grid.strongLinks[bridge]) {
+            
             for (auto &pincer1 : grid.biValues) {
                 if (!pincer1.get().candidates[bridge]) continue;
                 if (!sees(pincer1, link.first)) continue;
+                
                 int loose;
                 FOR_ALL(t)
                 if (pincer1.get().candidates[t] && t != bridge) {
                     loose = t;
                     break;
                 }
+                
 
                 for (auto &pincer2 : grid.biValues) {
                     if (pincer2.get().x == pincer1.get().x &&
@@ -146,7 +152,9 @@ void findWWing(Grid &grid) {
                     if (!checkBiValue(pincer2, bridge, loose)) continue;
                     if (!sees(pincer2, link.second)) continue;
                     if (sees(pincer1, pincer2)) continue;
-                    // w-wing pattern found
+
+                    
+                    //  w-wing pattern found
                     grid.instructions.clear();
                     grid.execution.executees.clear();
                     grid.execution.mode = false;
@@ -169,7 +177,7 @@ void findWWing(Grid &grid) {
                         grid.addInst(loose);
                         grid.addExec((encodePos(i, j)) << 8 | loose);
                     }
-                    if(flag) return;
+                    if (flag) return;
                 }
             }
         }
