@@ -21,6 +21,19 @@ std::pair<int, int> convert(int house, int index, int houseType) {
     return std::make_pair(-1, -1);
 }
 
+uint8_t encodePos(std::reference_wrapper<const Cell> cell){
+    return encodePos(cell.get().x, cell.get().y);
+}
+
+bool sees(int x1, int y1, int x2, int y2){
+    if(x1==x2 || y1==y2) return true;
+    if(x1/3 == x2 / 3 &&y1/3 == y2/3) return true;
+    return false;
+}
+
+bool sees(std::reference_wrapper<const Cell> cell, int x, int y){
+    return sees(cell.get().x,cell.get().y,x,y);
+}
 
 uint8_t encodePos(std::pair<int,int> pos){
     return encodePos(pos.first,pos.second);
@@ -78,4 +91,8 @@ bool targetIn(int target,
 
 uint8_t encodePos(int x, int y){
     return x<<4|y;
+}
+
+bool sees(std::reference_wrapper<const Cell> cell1, std::reference_wrapper<const Cell> cell2){
+    return sees(cell1.get().x, cell1.get().y,cell2.get().x,cell2.get().y);
 }

@@ -2,9 +2,33 @@
 
 #include <bitset>
 #include <vector>
-#include "util.h"
-#include "solvers/DLX.h"
 
+#include "solvers/DLX.h"
+#include "util.h"
+
+
+void Grid::updateStrongLinks(){
+    strongLinks.clear();
+    strongLinks.resize(9);
+    for(int houseType : {0,1,2}){
+        FOR_ALL(houseID){
+            FOR_ALL(target){
+                std::vector<std::reference_wrapper<const Cell>> tmp;
+                FOR_ALL(i){
+                    auto pos = convert(houseID, i, houseType);
+                    auto cell = getCell(pos);
+                    if(cell.value==target) break;
+                    if(cell.candidates[target]){
+                        tmp.push_back(cell);
+                    }
+                }
+                if(tmp.size()==2){
+                    strongLinks[target].push_back(std::make_pair(tmp[0], tmp[1]));
+                }
+            }
+        }
+    }
+}
 void Grid::checkAndFill(std::string gridPattern) {
     if (gridPattern.length() != 972) {
         throw std::invalid_argument("Invalid Pattern: wrong length");
@@ -112,15 +136,25 @@ void Grid::uniqueness() {
     }
     for (int i = 0; i < 9; i++) {
         for (int j = 0; j < 9; j++) {
-            if(!grid[i][j].ans) grid[i][j].ans = res[i*9+j] - '0';
-            else if(grid[i][j].ans != res[i * 9 + j] - '0')
+            if (!grid[i][j].ans)
+                grid[i][j].ans = res[i * 9 + j] - '0';
+            else if (grid[i][j].ans != res[i * 9 + j] - '0')
                 throw std::invalid_argument(
                     "Invalid Sudoku: provided answer doesn't match");
-
         }
     }
 }
 
+void Grid::updateBiValues() {
+    biValues.clear();
+    for(int i = 0; i < 9;i++){
+        for(int j = 0; j < 9; j++){
+            if(grid[i][j].candidates.count()==2){
+                biValues.push_back(grid[i][j]);
+            }
+        }
+    }
+}
 Grid::Grid(std::string gridPattern) {
     try {
         checkAndFill(gridPattern);
@@ -133,8 +167,8 @@ Grid::Grid(std::string gridPattern) {
         throw std::invalid_argument("Wrong candidates");
     if (!checkMissingCandidates())
         throw std::invalid_argument("Missing candidates");
-    for(int i = 0; i < 9; i++){
-        for(int j = 0; j < 9; j++){
+    for (int i = 0; i < 9; i++) {
+        for (int j = 0; j < 9; j++) {
             grid[i][j].x = i;
             grid[i][j].y = j;
         }
@@ -163,13 +197,16 @@ std::string Grid::toString() {
     return res;
 }
 
-Inst& Grid::nextStep() {
+Inst &Grid::nextStep() {
+
     // TODO: call solvers in sequence from easy to hard;
+        //TODO: init infos for solvers
+    updateBiValues();
+    updateStrongLinks();
     // once find a solution, return it;
     return instructions;
 }
 
+const Cell &Grid::getCell(int x, int y) const { return grid[x][y]; }
 
-const Cell & Grid::getCell(int x, int y) const{
-    return grid[x][y];
-}
+const Cell &Grid::getCell (std::pair<int, int> pos) const { return grid[pos.first][pos.second]; }
