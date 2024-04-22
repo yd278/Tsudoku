@@ -31,6 +31,7 @@ set(SOURCE_FILES
 set(HEADER_FILES
     src/engine/Grid.h
     src/engine/util.h
+    src/engine/util_const.h
 
     #solvers
     src/engine/solvers/DLX.h
