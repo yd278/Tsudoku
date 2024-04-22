@@ -1,200 +1,134 @@
 #include "subsetFinder.h"
 
 #include "util.h"
+#include "util_const.h"
 
-bool findNakedSubsetRec(Grid &grid, int cnt, int dep, int first, int houseType,
-                        int houseID, std::vector<std::bitset<9>> &candidateList,
-                        std::bitset<9> &options, std::bitset<9> acc,
-                        std::vector<int> &selectedCell) {
-    if (dep == cnt) {
-        if (acc.count() == cnt) {
-            grid.execution.executees.clear();
-            grid.instructions.clear();
-            grid.instructions.push_back(0x30 + cnt - 2);
-            grid.execution.mode = false;
-            // make a list of candidates form the naked subset
-            std::vector<int> selectedCandidates;
-            for (int i = 0; i < 9; i++) {
-                if (acc[i]) {
-                    selectedCandidates.push_back(i);
+void findNakedSubset(Grid &grid, int cnt) {
+    std::vector<const std::vector<std::vector<int>> *> combos = {
+        &ALL_PAIRS, &ALL_TRIPLES, &ALL_QUADRUPLETS};
+    for (int houseType : {0, 1, 2}) {
+        FOR_ALL(house) {
+            for (auto cells : *combos[cnt - 2]) {
+                bool hasValue = false;
+                std::bitset<9> candidateUnion;
+                for (int i = 0; i < cnt; i++) {
+                    auto cell = grid.getCell(houseType, house, cells[i]);
+                    if (cell->value != 0) {
+                        hasValue = true;
+                        break;
+                    }
+                    candidateUnion = candidateUnion | cell->candidates;
                 }
-            }
 
-            for (int i = 0; i < cnt; i++) {
-                int cellID = selectedCell[i];
-                auto pos = convert(houseID, cellID, houseType);
-                grid.instructions.push_back(encodePos(pos));
-                grid.instructions.push_back(selectedCandidates[i]);
-            }
-
-            // eliminations
-
-            bool flag = false;
-            int ptr = 0;
-            for (int i = 0; i < 9; i++) {
-                if (i == selectedCell[ptr]) {
-                    ptr++;
-                    continue;
-                } else {
-                    auto pos = convert(houseID, i, houseType);
-                    auto toEli =
-                        acc & grid.getCell(pos.first, pos.second).candidates;
-                    for (int j = 0; j < 9; j++) {
-                        if (toEli[j]) {
-                            flag = true;
-                            grid.instructions.push_back(encodePos(pos));
-                            grid.instructions.push_back(j);
-                            grid.execution.executees.push_back(
-                                (encodePos(pos) << 8) | j);
+                if (hasValue) continue;
+                if (candidateUnion.count() == cnt) {
+                    // naked subset found:
+                    grid.initInsAndExe();
+                    grid.setExec(false);
+                    grid.addInst(0x30 + cnt - 2);
+                    for (int i = 0; i < cnt; i++) {
+                        auto pos = convert(house, cells[i], houseType);
+                        grid.addInst(encodePos(pos));
+                    }
+                    std::vector<int> subsetCandidates;
+                    FOR_ALL(cand) {
+                        if (candidateUnion[cand]) {
+                            grid.addInst(cand);
+                            subsetCandidates.push_back(cand);
                         }
                     }
-                }
-            }
-
-            return flag;
-        }
-        return false;
-    }
-    for (int i = first; i < 9; i++) {
-        if (options[i]) {
-            selectedCell.push_back(i);
-            if (findNakedSubsetRec(grid, cnt, dep + 1, i + 1, houseType,
-                                   houseID, candidateList, options,
-                                   acc | candidateList[i], selectedCell))
-                return true;
-            ;
-            selectedCell.pop_back();
-        }
-    }
-    return false;
-}
-void findNakedSubset(Grid &grid, int cnt) {
-    grid.execution.mode = false;
-    grid.execution.executees.clear();
-    grid.instructions.clear();
-    for (int houseType = 0; houseType < 3; houseType++) {
-        for (int i = 0; i < 9; i++) {
-
-            std::vector<std::bitset<9>> candidateList(9);
-            std::bitset<9> options;
-            for (int j = 0; j < 9; j++) {
-
-                auto pos = convert(i, j, houseType);
-                auto c = grid.getCell(pos.first, pos.second);
-
-
-                if (c.value == 0) {
-                    options.set(j);
-                    candidateList[j] =
-                        grid.getCell(pos.first, pos.second).candidates;
-                }
-            }
-
-            if (options.size() <= cnt) continue;
-            std::vector<int> selectCell;
-            if (findNakedSubsetRec(grid, cnt, 0, 0, houseType, i, candidateList,
-                                   options, std::bitset<9>(), selectCell))
-                return;
-            else {
-                grid.execution.executees.clear();
-                grid.instructions.clear();
-            }
-        }
-    }
-}
-
-bool findHiddenSubsetRec(Grid &grid, int cnt, int dep, int first, int houseType,
-                         int houseID, std::vector<std::bitset<9>> &cellList,
-                         std::bitset<9> &options, std::bitset<9> acc,
-                         std::vector<int> selectCandidates) {
-    if (dep == cnt) {
-        if (acc.count() == cnt) {
-            grid.execution.executees.clear();
-            grid.instructions.clear();
-            grid.instructions.push_back(0x34 + cnt - 2);
-            grid.execution.mode = false;
-            // make a list of select cells id in the hidden subset
-
-            std::vector<int> selectedCells;
-            for (int i = 0; i < 9; i++) {
-                if (acc[i]) {
-                    selectedCells.push_back(i);
-                }
-            }
-            for (int i = 0; i < cnt; i++) {
-                int cellID = selectedCells[i];
-                auto pos = convert(houseID, cellID, houseType);
-                grid.instructions.push_back(encodePos(pos));
-                grid.instructions.push_back(selectCandidates[i]);
-            }
-            bool flag = false;
-            for (int i : selectedCells) {
-                int ptr = 0;
-                for (int j = 0; j < 9; j++) {
-                    if (j == selectCandidates[ptr]) {
-                        ptr++;
-                        continue;
+                    // eliminations:
+                    bool flag = false;
+                    // iterate every cells in this house
+                    FOR_ALL(cellId) {
+                        // check if it's in the subset selected
+                        bool inSubset = false;
+                        for (int i = 0; i < cnt; i++) {
+                            if (cellId == cells[i]) {
+                                inSubset = true;
+                                break;
+                            }
+                        }
+                        if (inSubset) continue;
+                        // it's not, take the cell;
+                        auto pos = convert(house, cellId, houseType);
+                        auto cell = grid.getCell(pos);
+                        // it shouldn't be filled;
+                        if (cell->value != 0) continue;
+                        // determine what s
+                        for (auto sc : subsetCandidates) {
+                            if (cell->candidates[sc]) {
+                                grid.addExec(encodePos(cell), sc);
+                                flag = true;
+                            }
+                        }
                     }
-                    auto pos = convert(houseID, i, houseType);
-                    auto c = grid.getCell(pos.first, pos.second);
-                    if (c.candidates[j]) {
-                        flag = true;
-                        grid.instructions.push_back(encodePos(pos));
-                        grid.instructions.push_back(j);
-                        grid.execution.executees.push_back(
-                            (encodePos(pos) << 8) | j);
+                    if (flag) {
+                        grid.sortExec();
+                        grid.addExecToInst();
+                        return;
                     }
                 }
             }
-
-            return flag;
-        }
-        return false;
-    }
-    for (int i = first; i < 9; i++) {
-        if (options[i]) {
-            selectCandidates.push_back(i);
-            if (findHiddenSubsetRec(grid, cnt, dep + 1, i + 1, houseType,
-                                    houseID, cellList, options,
-                                    acc | cellList[i], selectCandidates))
-                return true;
-            ;
-            selectCandidates.pop_back();
         }
     }
-    return false;
 }
+
 void findHiddenSubset(Grid &grid, int cnt) {
-    grid.execution.mode = false;
-    grid.execution.executees.clear();
-    grid.instructions.clear();
-    for (int houseType = 0; houseType < 3; houseType++) {
-        for (int i = 0; i < 9; i++) {
-            std::vector<std::bitset<9>> cellList(9);
-            std::bitset<9> options("111111111");
-
-            for (int j = 0; j < 9; j++) {
-                auto pos = convert(i, j, houseType);
-                auto c = grid.getCell(pos.first, pos.second);
-
-                if (c.value != 0) {
-                    options[c.value - 1] = false;
-                    continue;
-                }
-                for (int tar = 0; tar < 9; tar++) {
-                    if (c.candidates[tar]) cellList[tar][j] = true;
+    std::vector<std::bitset<9>> positions;
+    std::vector<const std::vector<std::vector<int>> *> combos = {
+        &ALL_PAIRS, &ALL_TRIPLES, &ALL_QUADRUPLETS};
+    for (int houseType : {0, 1, 2}) {
+        FOR_ALL(houseID) {
+            // get positions set;
+            positions.clear();
+            positions.resize(9);
+            FOR_ALL(cellID) {
+                auto cell = grid.getCell(houseType, houseID, cellID);
+                if (cell->value != 0) continue;
+                FOR_ALL(v) {
+                    if (cell->candidates[v]) positions[v].set(cellID);
                 }
             }
-            std::vector<int> selectCandidates;
 
-            if (options.size() <= cnt) continue;
-            if (findHiddenSubsetRec(grid, cnt, 0, 0, houseType, i, cellList,
-                                    options, std::bitset<9>(),
-                                    selectCandidates))
-                return;
-            else {
-                grid.execution.executees.clear();
-                grid.instructions.clear();
+            for (auto cands : *combos[cnt]) {
+                std::bitset<9> positionUnion;
+                std::bitset<9> candSet;
+                for (auto cand : cands) {
+                    positionUnion = positionUnion | positions[cand];
+                    candSet.set(cand);
+                }
+
+                if (positionUnion.count() == cnt) {
+                    // hidden Subset found
+                    grid.initInsAndExe();
+                    grid.setExec(false);
+                    grid.addInst(0x34 + cnt - 2);
+                    std::vector<int> positionList;
+                    FOR_ALL(i){
+                        if(positionUnion[i]){
+                            grid.addInst(encodePos(convert(houseID, i, houseType)));
+                            positionList.push_back(i);
+                        }
+                    }
+                    for(auto cand : cands){
+                        grid.addInst(cand);
+                    }
+
+                    //eliminations:
+                    bool flag = false;
+                    for(auto pos : positionList){
+                        FOR_ALL(c){
+                            auto cell = grid.getCell(houseType,houseID,pos);
+                            if(cell->candidates[c] && !candSet[c]){
+                                grid.addExec(encodePos(cell),c);
+                            }
+                        }
+                    }
+                    grid.sortExec();
+                    grid.addExecToInst();
+                    return ;
+                }
             }
         }
     }

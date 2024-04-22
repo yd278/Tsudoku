@@ -253,5 +253,3 @@ const std::vector<std::vector<int>> ALL_QUADRUPLETS = {
     {4, 6, 7, 8},
     {5, 6, 7, 8}
 };
-
-    std::vector<std::reference_wrapper<const std::vector<std::vector<int>>>> combos = {ALL_PAIRS, ALL_TRIPLES, ALL_QUADRUPLETS};

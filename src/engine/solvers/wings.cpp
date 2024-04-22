@@ -2,35 +2,33 @@
 
 
 #include "util.h"
-inline bool checkBiValue(std::reference_wrapper<const Cell> cell, int x,
+inline bool checkBiValue(const Cell* cell, int x,
                          int y) {
-    return cell.get().candidates[x] && cell.get().candidates[y];
+    return cell->candidates[x] && cell->candidates[y];
 }
 
 void findXYWing(Grid &grid) {
-    grid.instructions.clear();
-    grid.execution.executees.clear();
+    grid.initInsAndExe();
     FOR_ALL(x) {
         for (int y = x + 1; y < 9; y++) {
             FOR_ALL(z) {
                 if (z == x || z == y) continue;
                 // for fixed xyz
-                for (auto pivot : grid.biValues) {
+                for (auto pivot : *grid.getBiValues()) {
                     if (!checkBiValue(pivot, x, y)) continue;
                     // find the pivot with xy
-                    for (auto xPincers : grid.biValues) {
+                    for (auto xPincers : *grid.getBiValues()) {
                         if (!checkBiValue(xPincers, x, z)) continue;
                         if (!sees(pivot, xPincers)) continue;
                         // find the xPincers with xz
-                        for (auto yPincers : grid.biValues) {
+                        for (auto yPincers : *grid.getBiValues()) {
                             if (!checkBiValue(yPincers, y, z)) continue;
                             if (!sees(pivot, yPincers)) continue;
                             // find the yPincers with yz
                             if (sees(xPincers, yPincers)) continue;
                             // find one
-                            grid.instructions.clear();
-                            grid.execution.executees.clear();
-                            grid.execution.mode = false;
+                            grid.initInsAndExe();
+                            grid.setExec(false);
                             // setup instruction
                             grid.addInst(0x40);
                             grid.addInst(encodePos(pivot));
@@ -41,11 +39,10 @@ void findXYWing(Grid &grid) {
                             grid.addInst(z);
                             bool flag = false;
                             // setup elimination
-                            grid.execution.mode = false;
                             FOR_ALL(i) FOR_ALL(j) {
                                 if (sees(xPincers, i, j) &&
                                     sees(yPincers, i, j))
-                                    if (grid.getCell(i, j).candidates[z]) {
+                                    if (grid.getCell(i, j)->candidates[z]) {
                                         auto bPos = encodePos(i, j);
                                         grid.addInst(bPos);
                                         grid.addInst(z);
@@ -64,18 +61,17 @@ void findXYWing(Grid &grid) {
 }
 
 void findXYZWing(Grid &grid) {
-    grid.instructions.clear();
-    grid.execution.executees.clear();
+    grid.initInsAndExe();
     FOR_ALL(x)
     for (int y = x + 1; y < 9; y++) {
         FOR_ALL(z) {
             if (z == x || z == y) continue;
             // for fixed xyz
 
-            for (auto xPincers : grid.biValues) {
+            for (auto xPincers : *grid.getBiValues()) {
                 if (!checkBiValue(xPincers, x, z)) continue;
                 // find a xPincer
-                for (auto yPincers : grid.biValues) {
+                for (auto yPincers : *grid.getBiValues()) {
                     if (!checkBiValue(yPincers, y, z)) continue;
                     if (sees(xPincers, yPincers)) continue;
                     // find a yPincer
@@ -83,16 +79,15 @@ void findXYZWing(Grid &grid) {
                         if (!sees(xPincers, i, j) || !sees(yPincers, i, j))
                             continue;
                         auto pivot = grid.getCell(i, j);
-                        if (pivot.candidates.count() != 3) continue;
-                        if (!pivot.candidates[x]) continue;
-                        if (!pivot.candidates[y]) continue;
-                        if (!pivot.candidates[z]) continue;
+                        if (pivot->candidates.count() != 3) continue;
+                        if (!pivot->candidates[x]) continue;
+                        if (!pivot->candidates[y]) continue;
+                        if (!pivot->candidates[z]) continue;
                         // find a pivot
 
                         // set Instructions
-                        grid.instructions.clear();
-                        grid.execution.executees.clear();
-                        grid.execution.mode = false;
+                        grid.initInsAndExe();
+                        grid.setExec(false);
 
                         // setup instruction
                         grid.addInst(0x41);
@@ -111,7 +106,7 @@ void findXYZWing(Grid &grid) {
                             if (!sees(pivot, ti, tj)) continue;
                             if (!sees(xPincers, ti, tj)) continue;
                             if (!sees(yPincers, ti, tj)) continue;
-                            if (grid.getCell(ti, tj).candidates[z]) {
+                            if (grid.getCell(ti, tj)->candidates[z]) {
                                 auto bPos = encodePos(ti, tj);
                                 grid.addInst(bPos);
                                 grid.addInst(z);
@@ -131,33 +126,30 @@ void findXYZWing(Grid &grid) {
 void findWWing(Grid &grid) {
 
     FOR_ALL(bridge) {
-        for (auto link : grid.strongLinks[bridge]) {
+        for (auto link : grid.getStrongLinks()->at(bridge)) {
             
-            for (auto &pincer1 : grid.biValues) {
-                if (!pincer1.get().candidates[bridge]) continue;
+            for (auto &pincer1 : *grid.getBiValues()) {
+                if (!pincer1->candidates[bridge]) continue;
                 if (!sees(pincer1, link.first)) continue;
                 
                 int loose;
                 FOR_ALL(t)
-                if (pincer1.get().candidates[t] && t != bridge) {
+                if (pincer1->candidates[t] && t != bridge) {
                     loose = t;
                     break;
                 }
                 
 
-                for (auto &pincer2 : grid.biValues) {
-                    if (pincer2.get().x == pincer1.get().x &&
-                        pincer2.get().y == pincer1.get().y)
-                        continue;
+                for (auto &pincer2 :*grid.getBiValues()) {
+                    if (pincer2==pincer1) continue;
                     if (!checkBiValue(pincer2, bridge, loose)) continue;
                     if (!sees(pincer2, link.second)) continue;
                     if (sees(pincer1, pincer2)) continue;
 
                     
                     //  w-wing pattern found
-                    grid.instructions.clear();
-                    grid.execution.executees.clear();
-                    grid.execution.mode = false;
+                    grid.initInsAndExe();
+                    grid.setExec(false);
                     // setup instruction
                     grid.addInst(0x42);
                     grid.addInst(encodePos(pincer1));
@@ -172,7 +164,7 @@ void findWWing(Grid &grid) {
                     FOR_ALL(i) FOR_ALL(j) {
                         if (!sees(pincer1, i, j) || !sees(pincer2, i, j))
                             continue;
-                        if (!grid.getCell(i, j).candidates[loose]) continue;
+                        if (!grid.getCell(i, j)->candidates[loose]) continue;
                         grid.addInst(encodePos(i, j));
                         grid.addInst(loose);
                         grid.addExec((encodePos(i, j)) << 8 | loose);

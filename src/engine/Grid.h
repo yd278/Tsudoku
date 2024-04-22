@@ -13,6 +13,8 @@ struct Cell {
     std::bitset<9> candidates;
     int ans;
     int x, y;
+    std::vector<Cell*> SL;
+    Cell() : SL(27) {}
 };
 struct Exec {
     bool mode;  // true: set, false eliminate;
@@ -32,19 +34,46 @@ class Grid {
     void updateBiValues();
     void updateStrongLinks();
 
-   public:
-    std::vector<std::vector<std::pair<const Cell&, const Cell&>>> strongLinks;
+    std::vector<std::vector<std::pair<const Cell*, const Cell*>>> strongLinks;
+    std::vector<const Cell*> biValues;
+
     Inst instructions;
     Exec execution;
-    std::vector<std::reference_wrapper<const Cell>> biValues;
+
+   public:
+    inline void sortExec() {
+        sort(execution.executees.begin(), execution.executees.end());
+    }
+    inline void addExecToInst() {
+        for (auto exe : execution.executees) {
+            instructions.push_back(exe >> 8);
+            instructions.push_back(exe & 0xff);
+        }
+    }
     inline void addInst(uint8_t inst) { instructions.push_back(inst); }
     inline void addExec(uint16_t exec) { execution.executees.push_back(exec); }
+    inline void addExec(uint8_t pos, uint8_t cand) { execution.executees.push_back((pos<<8)|cand); }
+    inline void setExec(bool mode) { execution.mode = mode; }
+    inline void initInsAndExe() {
+        instructions.clear();
+        execution.executees.clear();
+    }
+    inline auto getStrongLinks() const -> const decltype(strongLinks)* {
+        return &strongLinks;
+    }
+    inline auto getBiValues() const -> const decltype(biValues)* {
+        return &biValues;
+    }
+
     Grid(int difficulty);
     Grid(std::string gridPattern);
-    const Cell& getCell(int x, int y) const;
-    const Cell& getCell(std::pair<int, int> pos) const;
+    const Cell* getCell(int x, int y) const;
+    const Cell* getCell(std::pair<int, int> pos) const;
+    const Cell* getCell(int houseType,int houseID, int cellID) const;
     std::string toString();
-    Inst& nextStep();
+    const Inst* nextStep();
+    inline const Inst* getInst() const {return &instructions;};
+    inline const Exec* getExec() const {return &execution;}
 };
 
 #endif  // GRID_H

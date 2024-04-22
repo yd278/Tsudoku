@@ -4,32 +4,30 @@
 #include "util_const.h"
 
 void findFish(Grid &grid, int order) {
-    std::vector<std::reference_wrapper<const std::vector<std::vector<int>>>>
-        combos = {ALL_PAIRS, ALL_TRIPLES, ALL_QUADRUPLETS};
+    std::vector<const std::vector<std::vector<int>> *> combos = {
+        &ALL_PAIRS, &ALL_TRIPLES, &ALL_QUADRUPLETS};
     FOR_ALL(target) {
         for (int houseType : {0, 1}) {
-            for (auto &base : combos[order - 2].get()) {
-                // TODO: fix the later for code reuse
+            for (auto &base : *combos[order - 2]) {
                 std::bitset<9> filter;
                 bool used = false;
                 FOR_ALL(cell) {
                     for (int i = 0; i < order; i++) {
-                        auto &tmpC =
+                        auto tmpC =
                             grid.getCell(convert(base[i], cell, houseType));
-                        if(tmpC.value==target+1){
+                        if (tmpC->value == target + 1) {
                             used = true;
                             break;
                         }
-                        if (tmpC.candidates[target]) filter.set(cell);
+                        if (tmpC->candidates[target]) filter.set(cell);
                     }
                 }
-                if(used) continue;
+                if (used) continue;
                 if (filter.count() == order) {
                     // fish found
-                    grid.instructions.clear();
-                    grid.execution.executees.clear();
+                    grid.initInsAndExe();
                     grid.addInst(0x20 + order - 2);
-                    grid.execution.mode = false;
+                    grid.setExec(false);
                     if (houseType) {
                         FOR_ALL(cover) {
                             if (filter[cover]) {
@@ -57,21 +55,17 @@ void findFish(Grid &grid, int order) {
                             for (int i = 0; i < order; i++)
                                 if (cell == base[i]) inBase = true;
                             if (inBase) continue;
-                            auto &tmp = grid.getCell(
+                            auto tmp = grid.getCell(
                                 convert(cover, cell, 1 - houseType));
-                            if (tmp.candidates[target]) {
+                            if (tmp->candidates[target]) {
                                 grid.addExec(encodePos(tmp) << 8 | target);
                                 flag = true;
                             }
                         }
                     }
                     if (flag) {
-                        std::sort(grid.execution.executees.begin(),
-                                  grid.execution.executees.end());
-                        for (auto exe : grid.execution.executees) {
-                            grid.addInst(exe >> 8);
-                            grid.addInst(exe & 0xff);
-                        }
+                        grid.sortExec();
+                        grid.addExecToInst();
                         return;
                     }
                 }

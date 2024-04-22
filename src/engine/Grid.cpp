@@ -11,22 +11,21 @@ void Grid::updateStrongLinks() {
     strongLinks.resize(9);
     for (int houseType : {0, 1, 2}) {
         FOR_ALL(houseID) {
-
             FOR_ALL(target) {
-                std::vector<std::reference_wrapper<const Cell>> tmp;
+                std::vector<const Cell *> tmp;
                 FOR_ALL(i) {
                     auto pos = convert(houseID, i, houseType);
                     auto cell = getCell(pos);
 
-                    if (cell.value != 0) continue;
-                    if (cell.candidates[target]) {
-                        tmp.push_back(getCell(pos));
+                    if (cell->value != 0) continue;
+                    if (cell->candidates[target]) {
+                        // tmp.push_back(getCell(pos));
+                        tmp.push_back(cell);
                     }
                 }
                 if (tmp.size() == 2) {
                     strongLinks[target].push_back(
                         std::make_pair(tmp[0], tmp[1]));
-                    
                 }
             }
         }
@@ -99,6 +98,10 @@ bool Grid::checkMissingCandidates() {
     return true;
 }
 
+const Cell* Grid::getCell(int houseType,int houseID, int cellID) const{
+    return getCell(convert(houseID, cellID, houseType));
+}
+
 bool Grid::checkWrongCandidates() {
     for (int houseType = 0; houseType < 3; houseType++) {
         for (int i = 0; i < 9; i++) {
@@ -106,7 +109,6 @@ bool Grid::checkWrongCandidates() {
             for (int j = 0; j < 9; j++) {
                 auto coordinate = convert(i, j, houseType);
                 Cell &cell = grid[coordinate.first][coordinate.second];
-
                 if (grid[i][j].value == 0) {
                     candidatesUnion = candidatesUnion | grid[i][j].candidates;
                 } else {
@@ -153,7 +155,7 @@ void Grid::updateBiValues() {
     for (int i = 0; i < 9; i++) {
         for (int j = 0; j < 9; j++) {
             if (grid[i][j].candidates.count() == 2) {
-                biValues.push_back(grid[i][j]);
+                biValues.push_back(&grid[i][j]);
             }
         }
     }
@@ -161,21 +163,15 @@ void Grid::updateBiValues() {
 Grid::Grid(std::string gridPattern) {
     try {
         checkAndFill(gridPattern);
-
-
         uniqueness();
-
-
-
     } catch (const std::invalid_argument &e) {
         throw;
     }
-    if (!checkWrongValues()) throw std::invalid_argument("Wrong cell values");
 
+    if (!checkWrongValues()) throw std::invalid_argument("Wrong cell values");
 
     if (!checkWrongCandidates())
         throw std::invalid_argument("Wrong candidates");
-
 
     if (!checkMissingCandidates())
         throw std::invalid_argument("Missing candidates");
@@ -188,7 +184,6 @@ Grid::Grid(std::string gridPattern) {
     }
 
     updateBiValues();
-
 
     updateStrongLinks();
 }
@@ -215,17 +210,17 @@ std::string Grid::toString() {
     return res;
 }
 
-Inst &Grid::nextStep() {
+const Inst *Grid::nextStep() {
     // TODO: call solvers in sequence from easy to hard;
     // TODO: init infos for solvers
     updateBiValues();
     updateStrongLinks();
     // once find a solution, return it;
-    return instructions;
+    return &instructions;
 }
 
-const Cell &Grid::getCell(int x, int y) const { return grid[x][y]; }
+const Cell *Grid::getCell(int x, int y) const { return &grid[x][y]; }
 
-const Cell &Grid::getCell(std::pair<int, int> pos) const {
-    return grid[pos.first][pos.second];
+const Cell *Grid::getCell(std::pair<int, int> pos) const {
+    return &grid[pos.first][pos.second];
 }
