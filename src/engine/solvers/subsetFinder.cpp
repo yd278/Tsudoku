@@ -80,7 +80,7 @@ void findHiddenSubset(Grid &grid, int cnt) {
         &ALL_PAIRS, &ALL_TRIPLES, &ALL_QUADRUPLETS};
     for (int houseType : {0, 1, 2}) {
         FOR_ALL(houseID) {
-            // get positions set;
+            //  get positions set;
             positions.clear();
             positions.resize(9);
             FOR_ALL(cellID) {
@@ -91,43 +91,58 @@ void findHiddenSubset(Grid &grid, int cnt) {
                 }
             }
 
-            for (auto cands : *combos[cnt]) {
+            for (auto cands : *combos[cnt - 2]) {
                 std::bitset<9> positionUnion;
                 std::bitset<9> candSet;
+
+                // get position Union set, skip combos with used numbers
+                bool used = false;
                 for (auto cand : cands) {
+                    if (positions[cand].count() == 0) {
+                        used = true;
+                        break;
+                    }
                     positionUnion = positionUnion | positions[cand];
                     candSet.set(cand);
                 }
+                if (used) continue;
 
                 if (positionUnion.count() == cnt) {
                     // hidden Subset found
+
                     grid.initInsAndExe();
                     grid.setExec(false);
                     grid.addInst(0x34 + cnt - 2);
                     std::vector<int> positionList;
-                    FOR_ALL(i){
-                        if(positionUnion[i]){
-                            grid.addInst(encodePos(convert(houseID, i, houseType)));
+                    // put pos into inst
+                    FOR_ALL(i) {
+                        if (positionUnion[i]) {
+                            grid.addInst(
+                                encodePos(convert(houseID, i, houseType)));
                             positionList.push_back(i);
                         }
                     }
-                    for(auto cand : cands){
+                    // put cand into inst
+                    for (auto cand : cands) {
                         grid.addInst(cand);
                     }
 
-                    //eliminations:
+                    // eliminations:
                     bool flag = false;
-                    for(auto pos : positionList){
-                        FOR_ALL(c){
-                            auto cell = grid.getCell(houseType,houseID,pos);
-                            if(cell->candidates[c] && !candSet[c]){
-                                grid.addExec(encodePos(cell),c);
+                    for (auto pos : positionList) {
+                        auto cell = grid.getCell(houseType, houseID, pos);
+                        FOR_ALL(c) {
+                            if (cell->candidates[c] && !candSet[c]) {
+                                grid.addExec(encodePos(cell), c);
+                                flag = true;
                             }
                         }
                     }
-                    grid.sortExec();
-                    grid.addExecToInst();
-                    return ;
+                    if (flag) {
+                        grid.sortExec();
+                        grid.addExecToInst();
+                        return;
+                    }
                 }
             }
         }
