@@ -1,7 +1,6 @@
 #ifndef UTIL_H
 #define UTIL_H
 
-#include <string>
 #include <utility>
 
 #include "Grid.h"
@@ -24,5 +23,5 @@ bool sees(int x1, int y1, int x2, int y2);
 bool sees(const Cell *cell, int x, int y);
 
 bool sees(const Cell *cell1, const Cell *cell2);
-
+bool cmp(const Cell *cell1, const Cell *cell2);
 #endif  // UTIL_H

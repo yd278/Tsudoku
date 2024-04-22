@@ -88,3 +88,9 @@ uint8_t encodePos(int x, int y) { return x << 4 | y; }
 bool sees(const Cell* cell1, const Cell* cell2) {
     return sees(cell1->x, cell1->y, cell2->x, cell2->y);
 }
+
+bool cmp(const Cell* cell1, const Cell* cell2){
+    if(cell1->x < cell2->x) return true;
+    if(cell1->x== cell2->x && cell1->y < cell2->y) return true;
+    return false;
+}

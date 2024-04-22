@@ -184,7 +184,6 @@ Grid::Grid(std::string gridPattern) {
     }
 
     updateBiValues();
-
     updateStrongLinks();
 }
 
