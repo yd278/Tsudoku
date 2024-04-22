@@ -26,6 +26,11 @@ void Grid::updateStrongLinks() {
                 if (tmp.size() == 2) {
                     strongLinks[target].push_back(
                         std::make_pair(tmp[0], tmp[1]));
+                    Cell& a = grid[tmp[0]->x][tmp[0]->y];
+                    Cell& b = grid[tmp[1]->x][tmp[1]->y];
+                    a.SL[houseType*9+target] = &b;
+                    b.SL[houseType*9+target] = &a;
+
                 }
             }
         }

@@ -13,7 +13,7 @@ struct Cell {
     std::bitset<9> candidates;
     int ans;
     int x, y;
-    std::vector<Cell*> SL;
+    std::vector<const Cell*> SL;
     Cell() : SL(27) {}
 };
 struct Exec {
