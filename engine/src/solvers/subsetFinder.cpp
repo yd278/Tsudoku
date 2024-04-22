@@ -1,5 +1,4 @@
-#include "subsetFinder.h"
-
+#include "solvers/subsetFinder.h"
 #include "util.h"
 #include "util_const.h"
 

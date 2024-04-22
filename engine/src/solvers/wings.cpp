@@ -1,6 +1,4 @@
-#include "wings.h"
-
-
+#include "solvers/wings.h"
 #include "util.h"
 inline bool checkBiValue(const Cell* cell, int x,
                          int y) {

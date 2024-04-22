@@ -10,35 +10,35 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
 # Include directories
 include_directories(
     ${CMAKE_JS_INC}                   # Include node-addon headers
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/engine  # Include your project headers
+    ${CMAKE_CURRENT_SOURCE_DIR}/engine/includes  # Include your project headers
 )
 
 # Source files
 set(SOURCE_FILES
-    src/engine/engineAPI.cpp
-    src/engine/Grid.cpp
-    src/engine/util.cpp;
+    engine/src/engineAPI.cpp
+    engine/src/Grid.cpp
+    engine/src/util.cpp;
 
     #Solvers
-    src/engine/solvers/DLX.cpp
-    src/engine/solvers/simpleSolvers.cpp
-    src/engine/solvers/subsetFinder.cpp
-    src/engine/solvers/wings.cpp
-    src/engine/solvers/fish.cpp
+    engine/src/solvers/DLX.cpp
+    engine/src/solvers/simpleSolvers.cpp
+    engine/src/solvers/subsetFinder.cpp
+    engine/src/solvers/wings.cpp
+    engine/src/solvers/fish.cpp
 )
 
 # Header files are listed for better project management in some IDEs
 set(HEADER_FILES
-    src/engine/Grid.h
-    src/engine/util.h
-    src/engine/util_const.h
+    engine/includes/Grid.h
+    engine/includes/util.h
+    engine/includes/util_const.h
 
     #solvers
-    src/engine/solvers/DLX.h
-    src/engine/solvers/simpleSolvers.h
-    src/engine/solvers/subsetFinder.h
-    src/engine/solvers/wings.h
-    src/engine/solvers/fish.h
+    engine/includes/solvers/DLX.h
+    engine/includes/solvers/simpleSolvers.h
+    engine/includes/solvers/subsetFinder.h
+    engine/includes/solvers/wings.h
+    engine/includes/solvers/fish.h
 )
 
 add_library(${PROJECT_NAME} SHARED ${SOURCE_FILES} ${HEADER_FILES} ${CMAKE_JS_SRC})

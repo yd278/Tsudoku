@@ -1,9 +1,4 @@
-#include "simpleSolvers.h"
-
-#include <_types/_uint16_t.h>
-#include <_types/_uint8_t.h>
-
-#include <iostream>
+#include "solvers/simpleSolvers.h"
 
 #include "util.h"
 

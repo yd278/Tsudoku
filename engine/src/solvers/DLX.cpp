@@ -1,4 +1,4 @@
-#include "DLX.h"
+#include "solvers/DLX.h"
 
 
 DLX::DLX(int r, int c) {
