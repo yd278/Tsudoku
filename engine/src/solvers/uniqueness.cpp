@@ -2,7 +2,61 @@
 
 #include "util.h"
 
-void uniquenessTestType1(Grid &grid) {}
+void uniquenessTestType1(Grid &grid) {
+    // no more than two bivalues with same candidates in one house:
+    // as we always execute naked pair before uniqueness test, these two
+    // bivalues are strong linked
+    
+    auto bivaluesMap = grid.getBiValuesByCands();
+    FOR_ALL(x) for (int y = 0; y < x; y++) {
+        auto bivalues = (*bivaluesMap)[x][y];
+        for(auto cell : bivalues){
+
+            if(!cell->SL[x]) continue;
+            if(!cell->SL[y]) continue;
+            if(cell->SL[x] != cell->SL[y])continue;
+
+            if(!cell->SL[x+9]) continue;
+            if(!cell->SL[y+9]) continue;
+            if(cell->SL[x+9] != cell->SL[y+9])continue;
+
+            // type1 pattern found:
+            auto pincer1 = cell->SL[x];
+            auto pincer2 = cell->SL[x+9];
+            auto exec = grid.getCell(pincer2->x,pincer1->y);
+            if((exec->candidates&cell->candidates).count()>0){
+                grid.initInsAndExe();
+                grid.addInst(0x60);
+                int row1 = cell->x;
+                int row2 = pincer2->x;
+                if(row1 > row2) std::swap(row1,row2);
+                grid.addInst((row1<<4)|0xF);
+                grid.addInst((row2<<4)|0xF);
+
+
+                int col1 = cell->y;
+                int col2 = pincer1->y;
+                if(col1 > col2) std::swap(col1,col2);
+                grid.addInst(0xF0|col1);
+                grid.addInst(0xf0|col2);
+
+                grid.addInst(y);
+                grid.addInst(x);
+                if(exec->candidates[y])
+                    grid.addExec(encodePos(exec),y);
+                if(exec->candidates[x]){
+                    grid.addExec(encodePos(exec),x);
+                }
+
+                grid.addExecToInst();
+                return;
+            }
+
+
+
+        }
+    }
+}
 void uniquenessTestType2(Grid &grid) {}
 void uniquenessTestType3(Grid &grid) {}
 void uniquenessTestType4(Grid &grid) {}

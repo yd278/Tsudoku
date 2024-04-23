@@ -157,10 +157,16 @@ void Grid::uniqueness() {
 
 void Grid::updateBiValues() {
     biValues.clear();
+    biValuesByCands.clear();
+    biValuesByCands.resize(9);
+    FOR_ALL(i) biValuesByCands[i].resize(i+1);
     for (int i = 0; i < 9; i++) {
         for (int j = 0; j < 9; j++) {
             if (grid[i][j].candidates.count() == 2) {
                 biValues.push_back(&grid[i][j]);
+                std::vector<int> cands;
+                FOR_ALL(can) if(grid[i][j].candidates[can])cands.push_back(can);
+                biValuesByCands[cands[1]][cands[0]].push_back(&grid[i][j]);
             }
         }
     }

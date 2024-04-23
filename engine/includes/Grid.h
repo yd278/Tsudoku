@@ -36,7 +36,7 @@ class Grid {
 
     std::vector<std::vector<std::pair<const Cell*, const Cell*>>> strongLinks;
     std::vector<const Cell*> biValues;
-
+    std::vector<std::vector<std::vector<const Cell*>>> biValuesByCands;
     Inst instructions;
     Exec execution;
 
@@ -63,6 +63,9 @@ class Grid {
     }
     inline auto getBiValues() const -> const decltype(biValues)* {
         return &biValues;
+    }
+    inline auto getBiValuesByCands() const -> const decltype(biValuesByCands) * {
+        return &biValuesByCands;
     }
 
     Grid(int difficulty);
