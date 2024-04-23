@@ -26,6 +26,7 @@ set(SOURCE_FILES
     engine/src/solvers/wings.cpp
     engine/src/solvers/fish.cpp
     engine/src/solvers/singleDigit.cpp
+    engine/src/solvers/uniqueness.cpp
 )
 
 # Header files are listed for better project management in some IDEs
@@ -41,6 +42,7 @@ set(HEADER_FILES
     engine/includes/solvers/wings.h
     engine/includes/solvers/fish.h
     engine/includes/solvers/singleDigit.h
+    engine/includes/solvers/uniqueness.h
 )
 
 add_library(${PROJECT_NAME} SHARED ${SOURCE_FILES} ${HEADER_FILES} ${CMAKE_JS_SRC})
@@ -60,6 +62,7 @@ set(TEST_SOURCES
     tests/solvers/test_wings.cpp
     tests/solvers/test_fish.cpp
     tests/solvers/test_singleDigit.cpp
+    tests/solvers/test_uniqueness.cpp
 )
 
 add_executable(runTests ${TEST_SOURCES})
