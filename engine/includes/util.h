@@ -4,13 +4,16 @@
 #include <utility>
 
 #include "Grid.h"
-
+#define PRINT(var) std::cout<<var;
+#define PRINTLN(var) std::cout<<var<<"\n";
 #define FOR_ALL(var) for (int var = 0; var < 9; var++)
 
 uint8_t encodePos(int x, int y);
 uint8_t encodePos(std::pair<int, int> pos);
 uint8_t encodePos(const Cell *cell);
-
+uint8_t encodeLine(int lineType, int lineNumber);
+inline int findBox(int x, int y);
+int findBox(const Cell* cell);
 std::pair<int, int> convert(int house, int index, int houseType);
 // intersection, boxRemaining, lineRemaining
 std::tuple<std::vector<const Cell *>, std::vector<const Cell *>,

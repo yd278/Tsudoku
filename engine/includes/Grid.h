@@ -11,10 +11,11 @@ struct Cell {
     bool given;
     int value;
     std::bitset<9> candidates;
+    std::bitset<9> candCouldBe;
     int ans;
     int x, y;
     std::vector<const Cell*> SL;
-    Cell() : SL(27) {}
+    Cell() : SL(27),candCouldBe(511) {}
 };
 struct Exec {
     bool mode;  // true: set, false eliminate;
@@ -31,6 +32,7 @@ class Grid {
     bool checkMissingCandidates();
     bool checkWrongCandidates();
     void uniqueness();
+    void updateCandCouldBe();
     void updateBiValues();
     void updateStrongLinks();
 

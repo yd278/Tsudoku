@@ -20,7 +20,18 @@ std::pair<int, int> convert(int house, int index, int houseType) {
     }
     return std::make_pair(-1, -1);
 }
+inline int findBox(int x,int y){
+    return (x/3)*3+(y/3);
+}
 
+uint8_t encodeLine(int lineType, int lineNumber){
+    if(lineType) return 0xF0 | lineNumber;
+    return (lineNumber<<4)|0xf;
+     
+}
+int findBox(const Cell* cell){
+    return findBox(cell->x,cell->y);
+}
 uint8_t encodePos(const Cell* cell) { return encodePos(cell->x, cell->y); }
 
 bool sees(int x1, int y1, int x2, int y2) {

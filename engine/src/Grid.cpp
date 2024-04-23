@@ -81,7 +81,21 @@ void Grid::checkAndFill(std::string gridPattern) {
         cur.ans = curCell[11] - '0';
     }
 }
-
+void Grid::updateCandCouldBe(){
+    FOR_ALL(x) FOR_ALL(y) {
+        if(grid[x][y].given){
+            FOR_ALL(tar) grid[x][y].candCouldBe[tar] = false;
+            int val = grid[x][y].value - 1;
+            FOR_ALL(row) grid[row][y].candCouldBe[val] = false;
+            FOR_ALL(col) grid[x][col].candCouldBe[val]=false;
+            int box = (x / 3) * 3 + (y / 3);
+            FOR_ALL(index){
+                auto pos = convert(box, index, 2);
+                grid[pos.first][pos.second].candCouldBe[val] = false;
+            }
+        }
+    }
+}
 bool Grid::checkWrongValues() {
     for (int i = 0; i < 9; i++) {
         for (int j = 0; j < 9; j++) {
@@ -193,7 +207,7 @@ Grid::Grid(std::string gridPattern) {
             grid[i][j].y = j;
         }
     }
-
+    updateCandCouldBe();
     updateBiValues();
     updateStrongLinks();
 }
