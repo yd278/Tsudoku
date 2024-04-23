@@ -2,7 +2,6 @@
 
 #include "util.h"
 
-// TODO: unique rectangle need to be in same tower or same level, fix this
 void uniquenessTestType1(Grid &grid) {
     // no more than two bivalues with same candidates in one house:
     // as we always execute naked pair before uniqueness test, these two
@@ -19,11 +18,14 @@ void uniquenessTestType1(Grid &grid) {
             if (!cell->SL[x + 9]) continue;
             if (!cell->SL[y + 9]) continue;
             if (cell->SL[x + 9] != cell->SL[y + 9]) continue;
-
             // type1 pattern found:
             auto pincer1 = cell->SL[x];
             auto pincer2 = cell->SL[x + 9];
+            if ((cell->y / 3 != pincer1->y / 3) &&
+                (cell->x / 3 != pincer2->x / 3))
+                continue;
             auto exec = grid.getCell(pincer2->x, pincer1->y);
+            if (exec->value) continue;
             if (exec->candCouldBe[x] && exec->candCouldBe[y]) {
                 grid.initInsAndExe();
                 grid.addInst(0x60);
@@ -41,13 +43,16 @@ void uniquenessTestType1(Grid &grid) {
 
                 grid.addInst(y);
                 grid.addInst(x);
-                if (exec->candidates[y]) grid.addExec(encodePos(exec), y);
-                if (exec->candidates[x]) {
-                    grid.addExec(encodePos(exec), x);
-                }
+                bool flag = false;
+                if (exec->candidates[y])
+                    grid.addExec(encodePos(exec), y), flag = true;
+                if (exec->candidates[x])
+                    grid.addExec(encodePos(exec), x), flag = true;
 
-                grid.addExecToInst();
-                return;
+                if (flag) {
+                    grid.addExecToInst();
+                    return;
+                }
             }
         }
     }
