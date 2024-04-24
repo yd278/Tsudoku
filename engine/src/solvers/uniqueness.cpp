@@ -456,8 +456,54 @@ bool testHR(Grid &grid, const Cell *cell, const Cell *SR, const Cell *SC,
 void findHiddenRectangle(Grid &grid) {
     findPossibleURByBiValue(grid, testHR);
 }
-void avoidableRectangle1(Grid &grid) {}
-void avoidableRectangle2(Grid &grid) {}
+void avoidableRectangle1(Grid &grid) {
+    FOR_ALL(si) FOR_ALL(sj){
+        auto startCorner = grid.getCell(si,sj);
+        if(startCorner->given)continue;
+        if(startCorner->value==0)continue;
+        int x = startCorner->value-1;
+        FOR_ALL(col){
+            if(col == sj)continue;
+            auto SR = grid.getCell(si,col);
+            if(SR->given)continue;
+            if(SR->value==0)continue;
+            if(!SR->candCouldBe[x])continue;
+            bool URCondition = (col /3 == sj / 3);
+            int y = SR->value - 1;
+            FOR_ALL(row){
+                if(row == si)continue;
+                if((si/3 != row / 3)^URCondition) continue;
+                auto SC = grid.getCell(row,sj);
+                if(SC->given)continue;
+                if(SC->value!=y+1) continue;
+                if(!SC->candCouldBe[x])continue;
+                auto DI = grid.getCell(row,col);
+                if(DI->value)continue;
+                if(!DI->candidates[x]) continue;
+                //AR found
+                grid.initInsAndExe();
+                grid.setExec(false);
+                grid.addInst(0x67);
+                std::vector<uint8_t> pos;
+                pos.push_back(encodePos(startCorner));
+                pos.push_back(encodePos(SC));
+                pos.push_back(encodePos(SR));
+                std::sort(pos.begin(),pos.end());
+                for(auto p : pos) grid.addInst(p);
+                
+                grid.addExec(encodePos(DI),x);
+
+                grid.addExecToInst();
+                return;
+
+
+            }
+        }
+    }
+}
+void avoidableRectangle2(Grid &grid) {
+
+}
 
 void bivalueUniversalGraveP1(Grid &grid) {
     // check  all bi-values
