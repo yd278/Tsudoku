@@ -2,11 +2,20 @@
 
 #include <bitset>
 #include <functional>
+#include <iostream>
 #include <utility>
 #include <vector>
 
 #include "util.h"
 #include "util_const.h"
+
+void log() {}
+
+template <typename First, typename... Rest>
+void log(First &&first, Rest &&...rest) {
+    std::cout << std::forward<First>(first);
+    log(std::forward<Rest>(rest)...);
+}
 
 void uniquenessTestType1(Grid &grid) {
     // no more than two bivalues with same candidates in one house:
@@ -64,7 +73,7 @@ void uniquenessTestType1(Grid &grid) {
     }
 }
 
-void findPossibleURViaNakedPair(
+void findPossibleURByNakedPair(
     Grid &grid, std::function<bool(Grid &, int, int, int, int, int, int, int,
                                    bool, const Cell *, const Cell *)>
                     processLogic) {
@@ -287,7 +296,7 @@ bool checkURType4(Grid &grid, int houseType, int HC0, int HC, int VC1, int VC2,
     grid.addInst(encodeLine(1 - houseType, VC1));
     grid.addInst(encodeLine(1 - houseType, VC2));
     for (int tmp : {x, y}) {
-        int other = tmp==x?y:x;
+        int other = tmp == x ? y : x;
         if (!mask[tmp]) {
             grid.addInst(tmp);
             grid.addInst(other);
@@ -305,19 +314,148 @@ bool checkURType4(Grid &grid, int houseType, int HC0, int HC, int VC1, int VC2,
     return false;
 }
 void uniquenessTestType2(Grid &grid) {
-    findPossibleURViaNakedPair(grid, checkURType2);
+    findPossibleURByNakedPair(grid, checkURType2);
 }
 void uniquenessTestType3(Grid &grid) {
-    findPossibleURViaNakedPair(grid, checkURType3);
+    findPossibleURByNakedPair(grid, checkURType3);
 }
 
 void uniquenessTestType4(Grid &grid) {
-    findPossibleURViaNakedPair(grid, checkURType4);
+    findPossibleURByNakedPair(grid, checkURType4);
+}
+
+void findPossibleURByBiValue(
+    Grid &grid, std::function<bool(Grid &, const Cell *, const Cell *,
+                                   const Cell *, const Cell *, int, int)>
+                    processLogic) {
+    FOR_ALL(x) for (int y = 0; y < x; y++) {
+        auto bivalues = (*grid.getBiValuesByCands())[x][y];
+        for (auto cell : bivalues) {
+            FOR_ALL(row) {
+                bool URCondition;
+                if (row == cell->x) continue;
+                if (row / 3 == cell->x / 3)
+                    URCondition = true;
+                else
+                    URCondition = false;
+                FOR_ALL(col) {
+                    if (col == cell->y) continue;
+                    if ((col / 3 != cell->y / 3) ^ URCondition) continue;
+                    // SR: same row, SC: same column, DI :diagonal
+                    auto SR = grid.getCell(cell->x, col);
+                    if (SR->value) continue;
+                    if (!SR->candCouldBe[x] || !SR->candCouldBe[y]) continue;
+                    auto SC = grid.getCell(row, cell->y);
+                    if (SC->value) continue;
+                    if (!SC->candCouldBe[x] || !SC->candCouldBe[y]) continue;
+                    auto DI = grid.getCell(row, col);
+                    if (DI->value) continue;
+                    if (!DI->candCouldBe[x] || !DI->candCouldBe[y]) continue;
+                    if (processLogic(grid, cell, SR, SC, DI, x, y)) return;
+                }
+            }
+        }
+    }
+}
+bool testURType5(Grid &grid, const Cell *cell, const Cell *SR, const Cell *SC,
+                 const Cell *DI, int x, int y) {
+    auto mask = SR->candidates;
+    mask = mask | SC->candidates;
+    mask = mask | DI->candidates;
+    int extra = -1;
+    bool multipleExtra = false;
+    FOR_ALL(can) {
+        if (can == x || can == y) continue;
+        if (mask[can]) {
+            if (extra == -1)
+                extra = can;
+            else {
+                multipleExtra = true;
+                break;
+            }
+        }
+    }
+    if (multipleExtra) return false;
+    ;
+
+    grid.initInsAndExe();
+    grid.setExec(false);
+    FOR_ALL(ei) FOR_ALL(ej) {
+        auto exec = grid.getCell(ei, ej);
+        if (exec == cell) continue;
+        bool notAExe = false;
+        for (auto ref : {SR, SC, DI}) {
+            if (exec == ref) {
+                notAExe = true;
+                break;
+            }
+            if (ref->candidates[extra] && !sees(exec, ref)) {
+                notAExe = true;
+                break;
+            }
+        }
+        if (notAExe) continue;
+        if (!exec->candidates[extra]) continue;
+        grid.addExec(exec, extra);
+    }
+    if (!grid.emptyExec()) {
+        grid.addInst(0x64);
+        std::vector<uint8_t> pos;
+        pos.push_back(encodePos(cell));
+        pos.push_back(encodePos(SR));
+        pos.push_back(encodePos(SC));
+        pos.push_back(encodePos(DI));
+        std::sort(pos.begin(), pos.end());
+        for (auto p : pos) grid.addInst(p);
+        grid.addInst(y);
+        grid.addInst(x);
+        grid.addInst(extra);
+
+        grid.addExecToInst();
+        return true;
+    }
+    return false;
 }
 void uniquenessTestType5(Grid &grid) {
-    
+    // iterate though bi-value
+    findPossibleURByBiValue(grid, testURType5);
 }
-void findHiddenRectangle(Grid &grid) {}
+bool testHR(Grid &grid, const Cell *cell, const Cell *SR, const Cell *SC,
+            const Cell *DI, int x, int y) {
+    int row = DI->x;
+    int col = DI->y;
+    for (int good : {x, y}) {
+        int bad = good == x ? y : x;
+        bool notAHR = false;
+        FOR_ALL(index) {
+            auto test = grid.getCell(row, index);
+            if (test == SC || test == DI) continue;
+            if (test->candidates[good]){notAHR = true; break;}; 
+        }
+        if(notAHR)continue;
+        FOR_ALL(index) {
+            auto test = grid.getCell(index, col);
+            if (test == SR || test == DI) continue;
+            if (test->candidates[good]){notAHR = true; break;}; 
+        }
+        if(notAHR)continue;
+
+        //HR found:
+        grid.initInsAndExe();
+        grid.addExec(DI,bad);
+        grid.addInst(0x66);
+        grid.addInst(encodePos(cell));
+        grid.addInst(encodePos(DI));
+        grid.addInst(good,bad);
+        grid.addExecToInst();
+        return true;
+    }
+
+    return false;
+}
+void findHiddenRectangle(Grid &grid) {
+    findPossibleURByBiValue(grid, testHR);
+}
 void avoidableRectangle1(Grid &grid) {}
 void avoidableRectangle2(Grid &grid) {}
 

@@ -26,11 +26,10 @@ void Grid::updateStrongLinks() {
                 if (tmp.size() == 2) {
                     strongLinks[target].push_back(
                         std::make_pair(tmp[0], tmp[1]));
-                    Cell& a = grid[tmp[0]->x][tmp[0]->y];
-                    Cell& b = grid[tmp[1]->x][tmp[1]->y];
-                    a.SL[houseType*9+target] = &b;
-                    b.SL[houseType*9+target] = &a;
-
+                    Cell &a = grid[tmp[0]->x][tmp[0]->y];
+                    Cell &b = grid[tmp[1]->x][tmp[1]->y];
+                    a.SL[houseType * 9 + target] = &b;
+                    b.SL[houseType * 9 + target] = &a;
                 }
             }
         }
@@ -81,15 +80,15 @@ void Grid::checkAndFill(std::string gridPattern) {
         cur.ans = curCell[11] - '0';
     }
 }
-void Grid::updateCandCouldBe(){
+void Grid::updateCandCouldBe() {
     FOR_ALL(x) FOR_ALL(y) {
-        if(grid[x][y].given){
+        if (grid[x][y].given) {
             FOR_ALL(tar) grid[x][y].candCouldBe[tar] = false;
             int val = grid[x][y].value - 1;
             FOR_ALL(row) grid[row][y].candCouldBe[val] = false;
-            FOR_ALL(col) grid[x][col].candCouldBe[val]=false;
+            FOR_ALL(col) grid[x][col].candCouldBe[val] = false;
             int box = (x / 3) * 3 + (y / 3);
-            FOR_ALL(index){
+            FOR_ALL(index) {
                 auto pos = convert(box, index, 2);
                 grid[pos.first][pos.second].candCouldBe[val] = false;
             }
@@ -117,7 +116,7 @@ bool Grid::checkMissingCandidates() {
     return true;
 }
 
-const Cell* Grid::getCell(int houseType,int houseID, int cellID) const{
+const Cell *Grid::getCell(int houseType, int houseID, int cellID) const {
     return getCell(convert(houseID, cellID, houseType));
 }
 
@@ -173,13 +172,14 @@ void Grid::updateBiValues() {
     biValues.clear();
     biValuesByCands.clear();
     biValuesByCands.resize(9);
-    FOR_ALL(i) biValuesByCands[i].resize(i+1);
+    FOR_ALL(i) biValuesByCands[i].resize(i + 1);
     for (int i = 0; i < 9; i++) {
         for (int j = 0; j < 9; j++) {
             if (grid[i][j].candidates.count() == 2) {
                 biValues.push_back(&grid[i][j]);
                 std::vector<int> cands;
-                FOR_ALL(can) if(grid[i][j].candidates[can])cands.push_back(can);
+                FOR_ALL(can)
+                if (grid[i][j].candidates[can]) cands.push_back(can);
                 biValuesByCands[cands[1]][cands[0]].push_back(&grid[i][j]);
             }
         }
@@ -249,6 +249,8 @@ const Cell *Grid::getCell(std::pair<int, int> pos) const {
     return &grid[pos.first][pos.second];
 }
 
-void Grid::addExec(const Cell* cell, uint8_t cand){
-    addExec(encodePos(cell),cand);
+void Grid::addExec(const Cell *cell, uint8_t cand) {
+    addExec(encodePos(cell), cand);
 }
+
+

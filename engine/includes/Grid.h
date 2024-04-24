@@ -15,7 +15,7 @@ struct Cell {
     int ans;
     int x, y;
     std::vector<const Cell*> SL;
-    Cell() : SL(27),candCouldBe(511) {}
+    Cell() : SL(27), candCouldBe(511) {}
 };
 struct Exec {
     bool mode;  // true: set, false eliminate;
@@ -52,9 +52,13 @@ class Grid {
             instructions.push_back(exe & 0xff);
         }
     }
-    inline void addInst(uint8_t inst) { instructions.push_back(inst); }
+    template <typename... Args>
+    void addInst(Args... args){(void)std::initializer_list<int>{(instructions.push_back(args), 0)...};}
+    void addInst(uint8_t inst){instructions.push_back(inst);}
     inline void addExec(uint16_t exec) { execution.executees.push_back(exec); }
-    inline void addExec(uint8_t pos, uint8_t cand) { execution.executees.push_back((pos<<8)|cand); }
+    inline void addExec(uint8_t pos, uint8_t cand) {
+        execution.executees.push_back((pos << 8) | cand);
+    }
 
     void addExec(const Cell* cell, uint8_t cand);
     inline void setExec(bool mode) { execution.mode = mode; }
@@ -68,7 +72,7 @@ class Grid {
     inline auto getBiValues() const -> const decltype(biValues)* {
         return &biValues;
     }
-    inline auto getBiValuesByCands() const -> const decltype(biValuesByCands) * {
+    inline auto getBiValuesByCands() const -> const decltype(biValuesByCands)* {
         return &biValuesByCands;
     }
 
@@ -76,12 +80,12 @@ class Grid {
     Grid(std::string gridPattern);
     const Cell* getCell(int x, int y) const;
     const Cell* getCell(std::pair<int, int> pos) const;
-    const Cell* getCell(int houseType,int houseID, int cellID) const;
+    const Cell* getCell(int houseType, int houseID, int cellID) const;
     std::string toString();
     const Inst* nextStep();
-    inline const Inst* getInst() const {return &instructions;};
-    inline const Exec* getExec() const {return &execution;}
-    inline bool emptyExec() const {return execution.executees.empty();}
+    inline const Inst* getInst() const { return &instructions; };
+    inline const Exec* getExec() const { return &execution; }
+    inline bool emptyExec() const { return execution.executees.empty(); }
 };
 
 #endif  // GRID_H
