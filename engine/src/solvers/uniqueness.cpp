@@ -430,57 +430,61 @@ bool testHR(Grid &grid, const Cell *cell, const Cell *SR, const Cell *SC,
         FOR_ALL(index) {
             auto test = grid.getCell(row, index);
             if (test == SC || test == DI) continue;
-            if (test->candidates[good]){notAHR = true; break;}; 
+            if (test->candidates[good]) {
+                notAHR = true;
+                break;
+            };
         }
-        if(notAHR)continue;
+        if (notAHR) continue;
         FOR_ALL(index) {
             auto test = grid.getCell(index, col);
             if (test == SR || test == DI) continue;
-            if (test->candidates[good]){notAHR = true; break;}; 
+            if (test->candidates[good]) {
+                notAHR = true;
+                break;
+            };
         }
-        if(notAHR)continue;
+        if (notAHR) continue;
 
-        //HR found:
+        // HR found:
         grid.initInsAndExe();
-        grid.addExec(DI,bad);
+        grid.addExec(DI, bad);
         grid.addInst(0x66);
         grid.addInst(encodePos(cell));
         grid.addInst(encodePos(DI));
-        grid.addInst(good,bad);
+        grid.addInst(good, bad);
         grid.addExecToInst();
         return true;
     }
 
     return false;
 }
-void findHiddenRectangle(Grid &grid) {
-    findPossibleURByBiValue(grid, testHR);
-}
+void findHiddenRectangle(Grid &grid) { findPossibleURByBiValue(grid, testHR); }
 void avoidableRectangle1(Grid &grid) {
-    FOR_ALL(si) FOR_ALL(sj){
-        auto startCorner = grid.getCell(si,sj);
-        if(startCorner->given)continue;
-        if(startCorner->value==0)continue;
-        int x = startCorner->value-1;
-        FOR_ALL(col){
-            if(col == sj)continue;
-            auto SR = grid.getCell(si,col);
-            if(SR->given)continue;
-            if(SR->value==0)continue;
-            if(!SR->candCouldBe[x])continue;
-            bool URCondition = (col /3 == sj / 3);
+    FOR_ALL(si) FOR_ALL(sj) {
+        auto startCorner = grid.getCell(si, sj);
+        if (startCorner->given) continue;
+        if (startCorner->value == 0) continue;
+        int x = startCorner->value - 1;
+        FOR_ALL(col) {
+            if (col == sj) continue;
+            auto SR = grid.getCell(si, col);
+            if (SR->given) continue;
+            if (SR->value == 0) continue;
+            if (!SR->candCouldBe[x]) continue;
+            bool URCondition = (col / 3 == sj / 3);
             int y = SR->value - 1;
-            FOR_ALL(row){
-                if(row == si)continue;
-                if((si/3 != row / 3)^URCondition) continue;
-                auto SC = grid.getCell(row,sj);
-                if(SC->given)continue;
-                if(SC->value!=y+1) continue;
-                if(!SC->candCouldBe[x])continue;
-                auto DI = grid.getCell(row,col);
-                if(DI->value)continue;
-                if(!DI->candidates[x]) continue;
-                //AR found
+            FOR_ALL(row) {
+                if (row == si) continue;
+                if ((si / 3 != row / 3) ^ URCondition) continue;
+                auto SC = grid.getCell(row, sj);
+                if (SC->given) continue;
+                if (SC->value != y + 1) continue;
+                if (!SC->candCouldBe[x]) continue;
+                auto DI = grid.getCell(row, col);
+                if (DI->value) continue;
+                if (!DI->candidates[x]) continue;
+                // AR found
                 grid.initInsAndExe();
                 grid.setExec(false);
                 grid.addInst(0x67);
@@ -488,21 +492,88 @@ void avoidableRectangle1(Grid &grid) {
                 pos.push_back(encodePos(startCorner));
                 pos.push_back(encodePos(SC));
                 pos.push_back(encodePos(SR));
-                std::sort(pos.begin(),pos.end());
-                for(auto p : pos) grid.addInst(p);
-                
-                grid.addExec(encodePos(DI),x);
+                std::sort(pos.begin(), pos.end());
+                for (auto p : pos) grid.addInst(p);
+
+                grid.addExec(encodePos(DI), x);
 
                 grid.addExecToInst();
                 return;
-
-
             }
         }
     }
 }
 void avoidableRectangle2(Grid &grid) {
+    FOR_ALL(bi) FOR_ALL(bj) {
+        auto baseCorner = grid.getCell(bi, bj);
+        if (baseCorner->given) continue;
+        if (baseCorner->value == 0) continue;
+        int x = baseCorner->value - 1;
 
+        // same row first
+        for (int houseType : {0, 1}) {// second given direction
+
+            int expCoord = houseType?bi : bj; // 
+            int sameCoord = houseType?bj:bi;
+
+            for (int sCoord = expCoord + 1; sCoord < 9; sCoord++) {
+                auto SR = grid.getCell(houseType,sameCoord, sCoord); //second r(?)
+                if (SR->given) continue;
+                if (SR->value == 0) continue;
+                int y = SR->value - 1;
+                bool URCondition = (sCoord / 3 == expCoord / 3);
+                FOR_ALL(ol) {
+                    if ((sameCoord / 3 != ol / 3) ^ URCondition) continue;
+                    if (ol == sameCoord) continue;
+                    auto tail1 = grid.getCell(houseType,ol, expCoord);  // should be y,extra
+                    auto tail2 = grid.getCell(houseType,ol, sCoord);  // should be x,extra
+                    if (tail1->given || tail2->given) continue;
+                    if (tail1->value || tail2->value) continue;
+                    if (tail1->candidates.count() != 2) continue;
+                    int extra = -1;
+                    bool notSingleExtra = false;
+                    FOR_ALL(cand) {
+                        if (cand == y) continue;
+                        if (tail1->candidates[cand]) {
+                            if (extra == -1)
+                                extra = cand;
+                            else {
+                                notSingleExtra = true;
+                                break;
+                            }
+                        }
+                    }
+                    if (notSingleExtra) continue;
+
+                    if (!tail1->candCouldBe[x]) continue;
+                    if (tail2->candidates.count() != 2) continue;
+                    if (!tail2->candidates[x] || !tail2->candidates[extra])
+                        continue;
+                    if (!tail2->candCouldBe[y]) continue;
+                    // AR type2 found
+
+                    FOR_ALL(ei) FOR_ALL(ej) {
+                        auto exe = grid.getCell(ei, ej);
+                        if (exe == baseCorner || exe == SR) continue;
+                        if (sees(exe, tail1) && sees(exe, tail2)) {
+                            if (exe->candidates[extra])
+                                grid.addExec(exe, extra);
+                        }
+                    }
+
+                    if (!grid.emptyExec()) {
+                        grid.addInst(0x68);
+                        grid.addInst(encodePos(baseCorner), encodePos(SR));
+                        grid.addInst(encodePos(tail1), encodePos(tail2));
+                        if (x > y) std::swap(x, y);
+                        grid.addInst(x, y, extra);
+                        grid.addExecToInst();
+                        return;
+                    }
+                }
+            }
+        }
+    }
 }
 
 void bivalueUniversalGraveP1(Grid &grid) {
