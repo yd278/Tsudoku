@@ -1,6 +1,12 @@
 #include "solvers/uniqueness.h"
 
+#include <bitset>
+#include <functional>
+#include <utility>
+#include <vector>
+
 #include "util.h"
+#include "util_const.h"
 
 void uniquenessTestType1(Grid &grid) {
     // no more than two bivalues with same candidates in one house:
@@ -58,7 +64,10 @@ void uniquenessTestType1(Grid &grid) {
     }
 }
 
-void uniquenessTestType2(Grid &grid) {
+void findPossibleURViaNakedPair(
+    Grid &grid, std::function<bool(Grid &, int, int, int, int, int, int, int,
+                                   bool, const Cell *, const Cell *)>
+                    processLogic) {
     auto bivaluesMap = grid.getBiValuesByCands();
     FOR_ALL(x) for (int y = 0; y < x; y++) {
         auto bivalues = (*bivaluesMap)[x][y];
@@ -88,63 +97,168 @@ void uniquenessTestType2(Grid &grid) {
                     if (!tail2->candCouldBe[x]) continue;
                     if (!tail2->candCouldBe[y]) continue;
                     // UR found
-                    // check if satisfies UT type2
-                    int extra = -1;
-                    bool moreThanOneExtra = false;
-                    FOR_ALL(cand) {
-                        if (tail1->candidates[cand]) {
-                            if (cand == x || cand == y) continue;
-                            if (extra == -1)
-                                extra = cand;
-                            else {
-                                moreThanOneExtra = true;
-                                break;
-                            }
-                        }
-                    }
-                    if (moreThanOneExtra) continue;
+                    if (processLogic(grid, houseType, HC0, HC, VC1, VC2, x, y,
+                                     URCondition, tail1, tail2))
+                        return;
+                }
+            }
+        }
+    }
+}
 
-                    FOR_ALL(cand) {
-                        if (tail2->candidates[cand]) {
-                            if (cand == x || cand == y) continue;
-                            if (cand != extra) {
-                                moreThanOneExtra = true;
-                                break;
-                            }
+bool checkURType2(Grid &grid, int houseType, int HC0, int HC, int VC1, int VC2,
+                  int x, int y, bool URCondition, const Cell *tail1,
+                  const Cell *tail2) {
+    // UR found
+    // check if satisfies UT type2
+    int extra = -1;
+    bool moreThanOneExtra = false;
+    FOR_ALL(cand) {
+        if (tail1->candidates[cand]) {
+            if (cand == x || cand == y) continue;
+            if (extra == -1)
+                extra = cand;
+            else {
+                moreThanOneExtra = true;
+                break;
+            }
+        }
+    }
+    if (moreThanOneExtra) return false;
+
+    FOR_ALL(cand) {
+        if (tail2->candidates[cand]) {
+            if (cand == x || cand == y) continue;
+            if (cand != extra) {
+                moreThanOneExtra = true;
+                break;
+            }
+        }
+    }
+    if (moreThanOneExtra) return false;
+    // UT type2 found
+    if (VC1 > VC2) std::swap(VC1, VC2);
+    grid.initInsAndExe();
+    grid.setExec(false);
+    grid.addInst(0x61);
+    grid.addInst(encodeLine(houseType, HC0));
+    grid.addInst(encodeLine(houseType, HC));
+    grid.addInst(encodeLine(1 - houseType, VC1));
+    grid.addInst(encodeLine(1 - houseType, VC2));
+    grid.addInst(y);
+    grid.addInst(x);
+    grid.addInst((URCondition ? 0xF0 : 0) | extra);
+    bool flag = false;
+    FOR_ALL(ei) FOR_ALL(ej) {
+        if (!sees(tail1, ei, ej)) continue;
+        ;
+        if (!sees(tail2, ei, ej)) continue;
+        ;
+        auto exec = grid.getCell(ei, ej);
+        if (exec == tail1 || exec == tail2) continue;
+        ;
+        if (exec->candidates[extra])
+            grid.addExec(encodePos(exec), extra), flag = true;
+    }
+    if (flag) {
+        grid.addExecToInst();
+        return true;
+    }
+    return false;
+}
+
+bool findNakedSubsetByPerm(std::bitset<9> &virtualCell, std::vector<const Cell *> &virtualLine, Grid &grid, int houseType,int HC0,int HC,int VC1,int VC2,int x,int y){
+     int lowerBound = virtualCell.count();
+    std::vector<const Cell *> hints;  // naked subset (except virtual)
+    hints.reserve(9);
+    for (int size = lowerBound; size < virtualLine.size()+1; size++) {
+        std::vector<bool> v(virtualLine.size());
+        std::fill(v.begin(), v.begin() + size - 1, true);
+        do {
+            auto unionSet = virtualCell;
+            for (int i = 0; i < virtualLine.size(); i++) {
+                if (v[i]) unionSet = unionSet | virtualLine[i]->candidates;
+            }
+            if (unionSet.count() == size) {
+                // naked subset found
+                //  test executees
+                grid.initInsAndExe();
+                for (int i = 0; i < virtualLine.size(); i++) {
+                    if (v[i]) continue;
+                    auto tmp = virtualLine[i]->candidates & unionSet;
+                    if (tmp.count() != 0) {
+                        FOR_ALL(cand) {
+                            if (!tmp[cand]) continue;
+                            grid.addExec(encodePos(virtualLine[i]), cand);
                         }
                     }
-                    if (moreThanOneExtra) continue;
-                    // UT type2 found
-                    if (VC1 > VC2) std::swap(VC1, VC2);
-                    grid.initInsAndExe();
-                    grid.setExec(false);
-                    grid.addInst(0x61);
+                }
+                if (!grid.emptyExec()) {
+                    grid.addInst(0x62);
                     grid.addInst(encodeLine(houseType, HC0));
                     grid.addInst(encodeLine(houseType, HC));
                     grid.addInst(encodeLine(1 - houseType, VC1));
                     grid.addInst(encodeLine(1 - houseType, VC2));
                     grid.addInst(y);
                     grid.addInst(x);
-                    grid.addInst((URCondition ? 0xF0 : 0) | extra);
-                    bool flag = false;
-                    FOR_ALL(ei) FOR_ALL(ej) {
-                        if (!sees(tail1, ei, ej)) continue;
-                        if (!sees(tail2, ei, ej)) continue;
-                        auto exec = grid.getCell(ei, ej);
-                        if (exec == tail1 || exec == tail2) continue;
-                        if (exec->candidates[extra])
-                            grid.addExec(encodePos(exec), extra), flag = true;
+                    grid.addInst(size);
+                    for(int i = 0; i < virtualLine.size();i++){
+                        if(v[i]) grid.addInst(encodePos(virtualLine[i]));
                     }
-                    if (flag) {
-                        grid.addExecToInst();
-                        return;
-                    }
+                    grid.addExecToInst();
+                    return true;
                 }
             }
-        }
+
+        } while (std::prev_permutation(v.begin(), v.end()));
     }
+    return false;
 }
-void uniquenessTestType3(Grid &grid) {}
+
+bool checkURType3(Grid &grid, int houseType, int HC0, int HC, int VC1, int VC2,
+                  int x, int y, bool URCondition, const Cell *tail1,
+                  const Cell *tail2) {
+    // now we DO get everything we need for instructions - the information about
+    // the UR we just need to check if this UR can be used to eliminate some
+    // candidates using type 3 logic
+    //  if we can get some executees, we can write and return
+    //  if we cannot , return false;
+    // get virtual line
+    
+    std::vector<const Cell *> virtualLine;
+    FOR_ALL(index) {
+        auto cell = grid.getCell(houseType, HC, index);
+        if (cell == tail1 || cell == tail2) continue;
+        if (cell->value) continue;
+        virtualLine.push_back(cell);
+    }
+    std::bitset<9> virtualCell;
+    FOR_ALL(cand) {
+        if (cand == x || cand == y) continue;
+        if (tail1->candidates[cand] || tail2->candidates[cand])
+            virtualCell[cand] = true;
+    }
+
+    if(findNakedSubsetByPerm(virtualCell, virtualLine, grid, houseType, HC0, HC, VC1, VC2, x, y)) return true;
+    int box = findBox(tail1);
+    virtualLine.clear();
+    FOR_ALL(index){
+        auto cell = grid.getCell(2, box, index);
+        if (cell == tail1 || cell == tail2) continue;
+        if (cell->value) continue;
+        virtualLine.push_back(cell);
+    }
+    if(findNakedSubsetByPerm(virtualCell, virtualLine, grid, houseType, HC0, HC, VC1, VC2, x, y)) return true;
+
+    return false;
+}
+
+void uniquenessTestType2(Grid &grid) {
+    findPossibleURViaNakedPair(grid, checkURType2);
+}
+void uniquenessTestType3(Grid &grid) {
+    findPossibleURViaNakedPair(grid, checkURType3);
+}
 void uniquenessTestType4(Grid &grid) {}
 void uniquenessTestType5(Grid &grid) {}
 void findHiddenRectangle(Grid &grid) {}

@@ -79,6 +79,7 @@ class Grid {
     const Inst* nextStep();
     inline const Inst* getInst() const {return &instructions;};
     inline const Exec* getExec() const {return &execution;}
+    inline bool emptyExec() const {return execution.executees.empty();}
 };
 
 #endif  // GRID_H

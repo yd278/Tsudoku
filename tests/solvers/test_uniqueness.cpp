@@ -75,7 +75,7 @@ TEST(TestUniqueness, Type2T2) {
 TEST(TestUniqueness, Type3T1) {
     // Uniqueness Test 3: 5/8 in r1c46,r7c46 => r7c8<>1
     Inst inst = {0x62,                          // type indicator
-                 0x0f, 0x6f, 0xf3, 0xf5, 4, 7,  // condition
+                 0x0f, 0x6f, 0xf3, 0xf5, 4, 7, 5,0x61,0x64,0x66,0x68, // condition
                  0x67, 0x00};                   // executees
     std::vector<uint16_t> executees = {0x6700};
     Grid grid(
@@ -102,7 +102,7 @@ TEST(TestUniqueness, Type3T1) {
 TEST(TestUniqueness, Type3T2) {
     // Uniqueness Test 3: 1/5 in r4c18,r6c18 => r6c2<>7
     Inst inst = {0x62,                          // type indicator
-                 0xf7, 0xf0, 0x3f, 0x5f, 0, 4,  // condition
+                 0xf7, 0xf0, 0x3f, 0x5f, 0, 4,2,0x31,  // condition
                  0x51, 0x06};                   // executees
     std::vector<uint16_t> executees = {0x5106};
     Grid grid(

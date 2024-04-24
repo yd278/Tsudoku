@@ -4,8 +4,10 @@
 #include <utility>
 
 #include "Grid.h"
-#define PRINT(var) std::cout<<var;
-#define PRINTLN(var) std::cout<<var<<"\n";
+
+
+
+
 #define FOR_ALL(var) for (int var = 0; var < 9; var++)
 
 uint8_t encodePos(int x, int y);
