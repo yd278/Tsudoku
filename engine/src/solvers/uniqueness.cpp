@@ -167,11 +167,14 @@ bool checkURType2(Grid &grid, int houseType, int HC0, int HC, int VC1, int VC2,
     return false;
 }
 
-bool findNakedSubsetByPerm(std::bitset<9> &virtualCell, std::vector<const Cell *> &virtualLine, Grid &grid, int houseType,int HC0,int HC,int VC1,int VC2,int x,int y){
-     int lowerBound = virtualCell.count();
+bool findNakedSubsetByPerm(std::bitset<9> &virtualCell,
+                           std::vector<const Cell *> &virtualLine, Grid &grid,
+                           int houseType, int HC0, int HC, int VC1, int VC2,
+                           int x, int y) {
+    int lowerBound = virtualCell.count();
     std::vector<const Cell *> hints;  // naked subset (except virtual)
     hints.reserve(9);
-    for (int size = lowerBound; size < virtualLine.size()+1; size++) {
+    for (int size = lowerBound; size < virtualLine.size() + 1; size++) {
         std::vector<bool> v(virtualLine.size());
         std::fill(v.begin(), v.begin() + size - 1, true);
         do {
@@ -202,8 +205,8 @@ bool findNakedSubsetByPerm(std::bitset<9> &virtualCell, std::vector<const Cell *
                     grid.addInst(y);
                     grid.addInst(x);
                     grid.addInst(size);
-                    for(int i = 0; i < virtualLine.size();i++){
-                        if(v[i]) grid.addInst(encodePos(virtualLine[i]));
+                    for (int i = 0; i < virtualLine.size(); i++) {
+                        if (v[i]) grid.addInst(encodePos(virtualLine[i]));
                     }
                     grid.addExecToInst();
                     return true;
@@ -224,7 +227,7 @@ bool checkURType3(Grid &grid, int houseType, int HC0, int HC, int VC1, int VC2,
     //  if we can get some executees, we can write and return
     //  if we cannot , return false;
     // get virtual line
-    
+
     std::vector<const Cell *> virtualLine;
     FOR_ALL(index) {
         auto cell = grid.getCell(houseType, HC, index);
@@ -239,28 +242,81 @@ bool checkURType3(Grid &grid, int houseType, int HC0, int HC, int VC1, int VC2,
             virtualCell[cand] = true;
     }
 
-    if(findNakedSubsetByPerm(virtualCell, virtualLine, grid, houseType, HC0, HC, VC1, VC2, x, y)) return true;
+    if (findNakedSubsetByPerm(virtualCell, virtualLine, grid, houseType, HC0,
+                              HC, VC1, VC2, x, y))
+        return true;
     int box = findBox(tail1);
     virtualLine.clear();
-    FOR_ALL(index){
+    FOR_ALL(index) {
         auto cell = grid.getCell(2, box, index);
         if (cell == tail1 || cell == tail2) continue;
         if (cell->value) continue;
         virtualLine.push_back(cell);
     }
-    if(findNakedSubsetByPerm(virtualCell, virtualLine, grid, houseType, HC0, HC, VC1, VC2, x, y)) return true;
+    if (findNakedSubsetByPerm(virtualCell, virtualLine, grid, houseType, HC0,
+                              HC, VC1, VC2, x, y))
+        return true;
 
     return false;
 }
 
+bool checkURType4(Grid &grid, int houseType, int HC0, int HC, int VC1, int VC2,
+                  int x, int y, bool URCondition, const Cell *tail1,
+                  const Cell *tail2) {
+    if (!URCondition) return false;
+    int box = findBox(tail1);
+    std::bitset<9> mask;
+    FOR_ALL(index) {
+        auto cell = grid.getCell(houseType, HC, index);
+        if (cell->value) continue;
+        if (cell == tail1 || cell == tail2) continue;
+        mask = mask | cell->candidates;
+    }
+    FOR_ALL(index) {
+        auto cell = grid.getCell(2, box, index);
+        if (cell->value) continue;
+        if (cell == tail1 || cell == tail2) continue;
+        mask = mask | cell->candidates;
+    }
+
+    grid.initInsAndExe();
+    grid.setExec(false);
+    grid.addInst(0x63);
+    grid.addInst(encodeLine(houseType, HC0));
+    grid.addInst(encodeLine(houseType, HC));
+    grid.addInst(encodeLine(1 - houseType, VC1));
+    grid.addInst(encodeLine(1 - houseType, VC2));
+    for (int tmp : {x, y}) {
+        int other = tmp==x?y:x;
+        if (!mask[tmp]) {
+            grid.addInst(tmp);
+            grid.addInst(other);
+
+            if (tail1->candidates[other]) grid.addExec(tail1, other);
+            if (tail2->candidates[other]) grid.addExec(tail2, other);
+            if (!grid.emptyExec()) {
+                grid.sortExec();
+                grid.addExecToInst();
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
 void uniquenessTestType2(Grid &grid) {
     findPossibleURViaNakedPair(grid, checkURType2);
 }
 void uniquenessTestType3(Grid &grid) {
     findPossibleURViaNakedPair(grid, checkURType3);
 }
-void uniquenessTestType4(Grid &grid) {}
-void uniquenessTestType5(Grid &grid) {}
+
+void uniquenessTestType4(Grid &grid) {
+    findPossibleURViaNakedPair(grid, checkURType4);
+}
+void uniquenessTestType5(Grid &grid) {
+    
+}
 void findHiddenRectangle(Grid &grid) {}
 void avoidableRectangle1(Grid &grid) {}
 void avoidableRectangle2(Grid &grid) {}

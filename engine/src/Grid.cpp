@@ -248,3 +248,7 @@ const Cell *Grid::getCell(int x, int y) const { return &grid[x][y]; }
 const Cell *Grid::getCell(std::pair<int, int> pos) const {
     return &grid[pos.first][pos.second];
 }
+
+void Grid::addExec(const Cell* cell, uint8_t cand){
+    addExec(encodePos(cell),cand);
+}

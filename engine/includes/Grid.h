@@ -55,6 +55,8 @@ class Grid {
     inline void addInst(uint8_t inst) { instructions.push_back(inst); }
     inline void addExec(uint16_t exec) { execution.executees.push_back(exec); }
     inline void addExec(uint8_t pos, uint8_t cand) { execution.executees.push_back((pos<<8)|cand); }
+
+    void addExec(const Cell* cell, uint8_t cand);
     inline void setExec(bool mode) { execution.mode = mode; }
     inline void initInsAndExe() {
         instructions.clear();
