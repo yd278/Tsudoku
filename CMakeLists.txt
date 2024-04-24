@@ -27,6 +27,7 @@ set(SOURCE_FILES
     engine/src/solvers/fish.cpp
     engine/src/solvers/singleDigit.cpp
     engine/src/solvers/uniqueness.cpp
+    engine/src/solvers/coloring.cpp
 )
 
 # Header files are listed for better project management in some IDEs
@@ -43,6 +44,7 @@ set(HEADER_FILES
     engine/includes/solvers/fish.h
     engine/includes/solvers/singleDigit.h
     engine/includes/solvers/uniqueness.h
+    engine/includes/solvers/coloring.h
 )
 
 add_library(${PROJECT_NAME} SHARED ${SOURCE_FILES} ${HEADER_FILES} ${CMAKE_JS_SRC})
