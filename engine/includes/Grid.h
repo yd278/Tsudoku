@@ -24,6 +24,13 @@ struct Exec {
         return mode == other.mode && executees == other.executees;
     }
 };
+struct Node{
+    int index;
+    bool state;
+    int target;
+    int x,y;
+    std::vector<int> edges;
+};
 class Grid {
    private:
     std::vector<std::vector<Cell>> grid;
@@ -33,8 +40,10 @@ class Grid {
     bool checkWrongCandidates();
     void uniqueness();
     void updateCandCouldBe();
+    void updateGraph();
     void updateBiValues();
     void updateStrongLinks();
+    std::vector<Node> nodes;
 
     std::vector<std::vector<std::pair<const Cell*, const Cell*>>> strongLinks;
     std::vector<const Cell*> biValues;
@@ -74,6 +83,9 @@ class Grid {
     }
     inline auto getBiValuesByCands() const -> const decltype(biValuesByCands)* {
         return &biValuesByCands;
+    }
+    inline auto getGraph() const -> const decltype(nodes)* {
+        return &nodes;
     }
 
     Grid(int difficulty);

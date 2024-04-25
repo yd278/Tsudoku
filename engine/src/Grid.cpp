@@ -1,6 +1,8 @@
 #include "Grid.h"
 
 #include <bitset>
+#include <map>
+#include <utility>
 #include <vector>
 
 #include "solvers/DLX.h"
@@ -185,6 +187,79 @@ void Grid::updateBiValues() {
         }
     }
 }
+void Grid::updateGraph() {
+    std::map<std::pair<const Cell *, int>, int> lookup;
+    nodes.clear();
+    int cnt = 0;
+    FOR_ALL(i) FOR_ALL(j) {
+        FOR_ALL(cand) {
+            if (grid[i][j].candidates[cand]) {
+                nodes.push_back(Node{cnt, false, cand, i, j});
+                lookup[std::make_pair(&grid[i][j], cand)] = cnt;
+                cnt++;
+            }
+        }
+    }
+    for (int i = 0; i < cnt; i++) {
+        auto &n = nodes[i];
+        Node p = Node{i + cnt, true, n.target, n.x, n.y};
+        nodes.push_back(std::move(p));
+    }
+    // build Strong Links;
+    // bi-locals
+    FOR_ALL(target) {
+        for (auto sl : strongLinks[target]) {
+            auto fir = sl.first;
+            auto sec = sl.second;
+            int fn = lookup[std::make_pair(fir, target)];
+            int sn = lookup[std::make_pair(sec, target)];
+            nodes[fn].edges.push_back(sn + cnt);
+            nodes[sn].edges.push_back(fn + cnt);
+        }
+    }
+    // bi-values
+    for (auto bv : biValues) {
+        int x, y;
+        FOR_ALL(i) if (bv->candidates[i]) {
+            x = i;
+            break;
+        }
+        for (int i = x + 1; i < 9; i++)
+            if (bv->candidates[i]) {
+                y = i;
+                break;
+            }
+        int xn = lookup[std::make_pair(bv, x)];
+        int yn = lookup[std::make_pair(bv, y)];
+        nodes[xn].edges.push_back(yn + cnt);
+        nodes[yn].edges.push_back(xn + cnt);
+    }
+
+    // week links
+    FOR_ALL(i) FOR_ALL(j) {
+        const Cell *cell = &grid[i][j];
+        FOR_ALL(target) {
+            if (!cell->candidates[target]) continue;
+            int cur = lookup[std::make_pair(cell, target)] + cnt;
+            // same cell:
+            FOR_ALL(other_target) {
+                if (!cell->candidates[other_target]) continue;
+                if (other_target == target) continue;
+                int other = lookup[std::make_pair(cell, other_target)];
+                nodes[cur].edges.push_back(other);
+            }
+            // different cell:
+            FOR_ALL(oi) FOR_ALL(oj) {
+                const Cell *other = &grid[oi][oj];
+                if (!sees(cell, other)) continue;
+                if(other->candidates[target]){
+                    int oth = lookup[std::make_pair(other, target)];
+                    nodes[cur].edges.push_back(oth);
+                }
+            }
+        }
+    }
+}
 Grid::Grid(std::string gridPattern) {
     try {
         checkAndFill(gridPattern);
@@ -210,6 +285,7 @@ Grid::Grid(std::string gridPattern) {
     updateCandCouldBe();
     updateBiValues();
     updateStrongLinks();
+    updateGraph();
 }
 
 Grid::Grid(int difficulty) {
@@ -217,6 +293,7 @@ Grid::Grid(int difficulty) {
     for (auto &row : grid) row.resize(9);
 
     // TODO: generate sudoku of given difficulty
+    // NOTE: during nextStep() and execution, if a value is set, elinimate all the same candidates see that.
 }
 
 std::string Grid::toString() {
@@ -252,5 +329,3 @@ const Cell *Grid::getCell(std::pair<int, int> pos) const {
 void Grid::addExec(const Cell *cell, uint8_t cand) {
     addExec(encodePos(cell), cand);
 }
-
-
