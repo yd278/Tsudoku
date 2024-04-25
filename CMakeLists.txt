@@ -65,6 +65,7 @@ set(TEST_SOURCES
     tests/solvers/test_fish.cpp
     tests/solvers/test_singleDigit.cpp
     tests/solvers/test_uniqueness.cpp
+    tests/solvers/test_coloring.cpp
 )
 
 add_executable(runTests ${TEST_SOURCES})

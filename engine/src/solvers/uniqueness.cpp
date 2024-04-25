@@ -2,20 +2,12 @@
 
 #include <bitset>
 #include <functional>
-#include <iostream>
 #include <utility>
 #include <vector>
 
 #include "util.h"
 #include "util_const.h"
 
-void log() {}
-
-template <typename First, typename... Rest>
-void log(First &&first, Rest &&...rest) {
-    std::cout << std::forward<First>(first);
-    log(std::forward<Rest>(rest)...);
-}
 
 void uniquenessTestType1(Grid &grid) {
     // no more than two bivalues with same candidates in one house:
