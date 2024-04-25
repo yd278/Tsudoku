@@ -3,6 +3,7 @@
 #include "util.h"
 #include "util_const.h"
 
+
 void findFish(Grid &grid, int order) {
     std::vector<const std::vector<std::vector<int>> *> combos = {
         &ALL_PAIRS, &ALL_TRIPLES, &ALL_QUADRUPLETS};
@@ -26,28 +27,8 @@ void findFish(Grid &grid, int order) {
                 if (filter.count() == order) {
                     // fish found
                     grid.initInsAndExe();
-                    grid.addInst(0x20 + order - 2);
                     grid.setExec(false);
-                    if (houseType) {
-                        FOR_ALL(cover) {
-                            if (filter[cover]) {
-                                grid.addInst(cover << 4 | 0xF);
-                            }
-                        }
-                        for (int i = 0; i < order; i++)
-                            grid.addInst(0xf0 | base[i]);
-                    } else {
-                        for (int i = 0; i < order; i++)
-                            grid.addInst(base[i] << 4 | 0xF);
-                        FOR_ALL(cover) {
-                            if (filter[cover]) {
-                                grid.addInst(0xF0 | cover);
-                            }
-                        }
-                    }
-                    grid.addInst(target);
-                    // eliminate candidates
-                    bool flag = false;
+
                     FOR_ALL(cover) {
                         if (!filter[cover]) continue;
                         FOR_ALL(cell) {
@@ -55,19 +36,28 @@ void findFish(Grid &grid, int order) {
                             for (int i = 0; i < order; i++)
                                 if (cell == base[i]) inBase = true;
                             if (inBase) continue;
-                            auto tmp = grid.getCell(
-                                convert(cover, cell, 1 - houseType));
-                            if (tmp->candidates[target]) {
-                                grid.addExec(encodePos(tmp) << 8 | target);
-                                flag = true;
-                            }
+                            auto tmp = grid.getCell(1 - houseType, cover, cell);
+                            if (tmp->candidates[target])
+                                grid.addExec(encodePos(tmp), target);
                         }
                     }
-                    if (flag) {
+                    if (!grid.emptyExec()) {
+                        grid.addInst(0x20 + order - 2);
+
+                        for (auto b : base) {
+                            grid.addInst(encodeLine(houseType, b));
+                        }
+                        FOR_ALL(cover) {
+                            if (!filter[cover]) continue;
+                            grid.addInst(encodeLine(1 - houseType, cover));
+                        }
+                        grid.addInst(target);
                         grid.sortExec();
                         grid.addExecToInst();
                         return;
                     }
+
+                    // eliminate candidates
                 }
             }
         }

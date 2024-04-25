@@ -1,11 +1,18 @@
 #ifndef UTIL_H
 #define UTIL_H
 
+#include <iostream>
 #include <utility>
 
 #include "Grid.h"
 
+inline void debugLog() {}
+template <typename First, typename... Rest>
 
+void debugLog(First &&first, Rest &&...rest) {
+    std::cout << std::forward<First>(first);
+    debugLog(std::forward<Rest>(rest)...);
+}
 
 
 #define FOR_ALL(var) for (int var = 0; var < 9; var++)
@@ -29,4 +36,9 @@ bool sees(const Cell *cell, int x, int y);
 
 bool sees(const Cell *cell1, const Cell *cell2);
 bool cmp(const Cell *cell1, const Cell *cell2);
+
+
+
+
+
 #endif  // UTIL_H

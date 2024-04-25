@@ -1,18 +1,9 @@
 #include "solvers/coloring.h"
-
-#include <iostream>
 #include <queue>
 #include <set>
 
 #include "util.h"
 
-void log() {}
-
-template <typename First, typename... Rest>
-void log(First &&first, Rest &&...rest) {
-    std::cout << std::forward<First>(first);
-    log(std::forward<Rest>(rest)...);
-}
 
 void findSimpleColoring(Grid &grid) {
     FOR_ALL(target) {
