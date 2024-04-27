@@ -54,6 +54,8 @@ class Grid {
    public:
     inline void sortExec() {
         sort(execution.executees.begin(), execution.executees.end());
+        auto it = std::unique (execution.executees.begin(), execution.executees.end());
+        execution.executees.resize( std::distance(execution.executees.begin(),it) );
     }
     inline void addExecToInst() {
         for (auto exe : execution.executees) {

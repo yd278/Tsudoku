@@ -232,7 +232,22 @@ void Grid::updateGraph() {
         int xn = lookup[std::make_pair(bv, x)];
         int yn = lookup[std::make_pair(bv, y)];
         nodes[xn].edges.push_back(yn + cnt);
+        // // DEBUG
+        // auto from = nodes[xn];
+        // auto to = nodes[yn + cnt];
+        // debugLog("(", from.x, ",", from.y, ",", from.target, ",", from.state,
+        //          ") -> ");
+        // debugLog("(", to.x, ",", to.y, ",", to.target, ",", to.state, ") \n ");
+        // // END DEBUG
         nodes[yn].edges.push_back(xn + cnt);
+
+        // // DEBUG
+        // from = nodes[yn];
+        // to = nodes[xn + cnt];
+        // debugLog("(", from.x, ",", from.y, ",", from.target, ",", from.state,
+        //          ") -> ");
+        // debugLog("(", to.x, ",", to.y, ",", to.target, ",", to.state, ") \n ");
+        // // END DEBUG
     }
 
     // week links
@@ -247,14 +262,30 @@ void Grid::updateGraph() {
                 if (other_target == target) continue;
                 int other = lookup[std::make_pair(cell, other_target)];
                 nodes[cur].edges.push_back(other);
+                // // DEBUG
+                // auto from = nodes[cur];
+                // auto to = nodes[other];
+                // debugLog("(", from.x, ",", from.y, ",", from.target, ",",
+                //          from.state, ") -> ");
+                // debugLog("(", to.x, ",", to.y, ",", to.target, ",", to.state,
+                //          ") \n ");
+                // // END DEBUG
             }
             // different cell:
             FOR_ALL(oi) FOR_ALL(oj) {
                 const Cell *other = &grid[oi][oj];
                 if (!sees(cell, other)) continue;
-                if(other->candidates[target]){
+                if (other->candidates[target]) {
                     int oth = lookup[std::make_pair(other, target)];
                     nodes[cur].edges.push_back(oth);
+                    // // DEBUG
+                    // auto from = nodes[cur];
+                    // auto to = nodes[oth];
+                    // debugLog("(", from.x, ",", from.y, ",", from.target, ",",
+                    //          from.state, ") -> ");
+                    // debugLog("(", to.x, ",", to.y, ",", to.target, ",",
+                    //          to.state, ") \n ");
+                    // // END DEBUG
                 }
             }
         }
@@ -293,7 +324,8 @@ Grid::Grid(int difficulty) {
     for (auto &row : grid) row.resize(9);
 
     // TODO: generate sudoku of given difficulty
-    // NOTE: during nextStep() and execution, if a value is set, elinimate all the same candidates see that.
+    // NOTE: during nextStep() and execution, if a value is set, elinimate all
+    // the same candidates see that.
 }
 
 std::string Grid::toString() {
