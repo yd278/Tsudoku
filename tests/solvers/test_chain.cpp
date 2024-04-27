@@ -2,7 +2,7 @@
 
 #include "solvers/chain.h"
 
-TEST(TestChain, ALCType2) {
+TEST(TestChain, AICType2) {
     // 5 5- r2c2 -9- r8c2 =9= r8c9 =1= r8c3 -1- r2c3 -8- r2c5 =8= r8c5 -8- r8c8
     // -5 => r2c8,r8c2<>5
     Inst inst = {0xD1,  // type
