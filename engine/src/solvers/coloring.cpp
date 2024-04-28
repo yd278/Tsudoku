@@ -1,8 +1,6 @@
 #include "solvers/coloring.h"
 
 #include <queue>
-#include <set>
-
 #include "util.h"
 
 void findSimpleColoring(Grid &grid) {
@@ -110,6 +108,7 @@ void conflictFound(Grid &grid, std::vector<uint8_t> &chain, int houseType,
 
 void findSingleDigitForcing(Grid &grid) {
     FOR_ALL(target) {
+
         // build virtual grid:
         std::vector<std::vector<bool>> board(9);
         for (auto &row : board) row.resize(9);
@@ -121,7 +120,7 @@ void findSingleDigitForcing(Grid &grid) {
                 count[0][i]++;
                 count[1][j]++;
                 int box = findBox(i, j);
-                count[3][box]++;
+                count[2][box]++;
             }
         }
         int n = 0;
@@ -133,6 +132,7 @@ void findSingleDigitForcing(Grid &grid) {
             if (!board[si][sj]) continue;
             int ci = si;
             int cj = sj;
+
             auto tmpBoard = board;
             auto tmpCount = count;
             std::vector<uint8_t> chain;
@@ -150,18 +150,21 @@ void findSingleDigitForcing(Grid &grid) {
                 // row
                 FOR_ALL(col) {
                     if (tmpBoard[ci][col]) {
+                        
                         tmpBoard[ci][col] = false;
                         tmpCount[0][ci]--;
                         tmpCount[1][col]--;
                         if (tmpCount[1][col] == 0) {
                             // conflict found
                             conflictFound(grid, chain, 1, col, target);
+                            return;
                         }
                         int oBox = findBox(ci, col);
                         tmpCount[2][oBox]--;
                         if (oBox != box && (tmpCount[2][oBox] == 0)) {
                             // conflict found
                             conflictFound(grid, chain, 2, oBox, target);
+                            return;
                         }
                     }
                 }
@@ -173,6 +176,7 @@ void findSingleDigitForcing(Grid &grid) {
                         if (tmpCount[0][row] == 0) {
                             // conflict found
                             conflictFound(grid, chain, 0, row, target);
+                             return;
                         }
                         tmpCount[1][cj]--;
 
@@ -181,6 +185,7 @@ void findSingleDigitForcing(Grid &grid) {
                         if (oBox != box && (tmpCount[2][oBox] == 0)) {
                             // conflict found
                             conflictFound(grid, chain, 2, oBox, target);
+                             return;
                         }
                     }
                 }
@@ -188,21 +193,27 @@ void findSingleDigitForcing(Grid &grid) {
 
                 FOR_ALL(index) {
                     auto pos = convert(box, index, 2);
+                    
+                        
+                    if(!tmpBoard[pos.first][pos.second])continue;
                     tmpBoard[pos.first][pos.second] = false;
                     tmpCount[0][pos.first]--;
                     if (tmpCount[0][pos.first] == 0) {
                         // con
                         conflictFound(grid, chain, 0, pos.first,target);
+                         return;
                     }
                     tmpCount[1][pos.second]--;
                     if (tmpCount[1][pos.second] == 0) {
                         // c
                         conflictFound(grid, chain, 1, pos.second,target);
+                         return;
                     }
                     tmpCount[2][box]--;
                 }
 
                 // find next chain node
+
                 bool found = false;
                 for (int houseType : {0, 1, 2}) {
                     FOR_ALL(house) {
