@@ -1,8 +1,9 @@
 #ifndef CHAIN_H
 #define CHAIN_H
 
+#include <functional>
 #include "Grid.h"
-
+void findXChain(Grid &grid);
 void findXYChain(Grid &grid);
 void findAIC(Grid &grid);
 void findNiceLoop(Grid &grid);
@@ -31,4 +32,5 @@ void dfs(int cur,                     // current node index
 
 // 
 void findLoop(std::vector<int> &path,std::vector<std::vector<int> >& paths, int start);
+bool bfs(const std::vector<Node>* graph, int i,int limit, std::function<bool(int)>predicate, std::function<bool(int)>process);
 #endif  // CHAIN_H

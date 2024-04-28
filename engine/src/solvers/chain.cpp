@@ -87,7 +87,8 @@ void findNiceLoop(Grid& grid) {
 }
 // ADD the chain int AIC
 int checkAIC(
-    Grid& grid, const std::vector<Node>* graph, int head, int tail, std::vector<int> &pr,
+    Grid& grid, const std::vector<Node>* graph, int head, int tail,
+    std::vector<int>& pr,
     std::vector<std::pair<std::vector<uint16_t>, std::vector<uint16_t>>>&
         AICs) {
     auto& nx = graph->at(head);
@@ -149,6 +150,44 @@ int checkAIC(
     }
     return 0;
 }
+
+bool bfsFindChain(const std::vector<Node>* graph, int i, int& limit,
+                  std::function<bool(int)> predicate,
+                  std::function<bool(int, std::vector<int>&)> process) {
+    std::queue<int> q;
+    std::vector<int> dist(graph->size(), INT_MAX);
+    std::vector<int> pr(graph->size());
+    bool found = false;
+    q.push(i);
+    dist[i] = 0;
+    while (!q.empty()) {
+        int h = q.front();
+        q.pop();
+        if (dist[h] >= limit - 1) {
+            break;
+        }
+
+        for (auto next : graph->at(h).edges) {
+            if (!predicate(next)) continue;
+            if (dist[next] <= dist[h] + 1) continue;
+            q.push(next);
+
+            pr[next] = h;
+            dist[next] = dist[h] + 1;
+            if (dist[next] % 2 == 1) {
+                if (process(next, pr)) {
+                    limit = dist[next];
+                    found = true;
+                    break;
+                }
+            }
+        }
+
+        if (found) break;
+    }
+    return found;
+}
+
 bool cmpAIC(std::pair<std::vector<uint16_t>, std::vector<uint16_t>>& a,
             std::pair<std::vector<uint16_t>, std::vector<uint16_t>>& b) {
     if (a.first.size() < b.first.size()) return true;
@@ -161,45 +200,37 @@ void findAIC(Grid& grid) {
     auto graph = grid.getGraph();
     std::vector<std::pair<std::vector<uint16_t>, std::vector<uint16_t>>> AICs;
     std::vector<int> AICstates;
+
     for (int i = 0; i < graph->size() / 2; i++) {
-        std::queue<int> q;
-        std::vector<int> dist(graph->size(), INT_MAX);
-        std::vector<int> pr(graph->size());
         int AICstate = 0;
-        dist[i] = 0;
-        q.push(i);
+
         int AICend = -1;
-        while (!q.empty()) {
-            int h = q.front();
-            q.pop();
-            if (dist[h] >= limit - 1) break;
-            for (auto next : graph->at(h).edges) {
-                if (dist[next] > dist[h] + 1) {
-                    q.push(next);
-                    pr[next] = h;
-                    dist[next] = dist[h] + 1;
-                    if (dist[next] % 2 == 1) {
-                        AICstate = checkAIC(grid, graph, i, next, pr,AICs);
-                        if (AICstate != 0) {
-                            AICend = next;
-                            break;
-                        }
-                    }
-                }
-            }
+        auto process = [&grid, graph, i, &AICs, &AICstate, &AICend, &AICstates](
+                           int next, std::vector<int>& pr) {
+            AICstate = checkAIC(grid, graph, i, next, pr, AICs);
             if (AICstate != 0) {
                 AICstates.push_back(AICstate);
-                break;
+                AICend = next;
+                return true;
             }
-        }
+            return false;
+        };
+
+        bfsFindChain(
+            graph, i, limit, [](int next) { return true; }, process);
     }
-    if (AICs.empty()) return;
+    if (AICs.empty()) {
+        return;
+    }
     int res = 0;
     for (int i = 0; i < AICs.size(); i++) {
         if (cmpAIC(AICs[i], AICs[res])) res = i;
     }
+
     grid.addInst(0xd0 + AICstates[res] - 1);
-    auto chain = AICs[res].first;
+
+    auto& chain = AICs[res].first;
+
     grid.addInst(chain.size());
     for (auto p : chain) {
         grid.addInst(p >> 8, p & 0xf);
@@ -211,4 +242,12 @@ void findAIC(Grid& grid) {
     grid.sortExec();
     grid.addExecToInst();
     return;
+}
+
+void findXChain(Grid& grid) {
+    int limit = INT_MAX;
+    auto graph = grid.getGraph();
+    FOR_ALL(target) {
+
+    }
 }
