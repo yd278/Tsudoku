@@ -20,9 +20,6 @@ std::pair<int, int> convert(int house, int index, int houseType) {
     }
     return std::make_pair(-1, -1);
 }
-inline int findBox(int x,int y){
-    return (x/3)*3+(y/3);
-}
 
 uint8_t encodeLine(int lineType, int lineNumber){
     if(lineType) return 0xF0 | lineNumber;

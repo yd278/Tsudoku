@@ -14,15 +14,15 @@ void debugLog(First &&first, Rest &&...rest) {
     debugLog(std::forward<Rest>(rest)...);
 }
 
-
 #define FOR_ALL(var) for (int var = 0; var < 9; var++)
 
 uint8_t encodePos(int x, int y);
 uint8_t encodePos(std::pair<int, int> pos);
 uint8_t encodePos(const Cell *cell);
 uint8_t encodeLine(int lineType, int lineNumber);
-inline int findBox(int x, int y);
-int findBox(const Cell* cell);
+inline int findBox(int x, int y) { return (x / 3) * 3 + (y / 3); }
+
+int findBox(const Cell *cell);
 std::pair<int, int> convert(int house, int index, int houseType);
 // intersection, boxRemaining, lineRemaining
 std::tuple<std::vector<const Cell *>, std::vector<const Cell *>,
@@ -36,9 +36,5 @@ bool sees(const Cell *cell, int x, int y);
 
 bool sees(const Cell *cell1, const Cell *cell2);
 bool cmp(const Cell *cell1, const Cell *cell2);
-
-
-
-
 
 #endif  // UTIL_H
