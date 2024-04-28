@@ -41,8 +41,6 @@ void Grid::checkAndFill(std::string gridPattern) {
         throw std::invalid_argument("Invalid Pattern: wrong length");
     }
     // initialize grid
-    grid.resize(9);
-    for (auto &row : grid) row.resize(9);
 
     // sanity check for each cell while filling in
     for (int i = 0; i < 81; i++) {
@@ -171,9 +169,7 @@ void Grid::uniqueness() {
 
 void Grid::updateBiValues() {
     biValues.clear();
-    biValuesByCands.clear();
-    biValuesByCands.resize(9);
-    FOR_ALL(i) biValuesByCands[i].resize(i + 1);
+    FOR_ALL(i) FOR_ALL(j) biValuesByCands[i][j].clear();
     for (int i = 0; i < 9; i++) {
         for (int j = 0; j < 9; j++) {
             if (grid[i][j].candidates.count() == 2) {
@@ -292,7 +288,13 @@ void Grid::updateGraph() {
         }
     }
 }
-Grid::Grid(std::string gridPattern) {
+Grid::Grid()
+    : grid(9, std::vector<Cell>(9)),
+      strongLinks(9),
+      filled(3, std::vector<std::bitset<9>>(9)),
+      biValuesByCands(9, std::vector<std::vector<const Cell *>>(
+                             9, std::vector<const Cell *>(9))) {}
+Grid::Grid(std::string gridPattern) : Grid() {
     try {
         checkAndFill(gridPattern);
         uniqueness();
@@ -314,19 +316,14 @@ Grid::Grid(std::string gridPattern) {
             grid[i][j].y = j;
         }
     }
-    strongLinks.resize(9);
-    filled.resize(3);
-    for (int houseType : {0, 1, 2}) {
-        filled[houseType].resize(9);
-    }
-    
+
     updateCandCouldBe();
     updateBiValues();
     strongLinks.resize(9);
     updateStrongLinks();
     updateGraph();
     filled.resize(3);
-    for(auto &house : filled){
+    for (auto &house : filled) {
         house.resize(9);
     }
     updateFilled();
@@ -376,8 +373,8 @@ void Grid::addExec(const Cell *cell, uint8_t cand) {
 }
 
 void Grid::updateFilled() {
-    for(auto &houses : filled){
-        for(auto &house : houses ){
+    for (auto &houses : filled) {
+        for (auto &house : houses) {
             house.reset();
         }
     }

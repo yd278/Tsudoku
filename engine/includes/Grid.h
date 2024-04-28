@@ -97,7 +97,7 @@ class Grid {
     inline auto getGraph() const -> const decltype(nodes)* {
         return &nodes;
     }
-
+    Grid();
     Grid(int difficulty);
     Grid(std::string gridPattern);
     const Cell* getCell(int x, int y) const;
