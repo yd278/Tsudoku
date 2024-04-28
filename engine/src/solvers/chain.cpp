@@ -247,7 +247,57 @@ void findAIC(Grid& grid) {
 void findXChain(Grid& grid) {
     int limit = INT_MAX;
     auto graph = grid.getGraph();
-    FOR_ALL(target) {
+    for (int i = 0; i < graph->size() / 2; i++) {
+        int target = graph->at(i).target;
 
+        auto predicate = [=](int next) {
+            return (graph->at(next).target == target);
+        };
+        std::vector<uint8_t> shortestChain;
+        std::vector<uint16_t> bestExec;
+
+        auto process = [&shortestChain, &bestExec, graph, i, &grid](
+                           int next, std::vector<int> pr) {
+            auto& head = graph->at(i);
+            auto& tail = graph->at(next);
+            if (sees(head.x, head.y, tail.x, tail.y)) {
+                // it's a basic fish / pointing /claiming
+                return false;
+            }
+            std::vector<uint16_t> exec;
+            FOR_ALL(i) FOR_ALL(j) {
+                if (sees(head.x, head.y, i, j) && sees(tail.x, tail.y, i, j)) {
+                    auto cell = grid.getCell(i, j);
+                    if (cell->candidates[head.target]) {
+                        exec.push_back((encodePos(cell)) << 8 | head.target);
+                    }
+                }
+            }
+            if (exec.empty()) return false;  // nothing to eliminate
+            bestExec = std::move(exec);
+            std::vector<uint8_t> chain;
+            for (int cur = next; cur != 0; cur = pr[cur]) {
+                chain.push_back(encodePos(graph->at(cur).x, graph->at(cur).y));
+            }
+            shortestChain = std::move(chain);
+            return true;
+        };
+
+        bfsFindChain(graph, i, limit, predicate, process);
+        if (shortestChain.empty()) {
+            continue;
+        }
+
+        grid.addInst(0x90);
+        grid.addInst(shortestChain.size());
+        for(auto c : shortestChain){
+            grid.addInst(c);
+        }
+        grid.addInst(target);
+
+        for(auto e : bestExec) grid.addExec(e);
+        grid.sortExec();
+        grid.addExecToInst();
+        return;
     }
 }
