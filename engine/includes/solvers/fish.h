@@ -6,4 +6,6 @@
 
 void findFish(Grid &grid, int order);
 
+void findFinedFish(Grid &grid, int order);
+
 #endif // FISH_H

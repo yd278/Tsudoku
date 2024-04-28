@@ -34,6 +34,10 @@ struct Node{
 class Grid {
    private:
     std::vector<std::vector<Cell>> grid;
+
+   std::vector<std::vector<std::bitset<9>>> filled;
+
+
     void checkAndFill(std::string gridPattern);
     bool checkWrongValues();
     bool checkMissingCandidates();
@@ -43,6 +47,7 @@ class Grid {
     void updateGraph();
     void updateBiValues();
     void updateStrongLinks();
+    void updateFilled();
     std::vector<Node> nodes;
 
     std::vector<std::vector<std::pair<const Cell*, const Cell*>>> strongLinks;
@@ -79,6 +84,9 @@ class Grid {
     }
     inline auto getStrongLinks() const -> const decltype(strongLinks)* {
         return &strongLinks;
+    }
+    inline auto getFilled() const -> const decltype(filled)* {
+        return &filled;
     }
     inline auto getBiValues() const -> const decltype(biValues)* {
         return &biValues;

@@ -9,8 +9,7 @@
 #include "util.h"
 
 void Grid::updateStrongLinks() {
-    strongLinks.clear();
-    strongLinks.resize(9);
+    for (auto &row : strongLinks) row.clear();
     for (int houseType : {0, 1, 2}) {
         FOR_ALL(houseID) {
             FOR_ALL(target) {
@@ -237,7 +236,8 @@ void Grid::updateGraph() {
         // auto to = nodes[yn + cnt];
         // debugLog("(", from.x, ",", from.y, ",", from.target, ",", from.state,
         //          ") -> ");
-        // debugLog("(", to.x, ",", to.y, ",", to.target, ",", to.state, ") \n ");
+        // debugLog("(", to.x, ",", to.y, ",", to.target, ",", to.state, ") \n
+        // ");
         // // END DEBUG
         nodes[yn].edges.push_back(xn + cnt);
 
@@ -246,7 +246,8 @@ void Grid::updateGraph() {
         // to = nodes[xn + cnt];
         // debugLog("(", from.x, ",", from.y, ",", from.target, ",", from.state,
         //          ") -> ");
-        // debugLog("(", to.x, ",", to.y, ",", to.target, ",", to.state, ") \n ");
+        // debugLog("(", to.x, ",", to.y, ",", to.target, ",", to.state, ") \n
+        // ");
         // // END DEBUG
     }
 
@@ -313,6 +314,12 @@ Grid::Grid(std::string gridPattern) {
             grid[i][j].y = j;
         }
     }
+    strongLinks.resize(9);
+    filled.resize(3);
+    for (int houseType : {0, 1, 2}) {
+        filled[houseType].resize(9);
+    }
+
     updateCandCouldBe();
     updateBiValues();
     updateStrongLinks();
@@ -360,4 +367,16 @@ const Cell *Grid::getCell(std::pair<int, int> pos) const {
 
 void Grid::addExec(const Cell *cell, uint8_t cand) {
     addExec(encodePos(cell), cand);
+}
+
+void Grid::updateFilled() {
+    FOR_ALL(i) FOR_ALL(j) {
+        if (grid[i][j].value) {
+            int box = findBox(i, j);
+            int v = grid[i][j].value - 1;
+            filled[0][i].set(v);
+            filled[1][j].set(v);
+            filled[2][box].set(v);
+        }
+    }
 }
