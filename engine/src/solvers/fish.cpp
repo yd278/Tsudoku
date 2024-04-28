@@ -67,6 +67,7 @@ void findFinedFish(Grid &grid, int order) {
     auto filled = grid.getFilled();
     std::vector<const std::vector<std::vector<int>> *> combos = {
         &ALL_PAIRS, &ALL_TRIPLES, &ALL_QUADRUPLETS};
+
     FOR_ALL(target) {
         for (int houseType : {0, 1}) {
             for (auto &base : *combos[order - 2]) {
@@ -88,13 +89,15 @@ void findFinedFish(Grid &grid, int order) {
                         }
                     }
                     if (invalidCover) continue;
-
-                    // base set and cover set fixed, check if a finned fish:
-                    // pick fins and check if fins has something in their intersect;
-
+                    //  base set and cover set fixed, check if a finned fish:
+                    //  pick fins and check if fins has something in their
+                    //  intersect;
+                    
                     bool noIntersect = false;
                     std::vector<const Cell *> fins;
-                    std::vector<std::vector<bool>> finIntersect;
+                    std::vector<std::vector<bool>> finIntersect(9);
+                    for (auto &row : finIntersect) row.resize(9);
+
                     FOR_ALL(i) FOR_ALL(j) finIntersect[i][j] = true;
                     for (auto baseIndex : base) {
                         int ptr = 0;
@@ -106,7 +109,10 @@ void findFinedFish(Grid &grid, int order) {
                             auto cell =
                                 grid.getCell(houseType, baseIndex, cellId);
                             if (!cell->candidates[target]) continue;
+                            
+
                             // a fin is found
+                            fins.push_back(cell);
                             int cnt = 0;
                             FOR_ALL(i) FOR_ALL(j) {
                                 if (!sees(cell, i, j))
@@ -120,43 +126,45 @@ void findFinedFish(Grid &grid, int order) {
                         }
                         if (noIntersect) break;
                     }
-                    if(noIntersect)continue;
+                    if (noIntersect) continue;
 
-                    //check if fin and cover have intersect and contains target as candidate
-                    std::vector<const Cell*> exes;
-                    for(int coverIndex : cover){
-                        int ptr=0;
-                        FOR_ALL(cellId){
-                            if(ptr<order && cellId==base[ptr]){
+                    // check if fin and cover have intersect and contains target
+                    // as candidate
+                    std::vector<const Cell *> exes;
+                    for (int coverIndex : cover) {
+                        int ptr = 0;
+                        FOR_ALL(cellId) {
+                            if (ptr < order && cellId == base[ptr]) {
                                 ptr++;
                                 continue;
                             }
-                            auto pos = convert(coverIndex, cellId, 1-houseType);
-                            if(finIntersect[pos.first][pos.second]){
-                                if(grid.getCell(pos)->candidates[target]){
+                            auto pos =
+                                convert(coverIndex, cellId, 1 - houseType);
+                            if (finIntersect[pos.first][pos.second]) {
+                                if (grid.getCell(pos)->candidates[target]) {
                                     exes.push_back(grid.getCell(pos));
                                 }
                             }
                         }
                     }
-                    if(exes.empty())continue;
+                    if (exes.empty()) continue;
 
-                    // finally we have some executees:
+                    //  finally we have some executees:
                     grid.initInsAndExe();
-                    grid.addInst(0x80+order-2);
-                    for(auto baseIndex : base){
+                    grid.addInst(0x80 + order - 2);
+                    for (auto baseIndex : base) {
                         grid.addInst(encodeLine(houseType, baseIndex));
                     }
-                    for(auto coverIndex : cover){
-                        grid.addInst(encodeLine(1-houseType, coverIndex));
+                    for (auto coverIndex : cover) {
+                        grid.addInst(encodeLine(1 - houseType, coverIndex));
                     }
                     grid.addInst(fins.size());
-                    for(auto fin : fins){
+                    for (auto fin : fins) {
                         grid.addInst(encodePos(fin));
                     }
                     grid.addInst(target);
-                    for(auto exe : exes){
-                        grid.addExec(exe,target);
+                    for (auto exe : exes) {
+                        grid.addExec(exe, target);
                     }
                     grid.addExecToInst();
                     return;

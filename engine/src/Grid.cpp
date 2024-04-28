@@ -319,11 +319,17 @@ Grid::Grid(std::string gridPattern) {
     for (int houseType : {0, 1, 2}) {
         filled[houseType].resize(9);
     }
-
+    
     updateCandCouldBe();
     updateBiValues();
+    strongLinks.resize(9);
     updateStrongLinks();
     updateGraph();
+    filled.resize(3);
+    for(auto &house : filled){
+        house.resize(9);
+    }
+    updateFilled();
 }
 
 Grid::Grid(int difficulty) {
@@ -370,6 +376,11 @@ void Grid::addExec(const Cell *cell, uint8_t cand) {
 }
 
 void Grid::updateFilled() {
+    for(auto &houses : filled){
+        for(auto &house : houses ){
+            house.reset();
+        }
+    }
     FOR_ALL(i) FOR_ALL(j) {
         if (grid[i][j].value) {
             int box = findBox(i, j);
