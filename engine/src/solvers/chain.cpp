@@ -1,6 +1,8 @@
 #include "solvers/chain.h"
 
+#include <cstdint>
 #include <queue>
+#include <utility>
 #include <vector>
 
 #include "util.h"
@@ -152,7 +154,7 @@ int checkAIC(
 }
 
 bool bfsFindChain(const std::vector<Node>* graph, int i, int& limit,
-                  std::function<bool(int)> predicate,
+                  std::function<bool(int, int)> predicate,
                   std::function<bool(int, std::vector<int>&)> process) {
     std::queue<int> q;
     std::vector<int> dist(graph->size(), INT_MAX);
@@ -168,7 +170,7 @@ bool bfsFindChain(const std::vector<Node>* graph, int i, int& limit,
         }
 
         for (auto next : graph->at(h).edges) {
-            if (!predicate(next)) continue;
+            if (!predicate(h, next)) continue;
             if (dist[next] <= dist[h] + 1) continue;
             q.push(next);
 
@@ -217,7 +219,7 @@ void findAIC(Grid& grid) {
         };
 
         bfsFindChain(
-            graph, i, limit, [](int next) { return true; }, process);
+            graph, i, limit, [](int h, int next) { return true; }, process);
     }
     if (AICs.empty()) {
         return;
@@ -246,24 +248,22 @@ void findAIC(Grid& grid) {
 
 void findXChain(Grid& grid) {
     int limit = INT_MAX;
+
+    std::vector<uint8_t> shortestChain;
+    std::vector<uint16_t> bestExec;
+    int bestTarget;
+
     auto graph = grid.getGraph();
     for (int i = 0; i < graph->size() / 2; i++) {
         int target = graph->at(i).target;
 
-        auto predicate = [=](int next) {
+        auto predicate = [=](int h, int next) {
             return (graph->at(next).target == target);
         };
-        std::vector<uint8_t> shortestChain;
-        std::vector<uint16_t> bestExec;
-
-        auto process = [&shortestChain, &bestExec, graph, i, &grid](
-                           int next, std::vector<int> pr) {
+        auto process = [&shortestChain, &bestExec, graph, i, &grid, &bestTarget,
+                        target](int next, std::vector<int>& pr) {
             auto& head = graph->at(i);
             auto& tail = graph->at(next);
-            if (sees(head.x, head.y, tail.x, tail.y)) {
-                // it's a basic fish / pointing /claiming
-                return false;
-            }
             std::vector<uint16_t> exec;
             FOR_ALL(i) FOR_ALL(j) {
                 if (sees(head.x, head.y, i, j) && sees(tail.x, tail.y, i, j)) {
@@ -280,24 +280,92 @@ void findXChain(Grid& grid) {
                 chain.push_back(encodePos(graph->at(cur).x, graph->at(cur).y));
             }
             shortestChain = std::move(chain);
+            bestTarget = target;
             return true;
         };
 
         bfsFindChain(graph, i, limit, predicate, process);
-        if (shortestChain.empty()) {
-            continue;
-        }
-
-        grid.addInst(0x90);
-        grid.addInst(shortestChain.size());
-        for(auto c : shortestChain){
-            grid.addInst(c);
-        }
-        grid.addInst(target);
-
-        for(auto e : bestExec) grid.addExec(e);
-        grid.sortExec();
-        grid.addExecToInst();
+    }
+    if (shortestChain.empty()) {
         return;
     }
+
+    grid.addInst(0x90);
+    grid.addInst(shortestChain.size());
+    for (auto c : shortestChain) {
+        grid.addInst(c);
+    }
+    grid.addInst(bestTarget);
+
+    for (auto e : bestExec) grid.addExec(e);
+    grid.sortExec();
+    grid.addExecToInst();
+    return;
+}
+
+void findXYChain(Grid& grid) {
+    int limit = INT_MAX;
+    auto graph = grid.getGraph();
+
+    std::vector<uint8_t> shortestChain;
+    std::vector<uint16_t> bestExec;
+    for (int i = 0; i < graph->size() / 2; i++) {
+        auto node = graph->at(i);
+        auto cell = grid.getCell(node.x, node.y);
+        if (cell->candidates.count() != 2) continue;
+        // start with a bi-value
+
+        auto predicate = [graph](int h, int next) {
+            auto hNode = graph->at(h);
+            auto nextNode = graph->at(next);
+            if (hNode.state == false) {
+                return hNode.x == nextNode.x && hNode.y == nextNode.y;
+            } else {
+                return hNode.target == nextNode.target;
+            }
+            return false;
+        };
+
+        auto process = [graph, i, &grid, &bestExec, &shortestChain](
+                           int next, std::vector<int>& pr) {
+            auto endNode = graph->at(next);
+            if (endNode.target != graph->at(i).target) return false;
+            auto startCell = grid.getCell(graph->at(i).x, graph->at(i).y);
+            auto endCell = grid.getCell(endNode.x, endNode.y);
+
+            std::vector<uint16_t> exec;
+            FOR_ALL(i) FOR_ALL(j) {
+                auto exe = grid.getCell(i, j);
+                if (!exe->candidates[endNode.target]) continue;
+                if (sees(exe, startCell) && sees(exe, endCell)) {
+                    exec.push_back((encodePos(exe) << 8) | endNode.target);
+                }
+            }
+            if (exec.empty()) return false;
+            bestExec = std::move(exec);
+            std::vector<uint8_t> chain;
+            for (auto cur = next; cur != 0; cur = pr[cur]) {
+                chain.push_back(encodePos(graph->at(cur).x, graph->at(cur).y));
+                chain.push_back(graph->at(cur).target);
+            }
+            shortestChain = std::move(chain);
+            return true;
+        };
+
+        bfsFindChain(graph, i, limit, predicate, process);
+    }
+    if (shortestChain.empty()) {
+        return;
+    }
+
+    grid.addInst(0x91);
+    grid.addInst(shortestChain.size() / 2);
+    for (auto c : shortestChain) {
+        grid.addInst(c);
+    }
+
+    for (auto e : bestExec) grid.addExec(e);
+    grid.sortExec();
+    grid.addExecToInst();
+    return;
 }
