@@ -29,6 +29,7 @@ set(SOURCE_FILES
     engine/src/solvers/uniqueness.cpp
     engine/src/solvers/coloring.cpp
     engine/src/solvers/chain.cpp
+    engine/src/solvers/sdc.cpp
 )
 
 # Header files are listed for better project management in some IDEs
@@ -47,6 +48,7 @@ set(HEADER_FILES
     engine/includes/solvers/uniqueness.h
     engine/includes/solvers/coloring.h
     engine/includes/solvers/chain.h
+    engine/includes/solvers/sdc.h
 )
 
 add_library(${PROJECT_NAME} SHARED ${SOURCE_FILES} ${HEADER_FILES} ${CMAKE_JS_SRC})
@@ -69,6 +71,7 @@ set(TEST_SOURCES
     tests/solvers/test_uniqueness.cpp
     tests/solvers/test_coloring.cpp
     tests/solvers/test_chain.cpp
+    tests/solvers/test_sdc.cpp
 )
 
 add_executable(runTests ${TEST_SOURCES})

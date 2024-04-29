@@ -1,5 +1,7 @@
 #include "util.h"
 
+#include <cstdint>
+
 // houseType: 0-rows, 1-columns, 2-boxes
 std::pair<int, int> convert(int house, int index, int houseType) {
     if (houseType == 0) {
@@ -21,18 +23,15 @@ std::pair<int, int> convert(int house, int index, int houseType) {
     return std::make_pair(-1, -1);
 }
 
-uint8_t encodeLine(int lineType, int lineNumber){
-    if(lineType) return 0xF0 | lineNumber;
-    return (lineNumber<<4)|0xf;
-     
+uint8_t encodeLine(int lineType, int lineNumber) {
+    if (lineType) return 0xF0 | lineNumber;
+    return (lineNumber << 4) | 0xf;
 }
-int findBox(const Cell* cell){
-    return findBox(cell->x,cell->y);
-}
+int findBox(const Cell* cell) { return findBox(cell->x, cell->y); }
 uint8_t encodePos(const Cell* cell) { return encodePos(cell->x, cell->y); }
 
 bool sees(int x1, int y1, int x2, int y2) {
-    if(x1==x2 && y1==y2) return false;
+    if (x1 == x2 && y1 == y2) return false;
     if (x1 == x2 || y1 == y2) return true;
     if (x1 / 3 == x2 / 3 && y1 / 3 == y2 / 3) return true;
     return false;
@@ -98,8 +97,11 @@ bool sees(const Cell* cell1, const Cell* cell2) {
     return sees(cell1->x, cell1->y, cell2->x, cell2->y);
 }
 
-bool cmp(const Cell* cell1, const Cell* cell2){
-    if(cell1->x < cell2->x) return true;
-    if(cell1->x== cell2->x && cell1->y < cell2->y) return true;
+bool cmp(const Cell* cell1, const Cell* cell2) {
+    if (cell1->x < cell2->x) return true;
+    if (cell1->x == cell2->x && cell1->y < cell2->y) return true;
     return false;
+}
+uint16_t encodeExe(const Cell* cell, int target) {
+    return (encodePos(cell) << 8) | target;
 }

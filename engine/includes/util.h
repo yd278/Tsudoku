@@ -16,6 +16,7 @@ void debugLog(First &&first, Rest &&...rest) {
 
 #define FOR_ALL(var) for (int var = 0; var < 9; var++)
 
+uint16_t encodeExe(const Cell * cell, int target);
 uint8_t encodePos(int x, int y);
 uint8_t encodePos(std::pair<int, int> pos);
 uint8_t encodePos(const Cell *cell);
