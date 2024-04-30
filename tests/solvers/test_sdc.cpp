@@ -3,7 +3,7 @@
 
 TEST(TestSDC, SDC1) {
     Inst inst = {
-        0x92,                   // type
+        0xB2,                   // type
         2,                      // c-size
         0x11, 0x21,             // c pos
         1,                      // r-size
@@ -36,7 +36,7 @@ TEST(TestSDC, SDC1) {
 
 TEST(TestSDC, SDC2) {
     Inst inst = {
-        0x92,                                           // type
+        0xB2,                                           // type
         3,                                              // c-size
         0x50, 0x51, 0x52,                               // c pos
         1,                                              // r-size
@@ -69,7 +69,7 @@ TEST(TestSDC, SDC2) {
 
 TEST(TestSDC, SDC3) {
     Inst inst = {
-        0x92,                   // type
+        0xB2,                   // type
         3,                      // c-size
         0x04, 0x14, 0x24,       // c pos
         3,                      // r-size
@@ -101,7 +101,7 @@ TEST(TestSDC, SDC3) {
 }
 TEST(TestSDC, SDC4) {
     Inst inst = {
-       0x92,   // type
+       0xB2,   // type
         2,// c-size
         0x50,0x51,// c pos
         1,// r-size
