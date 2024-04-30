@@ -13,11 +13,11 @@ typedef std::vector<const Cell *> cellSet;
 
 void findAllValid(
     Grid &grid, cellSet &all,
-    std::vector<std::tuple<cellSet, cellSet, std::bitset<9>>> valid,
+    std::vector<std::tuple<cellSet, cellSet, std::bitset<9>>> &valid,
     std::bitset<9> &CUnion, int CSize) {
     for (int size = 1; size < all.size(); size++) {
         std::vector<bool> mask(all.size());
-        std::fill(mask.begin(), mask.begin() + size - 1, true);
+        std::fill(mask.begin(), mask.begin() + size, true);
         do {
             cellSet tmpCR, tmpCRE;
             std::bitset<9> CRUnion;
@@ -63,6 +63,7 @@ void findSDC(Grid &grid) {
                         cellSet{intersect[0], intersect[2]});
                     choosenIntersect.push_back(
                         cellSet{intersect[1], intersect[2]});
+                    choosenIntersect.push_back(std::move(intersect));
                 }
                 for (auto C : choosenIntersect) {
                     // check if AALS condition satisfied
@@ -87,7 +88,6 @@ void findSDC(Grid &grid) {
                     std::vector<std::tuple<cellSet, cellSet, std::bitset<9>>>
                         validCR;
                     findAllValid(grid, allR, validCR, CUnion, C.size());
-
                     if (validCR.empty()) continue;
                     // find all B-cells;
                     cellSet allB;
@@ -148,6 +148,7 @@ void findSDC(Grid &grid) {
                                 auto CBPos = std::get<0>(CB);
                                 grid.addInst(CBPos.size());
                                 for(auto c : CBPos) grid.addInst(encodePos(c));
+                                for(auto exe : exes) grid.addExec(exe);
                                 grid.sortExec();
                                 grid.addExecToInst();
                                 return;
