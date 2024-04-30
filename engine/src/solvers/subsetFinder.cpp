@@ -1,4 +1,5 @@
 #include "solvers/subsetFinder.h"
+
 #include "util.h"
 #include "util_const.h"
 
@@ -24,45 +25,32 @@ void findNakedSubset(Grid &grid, int cnt) {
                     // naked subset found:
                     grid.initInsAndExe();
                     grid.setExec(false);
-                    grid.addInst(0x30 + cnt - 2);
-                    for (int i = 0; i < cnt; i++) {
-                        auto pos = convert(house, cells[i], houseType);
-                        grid.addInst(encodePos(pos));
-                    }
-                    std::vector<int> subsetCandidates;
-                    FOR_ALL(cand) {
-                        if (candidateUnion[cand]) {
-                            grid.addInst(cand);
-                            subsetCandidates.push_back(cand);
-                        }
-                    }
-                    // eliminations:
-                    bool flag = false;
-                    // iterate every cells in this house
+                    int ptr = 0;
                     FOR_ALL(cellId) {
-                        // check if it's in the subset selected
-                        bool inSubset = false;
-                        for (int i = 0; i < cnt; i++) {
-                            if (cellId == cells[i]) {
-                                inSubset = true;
-                                break;
-                            }
+                        if (ptr < cnt && cells[ptr] == cellId) {
+                            ptr++;
+                            continue;
                         }
-                        if (inSubset) continue;
-                        // it's not, take the cell;
-                        auto pos = convert(house, cellId, houseType);
-                        auto cell = grid.getCell(pos);
-                        // it shouldn't be filled;
-                        if (cell->value != 0) continue;
-                        // determine what s
-                        for (auto sc : subsetCandidates) {
-                            if (cell->candidates[sc]) {
-                                grid.addExec(encodePos(cell), sc);
-                                flag = true;
+                        auto cell = grid.getCell(houseType, house, cellId);
+                        if (cell->value) continue;
+                        FOR_ALL(target) {
+                            if (!candidateUnion[target]) continue;
+                            if (cell->candidates[target]) {
+                                grid.addExec(cell, target);
                             }
                         }
                     }
-                    if (flag) {
+                    if (!grid.emptyExec()) {
+                        grid.addInst(0x30 + cnt - 2);
+                        for (int i = 0; i < cnt; i++) {
+                            auto pos = convert(house, cells[i], houseType);
+                            grid.addInst(encodePos(pos));
+                        }
+                        FOR_ALL(cand) {
+                            if (candidateUnion[cand]) {
+                                grid.addInst(cand);
+                            }
+                        }
                         grid.sortExec();
                         grid.addExecToInst();
                         return;
@@ -108,17 +96,24 @@ void findHiddenSubset(Grid &grid, int cnt) {
 
                 if (positionUnion.count() == cnt) {
                     // hidden Subset found
-
                     grid.initInsAndExe();
+                    FOR_ALL(pos) {
+                        if (!positionUnion[pos]) continue;
+                        auto cell = grid.getCell(houseType, houseID, pos);
+                        FOR_ALL(c) {
+                            if (cell->candidates[c] && !candSet[c]) {
+                                grid.addExec(encodePos(cell), c);
+                            }
+                        }
+                    }
+                    if (grid.emptyExec()) continue;
                     grid.setExec(false);
                     grid.addInst(0x34 + cnt - 2);
-                    std::vector<int> positionList;
                     // put pos into inst
                     FOR_ALL(i) {
                         if (positionUnion[i]) {
                             grid.addInst(
                                 encodePos(convert(houseID, i, houseType)));
-                            positionList.push_back(i);
                         }
                     }
                     // put cand into inst
@@ -127,21 +122,9 @@ void findHiddenSubset(Grid &grid, int cnt) {
                     }
 
                     // eliminations:
-                    bool flag = false;
-                    for (auto pos : positionList) {
-                        auto cell = grid.getCell(houseType, houseID, pos);
-                        FOR_ALL(c) {
-                            if (cell->candidates[c] && !candSet[c]) {
-                                grid.addExec(encodePos(cell), c);
-                                flag = true;
-                            }
-                        }
-                    }
-                    if (flag) {
-                        grid.sortExec();
-                        grid.addExecToInst();
-                        return;
-                    }
+                    grid.sortExec();
+                    grid.addExecToInst();
+                    return;
                 }
             }
         }

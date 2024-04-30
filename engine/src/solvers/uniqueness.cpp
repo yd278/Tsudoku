@@ -8,7 +8,6 @@
 #include "util.h"
 #include "util_const.h"
 
-
 void uniquenessTestType1(Grid &grid) {
     // no more than two bivalues with same candidates in one house:
     // as we always execute naked pair before uniqueness test, these two
@@ -33,8 +32,13 @@ void uniquenessTestType1(Grid &grid) {
                 continue;
             auto exec = grid.getCell(pincer2->x, pincer1->y);
             if (exec->value) continue;
+
+            grid.initInsAndExe();
             if (exec->candCouldBe[x] && exec->candCouldBe[y]) {
-                grid.initInsAndExe();
+                if (exec->candidates[y]) grid.addExec(encodePos(exec), y);
+                if (exec->candidates[x]) grid.addExec(encodePos(exec), x);
+                if (grid.emptyExec()) continue;
+
                 grid.addInst(0x90);
                 int row1 = cell->x;
                 int row2 = pincer2->x;
@@ -50,16 +54,9 @@ void uniquenessTestType1(Grid &grid) {
 
                 grid.addInst(y);
                 grid.addInst(x);
-                bool flag = false;
-                if (exec->candidates[y])
-                    grid.addExec(encodePos(exec), y), flag = true;
-                if (exec->candidates[x])
-                    grid.addExec(encodePos(exec), x), flag = true;
-
-                if (flag) {
-                    grid.addExecToInst();
-                    return;
-                }
+                grid.sortExec();
+                grid.addExecToInst();
+                return;
             }
         }
     }
@@ -140,6 +137,17 @@ bool checkURType2(Grid &grid, int houseType, int HC0, int HC, int VC1, int VC2,
     // UT type2 found
     if (VC1 > VC2) std::swap(VC1, VC2);
     grid.initInsAndExe();
+    FOR_ALL(ei) FOR_ALL(ej) {
+        if (!sees(tail1, ei, ej)) continue;
+
+        if (!sees(tail2, ei, ej)) continue;
+
+        auto exec = grid.getCell(ei, ej);
+        if (exec == tail1 || exec == tail2) continue;
+
+        if (exec->candidates[extra]) grid.addExec(encodePos(exec), extra);
+    }
+    if (grid.emptyExec()) return false;
     grid.setExec(false);
     grid.addInst(0x91);
     grid.addInst(encodeLine(houseType, HC0));
@@ -149,23 +157,9 @@ bool checkURType2(Grid &grid, int houseType, int HC0, int HC, int VC1, int VC2,
     grid.addInst(y);
     grid.addInst(x);
     grid.addInst((URCondition ? 0xF0 : 0) | extra);
-    bool flag = false;
-    FOR_ALL(ei) FOR_ALL(ej) {
-        if (!sees(tail1, ei, ej)) continue;
-        ;
-        if (!sees(tail2, ei, ej)) continue;
-        ;
-        auto exec = grid.getCell(ei, ej);
-        if (exec == tail1 || exec == tail2) continue;
-        ;
-        if (exec->candidates[extra])
-            grid.addExec(encodePos(exec), extra), flag = true;
-    }
-    if (flag) {
-        grid.addExecToInst();
-        return true;
-    }
-    return false;
+    grid.sortExec();
+    grid.addExecToInst();
+    return true;
 }
 
 bool findNakedSubsetByPerm(std::bitset<9> &virtualCell,
@@ -264,7 +258,7 @@ bool checkURType3(Grid &grid, int houseType, int HC0, int HC, int VC1, int VC2,
 bool checkURType4(Grid &grid, int houseType, int HC0, int HC, int VC1, int VC2,
                   int x, int y, bool URCondition, const Cell *tail1,
                   const Cell *tail2) {
-    if (!URCondition) return false;
+    // FIXME: totally wrong
     int box = findBox(tail1);
     std::bitset<9> mask;
     FOR_ALL(index) {
@@ -273,29 +267,28 @@ bool checkURType4(Grid &grid, int houseType, int HC0, int HC, int VC1, int VC2,
         if (cell == tail1 || cell == tail2) continue;
         mask = mask | cell->candidates;
     }
-    FOR_ALL(index) {
-        auto cell = grid.getCell(2, box, index);
-        if (cell->value) continue;
-        if (cell == tail1 || cell == tail2) continue;
-        mask = mask | cell->candidates;
-    }
+    if (URCondition) FOR_ALL(index) {
+            auto cell = grid.getCell(2, box, index);
+            if (cell->value) continue;
+            if (cell == tail1 || cell == tail2) continue;
+            mask = mask | cell->candidates;
+        }
 
     grid.initInsAndExe();
-    grid.setExec(false);
-    grid.addInst(0x93);
-    grid.addInst(encodeLine(houseType, HC0));
-    grid.addInst(encodeLine(houseType, HC));
-    grid.addInst(encodeLine(1 - houseType, VC1));
-    grid.addInst(encodeLine(1 - houseType, VC2));
     for (int tmp : {x, y}) {
         int other = tmp == x ? y : x;
         if (!mask[tmp]) {
-            grid.addInst(tmp);
-            grid.addInst(other);
-
             if (tail1->candidates[other]) grid.addExec(tail1, other);
             if (tail2->candidates[other]) grid.addExec(tail2, other);
             if (!grid.emptyExec()) {
+                grid.setExec(false);
+                grid.addInst(0x93);
+                grid.addInst(encodeLine(houseType, HC0));
+                grid.addInst(encodeLine(houseType, HC));
+                grid.addInst(encodeLine(1 - houseType, VC1));
+                grid.addInst(encodeLine(1 - houseType, VC2));
+                grid.addInst(tmp);
+                grid.addInst(other);
                 grid.sortExec();
                 grid.addExecToInst();
                 return true;
@@ -418,6 +411,8 @@ bool testHR(Grid &grid, const Cell *cell, const Cell *SR, const Cell *SC,
     int col = DI->y;
     for (int good : {x, y}) {
         int bad = good == x ? y : x;
+
+        if(!DI->candidates[bad]) continue;
         bool notAHR = false;
         FOR_ALL(index) {
             auto test = grid.getCell(row, index);
@@ -437,6 +432,7 @@ bool testHR(Grid &grid, const Cell *cell, const Cell *SR, const Cell *SC,
             };
         }
         if (notAHR) continue;
+
 
         // HR found:
         grid.initInsAndExe();
@@ -503,13 +499,14 @@ void avoidableRectangle2(Grid &grid) {
         int x = baseCorner->value - 1;
 
         // same row first
-        for (int houseType : {0, 1}) {// second given direction
+        for (int houseType : {0, 1}) {  // second given direction
 
-            int expCoord = houseType?bi : bj; // 
-            int sameCoord = houseType?bj:bi;
+            int expCoord = houseType ? bi : bj;  //
+            int sameCoord = houseType ? bj : bi;
 
             for (int sCoord = expCoord + 1; sCoord < 9; sCoord++) {
-                auto SR = grid.getCell(houseType,sameCoord, sCoord); //second r(?)
+                auto SR =
+                    grid.getCell(houseType, sameCoord, sCoord);  // second r(?)
                 if (SR->given) continue;
                 if (SR->value == 0) continue;
                 int y = SR->value - 1;
@@ -517,8 +514,10 @@ void avoidableRectangle2(Grid &grid) {
                 FOR_ALL(ol) {
                     if ((sameCoord / 3 != ol / 3) ^ URCondition) continue;
                     if (ol == sameCoord) continue;
-                    auto tail1 = grid.getCell(houseType,ol, expCoord);  // should be y,extra
-                    auto tail2 = grid.getCell(houseType,ol, sCoord);  // should be x,extra
+                    auto tail1 = grid.getCell(houseType, ol,
+                                              expCoord);  // should be y,extra
+                    auto tail2 = grid.getCell(houseType, ol,
+                                              sCoord);  // should be x,extra
                     if (tail1->given || tail2->given) continue;
                     if (tail1->value || tail2->value) continue;
                     if (tail1->candidates.count() != 2) continue;

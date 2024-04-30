@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "solvers/DLX.h"
+#include "solvers/allSolvers.h"
 #include "util.h"
 
 void Grid::updateStrongLinks() {
@@ -319,13 +320,8 @@ Grid::Grid(std::string gridPattern) : Grid() {
 
     updateCandCouldBe();
     updateBiValues();
-    strongLinks.resize(9);
     updateStrongLinks();
     updateGraph();
-    filled.resize(3);
-    for (auto &house : filled) {
-        house.resize(9);
-    }
     updateFilled();
 }
 
@@ -354,11 +350,11 @@ std::string Grid::toString() {
 }
 
 const Inst *Grid::nextStep() {
-    // TODO: call solvers in sequence from easy to hard;
-    // TODO: init infos for solvers
-    updateBiValues();
-    updateStrongLinks();
-    // once find a solution, return it;
+    initInsAndExe();
+    for (auto solver : solvers) {
+        solver(*this);
+        if (!instructions.empty()) break;
+    }
     return &instructions;
 }
 
@@ -387,4 +383,64 @@ void Grid::updateFilled() {
             filled[2][box].set(v);
         }
     }
+}
+
+int Grid::checkDifficulty() {
+    int maxDifficulty = 0;
+
+    while (!completed()) {
+        nextStep();
+        if (instructions.empty()) {
+            return 4;
+        }
+        //DEBUG
+        //debugLog(instructions[0] >> 6, (instructions[0] >>4) &3 , (instructions[0] >>2) &3, instructions[0] &3,"\n");
+        //END DEBUG
+        int difficulty = instructions[0] >> 6;
+        if (maxDifficulty < difficulty) maxDifficulty = difficulty;
+        execute();
+    }
+    return maxDifficulty;
+}
+
+void Grid::execute() {
+
+    if (execution.mode) {
+        for (auto exec : execution.executees) {
+            int x = exec >> 12;
+            int y = (exec >> 8) & 0xf;
+            int target = exec & 0xf;
+            grid[x][y].value = target + 1;
+            grid[x][y].candidates.reset();
+            //debugLog("(",x+1,",",y+1,")=",target+1,"\n");
+            //auto eliminate candidates
+            int box = findBox(x,y);
+            FOR_ALL(index){
+                grid[x][index].candidates.reset(target);
+                grid[index][y].candidates.reset(target);
+                auto pos = convert(box, index, 2);
+                grid[pos.first][pos.second].candidates.reset(target);
+            }
+        }
+
+    } else {
+        for (auto exec : execution.executees) {
+            int x = exec >> 12;
+            int y = (exec >> 8) & 0xf;
+            int target = exec & 0xf;
+            grid[x][y].candidates[target] = false;
+
+            //debugLog("(",x+1,",",y+1,")!=",target+1,"\n");
+        }
+    }
+    updateBiValues();
+    updateStrongLinks();
+    updateGraph();
+    updateFilled();
+}
+bool Grid::completed(){
+    FOR_ALL(i) FOR_ALL(j){
+        if(grid[i][j].value==0) return false;
+    }
+    return true;
 }

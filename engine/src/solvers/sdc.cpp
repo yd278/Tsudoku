@@ -138,7 +138,7 @@ void findSDC(Grid &grid) {
 
                             if(!exes.empty()){
                                 // useful sdq found
-                                grid.addInst(0x92);
+                                grid.addInst(0xB2);
                                 grid.addInst(C.size());
                                 for(auto c : C) grid.addInst(encodePos(c));
                                 auto CRPos = std::get<0>(CR);

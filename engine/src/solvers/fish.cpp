@@ -63,7 +63,7 @@ void findFish(Grid &grid, int order) {
     }
 }
 
-void findFinedFish(Grid &grid, int order) {
+void findFinnedFish(Grid &grid, int order) {
     auto filled = grid.getFilled();
     std::vector<const std::vector<std::vector<int>> *> combos = {
         &ALL_PAIRS, &ALL_TRIPLES, &ALL_QUADRUPLETS};

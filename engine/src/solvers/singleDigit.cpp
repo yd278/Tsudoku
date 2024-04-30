@@ -60,8 +60,18 @@ void findTurbotFish(Grid &grid) {
 
                             // set insts;
                             grid.initInsAndExe();
-                            grid.setExec(false);
 
+                            FOR_ALL(ei) FOR_ALL(ej) {
+                                if (sees(pincer[0], ei, ej) &&
+                                    sees(pincer[1], ei, ej)) {
+                                    if (grid.getCell(ei, ej)
+                                            ->candidates[target]) {
+                                        grid.addExec(encodePos(ei, ej), target);
+                                    }
+                                }
+                            }
+                            grid.setExec(false);
+                            if (grid.emptyExec()) continue;
                             grid.addInst(0x50 + type);
 
                             for (int index : {0, 1})
@@ -70,22 +80,9 @@ void findTurbotFish(Grid &grid) {
                                 grid.addInst(encodePos(pincer[index]));
                             grid.addInst(target);
 
-                            // set exec
-                            bool flag = false;
-                            FOR_ALL(ei) FOR_ALL(ej) {
-                                if (sees(pincer[0], ei, ej) &&
-                                    sees(pincer[1], ei, ej)) {
-                                    if (grid.getCell(ei, ej)
-                                            ->candidates[target]) {
-                                        grid.addExec(encodePos(ei, ej), target);
-                                        flag = true;
-                                    }
-                                }
-                            }
-                            if (flag) {
-                                grid.addExecToInst();
-                                return;
-                            }
+                            grid.sortExec();
+                            grid.addExecToInst();
+                            return;
                         }
                     }
                 }
@@ -96,58 +93,57 @@ void findTurbotFish(Grid &grid) {
 void findEmptyRectangle(Grid &grid) {
     FOR_ALL(target) {
         FOR_ALL(box) {
-
             bool invalid = false;
             int cnt = 0;
-            std::vector<const Cell*> cells;
+            std::vector<const Cell *> cells;
             FOR_ALL(cellId) {
                 auto cell = grid.getCell(2, box, cellId);
                 if (cell->value == target + 1) {
                     invalid = true;
                     break;
                 }
-                if(cell->candidates[target]) cells.push_back(cell);
-                
+                if (cell->candidates[target]) cells.push_back(cell);
             }
-            if(invalid) continue;
+            if (invalid) continue;
             int row, col;
             bool found;
             int rOffset = (box / 3) * 3;
-            int cOffset = (box %3) *3;
-            for (int tRow = rOffset; tRow < rOffset+3; tRow++){
+            int cOffset = (box % 3) * 3;
+            for (int tRow = rOffset; tRow < rOffset + 3; tRow++) {
                 found = false;
-                for (int tCol = cOffset; tCol <cOffset+ 3; tCol++) {
-                    //check if:
-                    //  1. no cells outside tRow and tCol
-                    //  2. at least one more cell in the row and the column
+                for (int tCol = cOffset; tCol < cOffset + 3; tCol++) {
+                    // check if:
+                    //   1. no cells outside tRow and tCol
+                    //   2. at least one more cell in the row and the column
                     bool rowFlag = false;
                     bool colFlag = false;
                     bool outside = false;
-                    for(auto c : cells){
-                        if(c->y!=tCol && c->x!=tRow){
+                    for (auto c : cells) {
+                        if (c->y != tCol && c->x != tRow) {
                             outside = true;
                             break;
                         }
-                        if(c->x!=tRow &&c->y!=tCol){
+                        if (c->x != tRow && c->y != tCol) {
                             outside = true;
                             break;
                         }
-                        if(c->x == tRow && c->y == tCol) continue; //same cell, doesn't count
-                        if(c->x==tRow) rowFlag = true;
-                        if(c->y==tCol) colFlag = true;
+                        if (c->x == tRow && c->y == tCol)
+                            continue;  // same cell, doesn't count
+                        if (c->x == tRow) rowFlag = true;
+                        if (c->y == tCol) colFlag = true;
                     }
 
-                    if(outside) continue; //check next tR and tC
-                    if(rowFlag && colFlag){
+                    if (outside) continue;  // check next tR and tC
+                    if (rowFlag && colFlag) {
                         row = tRow;
-                        col= tCol;
+                        col = tCol;
                         found = true;
                         break;
                     }
                 }
-                if(found) break;
+                if (found) break;
             }
-            if(!found) continue; //empty rectangle not found, check next box
+            if (!found) continue;  // empty rectangle not found, check next box
             // empty rect pattern found:
 
             // try row first;
