@@ -5,7 +5,7 @@
 
 TEST(TestUniqueness, Type1T1) {
     // Uniqueness Test 1: 1/3 in r1c67,r3c67 => r1c6<>1, r1c6<>3
-    Inst inst = {0x60,                          // type indicator
+    Inst inst = {0x90,                          // type indicator
                  0x0f, 0x2f, 0xf5, 0xf6, 0, 2,  // condition
                  0x05, 0x00, 0x05, 0x02};       // executees
     std::vector<uint16_t> executees = {0x0500, 0x0502};
@@ -19,7 +19,7 @@ TEST(TestUniqueness, Type1T1) {
 
 TEST(TestUniqueness, Type1T2) {
     // Uniqueness Test 1: 8/9 in r12 c16 -> r2c1 != 89
-    Inst inst = {0x60,                          // type indicator
+    Inst inst = {0x90,                          // type indicator
                  0x0f, 0x1f, 0xf0, 0xf5, 7, 8,  // condition
                  0x10, 0x07, 0x10, 0x08};       // executees
     std::vector<uint16_t> executees = {0x1007, 0x1008};
@@ -33,7 +33,7 @@ TEST(TestUniqueness, Type1T2) {
 
 TEST(TestUniqueness, Type2T1) {
     // Uniqueness Test 2: 2/8 in r2c28,r3c28 => r3c3,r8c2<>6
-    Inst inst = {0x61,                          // type indicator
+    Inst inst = {0x91,                          // type indicator
                  0xf7, 0xf1, 0x1f, 0x2f, 1, 7, 0xf5, // condition
                  0x22, 0x05, 0x71, 0x05};       // executees
     std::vector<uint16_t> executees = {0x2205, 0x7105};
@@ -47,7 +47,7 @@ TEST(TestUniqueness, Type2T1) {
 
 TEST(TestUniqueness, Type2T2) {
     // Uniqueness Test 2: 1/5 in r1c16,r2c16 => r2c4<>4
-    Inst inst = {0x61,                          // type indicator
+    Inst inst = {0x91,                          // type indicator
                  0x0f, 0x1f, 0xf0, 0xf5, 0, 4,3, // condition
                  0x13, 0x03};                   // executees
     std::vector<uint16_t> executees = {0x1303};
@@ -74,7 +74,7 @@ TEST(TestUniqueness, Type2T2) {
 
 TEST(TestUniqueness, Type3T1) {
     // Uniqueness Test 3: 5/8 in r1c46,r7c46 => r7c8<>1
-    Inst inst = {0x62,                          // type indicator
+    Inst inst = {0x92,                          // type indicator
                  0x0f, 0x6f, 0xf3, 0xf5, 4, 7, 5,0x61,0x64,0x66,0x68, // condition
                  0x67, 0x00};                   // executees
     std::vector<uint16_t> executees = {0x6700};
@@ -101,7 +101,7 @@ TEST(TestUniqueness, Type3T1) {
 
 TEST(TestUniqueness, Type3T2) {
     // Uniqueness Test 3: 1/5 in r4c18,r6c18 => r6c2<>7
-    Inst inst = {0x62,                          // type indicator
+    Inst inst = {0x92,                          // type indicator
                  0xf7, 0xf0, 0x3f, 0x5f, 0, 4,2,0x31,  // condition
                  0x51, 0x06};                   // executees
     std::vector<uint16_t> executees = {0x5106};
@@ -128,7 +128,7 @@ TEST(TestUniqueness, Type3T2) {
 
 TEST(TestUniqueness, Type4T1) {
     // Uniqueness Test 4: 1/2 in r2c23,r5c23 => r2c23<>2
-    Inst inst = {0x63,                          // type indicator
+    Inst inst = {0x93,                          // type indicator
                  0x4f, 0x1f, 0xf1, 0xf2, 0, 1,  // condition
                  0x11, 0x01, 0x12, 0x01};       // executees
     std::vector<uint16_t> executees = {0x1101, 0x1201};
@@ -155,7 +155,7 @@ TEST(TestUniqueness, Type4T1) {
 
 TEST(TestUniqueness, Type4T2) {
     // Uniqueness Test 4: 1/2 in r2c23,r5c23 => r2c23<>2
-    Inst inst = {0x63,                          // type indicator
+    Inst inst = {0x93,                          // type indicator
                  0x4f, 0x1f, 0xf0, 0xf1, 1, 3,  // condition
                  0x10, 0x03, 0x11, 0x03};       // executees
     std::vector<uint16_t> executees = {0x1003, 0x1103};
@@ -182,7 +182,7 @@ TEST(TestUniqueness, Type4T2) {
 
 TEST(TestUniqueness, Type5T1) {
     // Uniqueness Test 5: 8/9 in r2c47,r3c47 => r2c8<>4
-    Inst inst = {0x64,                          // type indicator
+    Inst inst = {0x94,                          // type indicator
                  0x13, 0x16, 0x23, 0x26, 7, 8,3,  // condition
                  0x17, 0x03};                   // executees
     std::vector<uint16_t> executees = {0x1703};
@@ -196,7 +196,7 @@ TEST(TestUniqueness, Type5T1) {
 
 TEST(TestUniqueness, Type5T2) {
     // Uniqueness Test 5: 1/8 in r2c46,r9c46 => r1c6<>5
-    Inst inst = {0x64,                          // type indicator
+    Inst inst = {0x94,                          // type indicator
                  0x13, 0x15, 0x83, 0x85, 0, 7, 4, // condition
                  0x05, 0x04};                   // executees
     std::vector<uint16_t> executees = {0x0504};
@@ -223,7 +223,7 @@ TEST(TestUniqueness, Type5T2) {
 
 TEST(TestUniqueness, HRT1) {
     // //Hidden Rectangle: 2/5 in r4c37,r5c37 => r4c3<>2
-    Inst inst = {0x66,              // type indicator
+    Inst inst = {0x96,              // type indicator
                  0x46, 0x32, 4, 1,  // condition
                  0x32, 0x01};       // executees
     std::vector<uint16_t> executees = {0x3201};
@@ -249,7 +249,7 @@ TEST(TestUniqueness, HRT1) {
 }
 TEST(TestUniqueness, HRT2) {
     // Hidden Rectangle: 1/5 in r1c13,r5c13 => r5c3<>1
-    Inst inst = {0x66,              // type indicator
+    Inst inst = {0x96,              // type indicator
                  0x00, 0x42, 4, 0,  // condition
                  0x42, 0x00};       // executees
     std::vector<uint16_t> executees = {0x4200};
@@ -276,7 +276,7 @@ TEST(TestUniqueness, HRT2) {
 
 TEST(TestUniqueness, ARType1T1) {
     // Avoidable Rectangle Type 1: 8/9 in r5c38,r6c38 => r6c3<>8
-    Inst inst = {0x67,              // type indicator
+    Inst inst = {0x97,              // type indicator
                  0x42, 0x47, 0x57,  // condition
                  0x52, 0x07};       // executees
     std::vector<uint16_t> executees = {0x5207};
@@ -303,7 +303,7 @@ TEST(TestUniqueness, ARType1T1) {
 
 TEST(TestUniqueness, ARType1T2) {
     // Avoidable Rectangle Type 1: 6/2 in r1c14,r3c14 => r1c4<>2
-    Inst inst = {0x67,              // type indicator
+    Inst inst = {0x97,              // type indicator
                  0x00, 0x20, 0x23,  // condition
                  0x03, 0x01};       // executees
     std::vector<uint16_t> executees = {0x0301};
@@ -330,7 +330,7 @@ TEST(TestUniqueness, ARType1T2) {
 
 TEST(TestUniqueness, ARType2T1) {
     // Avoidable Rectangle Type 2: 3/7 in r7c37,r8c37 => r4c3,r78c2<>9
-    Inst inst = {0x68,                                  // type indicator
+    Inst inst = {0x98,                                  // type indicator
                  0x66, 0x76, 0x62, 0x72, 2,    6,   8,  // condition
                  0x32, 0x08, 0x61, 0x08, 0x71, 0x08};   // executees
     std::vector<uint16_t> executees = {0x3208, 0x6108, 0x7108};
@@ -357,7 +357,7 @@ TEST(TestUniqueness, ARType2T1) {
 
 TEST(TestUniqueness, ARType2T2) {
     // Avoidable Rectangle Type 2: 2/8 in r4c37,r5c37 => r18c7,r456c9,r56c8<>9
-    Inst inst = {0x68,                                   // type indicator
+    Inst inst = {0x98,                                   // type indicator
                  0x32, 0x42, 0x36, 0x46, 1,    7,    8,  // condition
                  0x06, 0x08, 0x38, 0x08, 0x47, 0x08, 0x48,
                  0x08, 0x57, 0x08, 0x58, 0x08, 0x76, 0x08};  // executees
@@ -385,7 +385,7 @@ TEST(TestUniqueness, ARType2T2) {
 }
 
 TEST(TestUniqueness, BUGT1) {  // Bivalue Universal Grave + 1 => r5c2=7
-    Inst inst = {0x69,         // type indicator
+    Inst inst = {0x99,         // type indicator
                  0x41, 0x06};  // executees
     std::vector<uint16_t> executees = {0x4106};
     Grid grid(
@@ -409,7 +409,7 @@ TEST(TestUniqueness, BUGT1) {  // Bivalue Universal Grave + 1 => r5c2=7
     EXPECT_EQ(grid.getExec()->executees, executees);
 }
 TEST(TestUniqueness, BUGT2) {  // Bivalue Universal Grave + 1 => r6c2=6
-    Inst inst = {0x69,         // type indicator
+    Inst inst = {0x99,         // type indicator
                  0x51, 0x05};  // executees
     std::vector<uint16_t> executees = {0x5105};
     Grid grid(

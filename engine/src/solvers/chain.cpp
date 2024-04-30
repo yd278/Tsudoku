@@ -290,7 +290,7 @@ void findXChain(Grid& grid) {
         return;
     }
 
-    grid.addInst(0x90);
+    grid.addInst(0x60);
     grid.addInst(shortestChain.size());
     for (auto c : shortestChain) {
         grid.addInst(c);
@@ -358,7 +358,7 @@ void findXYChain(Grid& grid) {
         return;
     }
 
-    grid.addInst(0x91);
+    grid.addInst(0x61);
     grid.addInst(shortestChain.size() / 2);
     for (auto c : shortestChain) {
         grid.addInst(c);

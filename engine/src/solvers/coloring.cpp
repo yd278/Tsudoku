@@ -94,7 +94,7 @@ void conflictFound(Grid &grid, std::vector<uint8_t> &chain, int houseType,
     grid.setExec(false);
     grid.addExec((chain.front() << 8) | target);
 
-    grid.addInst(0x71);
+    grid.addInst(0xE0);
     grid.addInst(target);
     grid.addInst(chain.size());
     for (auto c : chain) grid.addInst(c);

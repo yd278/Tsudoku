@@ -177,7 +177,7 @@ TEST(TestChain, DNL2) {
 }
 
 TEST(TestChain,XChain1){
-    Inst inst = {0x90,  // type
+    Inst inst = {0x60,  // type
                 8,//length
                0x83,0x86,0x16,0x17,0x47,0x41,0x50,0x60,//chain
                1,//target
@@ -192,7 +192,7 @@ TEST(TestChain,XChain1){
     EXPECT_EQ(grid.getExec()->executees, executees);
 }
 TEST(TestChain,XChain2){
-    Inst inst = {0x90,  // type
+    Inst inst = {0x60,  // type
                 6,//length
                0x13,0x17,0x26,0x86,0x84,0x04,//chain
                1,//target
@@ -208,7 +208,7 @@ TEST(TestChain,XChain2){
 }
 
 TEST(TestChain,XYChain1){
-    Inst inst = {0x91,  // type
+    Inst inst = {0x61,  // type
                8, //length
                0x34,0x03,0x34,0x01,0x24,0x01,0x24,0x04,0x27,0x04,0x27,0x05,0x20,0x05,0x20,0x03,//chain
                0x30,0x03//executee
@@ -222,7 +222,7 @@ TEST(TestChain,XYChain1){
     EXPECT_EQ(grid.getExec()->executees, executees);
 }
 TEST(TestChain,XYChain2){
-    Inst inst = {0x91,  // type
+    Inst inst = {0x61,  // type
                 10,//length
                0x40,0x02,0x40,0x04,0x43,0x04,0x43,0x00,0x23,0x00,0x23,0x03,0x21,0x03,0x21,0x04,0x12,0x04,0x12,0x02,//chain
                0x32,0x02//executee

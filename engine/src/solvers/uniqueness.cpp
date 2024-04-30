@@ -35,7 +35,7 @@ void uniquenessTestType1(Grid &grid) {
             if (exec->value) continue;
             if (exec->candCouldBe[x] && exec->candCouldBe[y]) {
                 grid.initInsAndExe();
-                grid.addInst(0x60);
+                grid.addInst(0x90);
                 int row1 = cell->x;
                 int row2 = pincer2->x;
                 if (row1 > row2) std::swap(row1, row2);
@@ -141,7 +141,7 @@ bool checkURType2(Grid &grid, int houseType, int HC0, int HC, int VC1, int VC2,
     if (VC1 > VC2) std::swap(VC1, VC2);
     grid.initInsAndExe();
     grid.setExec(false);
-    grid.addInst(0x61);
+    grid.addInst(0x91);
     grid.addInst(encodeLine(houseType, HC0));
     grid.addInst(encodeLine(houseType, HC));
     grid.addInst(encodeLine(1 - houseType, VC1));
@@ -198,7 +198,7 @@ bool findNakedSubsetByPerm(std::bitset<9> &virtualCell,
                     }
                 }
                 if (!grid.emptyExec()) {
-                    grid.addInst(0x62);
+                    grid.addInst(0x92);
                     grid.addInst(encodeLine(houseType, HC0));
                     grid.addInst(encodeLine(houseType, HC));
                     grid.addInst(encodeLine(1 - houseType, VC1));
@@ -282,7 +282,7 @@ bool checkURType4(Grid &grid, int houseType, int HC0, int HC, int VC1, int VC2,
 
     grid.initInsAndExe();
     grid.setExec(false);
-    grid.addInst(0x63);
+    grid.addInst(0x93);
     grid.addInst(encodeLine(houseType, HC0));
     grid.addInst(encodeLine(houseType, HC));
     grid.addInst(encodeLine(1 - houseType, VC1));
@@ -391,7 +391,7 @@ bool testURType5(Grid &grid, const Cell *cell, const Cell *SR, const Cell *SC,
         grid.addExec(exec, extra);
     }
     if (!grid.emptyExec()) {
-        grid.addInst(0x64);
+        grid.addInst(0x94);
         std::vector<uint8_t> pos;
         pos.push_back(encodePos(cell));
         pos.push_back(encodePos(SR));
@@ -441,7 +441,7 @@ bool testHR(Grid &grid, const Cell *cell, const Cell *SR, const Cell *SC,
         // HR found:
         grid.initInsAndExe();
         grid.addExec(DI, bad);
-        grid.addInst(0x66);
+        grid.addInst(0x96);
         grid.addInst(encodePos(cell));
         grid.addInst(encodePos(DI));
         grid.addInst(good, bad);
@@ -479,7 +479,7 @@ void avoidableRectangle1(Grid &grid) {
                 // AR found
                 grid.initInsAndExe();
                 grid.setExec(false);
-                grid.addInst(0x67);
+                grid.addInst(0x97);
                 std::vector<uint8_t> pos;
                 pos.push_back(encodePos(startCorner));
                 pos.push_back(encodePos(SC));
@@ -554,7 +554,7 @@ void avoidableRectangle2(Grid &grid) {
                     }
 
                     if (!grid.emptyExec()) {
-                        grid.addInst(0x68);
+                        grid.addInst(0x98);
                         grid.addInst(encodePos(baseCorner), encodePos(SR));
                         grid.addInst(encodePos(tail1), encodePos(tail2));
                         if (x > y) std::swap(x, y);
@@ -641,7 +641,7 @@ void bivalueUniversalGraveP1(Grid &grid) {
     // bug find
     grid.initInsAndExe();
     grid.setExec(true);
-    grid.addInst(0x69);
+    grid.addInst(0x99);
     grid.addExec(encodePos(tri), extra);
     grid.addExecToInst();
 }

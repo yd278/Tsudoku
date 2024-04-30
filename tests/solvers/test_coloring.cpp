@@ -40,7 +40,7 @@ TEST(TestColoring, SimpleColoringT2) {
 TEST(TestColoring, SDFT1) {
     //// target: 8, (3,9)(5,4)(2,2)(1,5)(6,8) r9
     Inst inst = {
-        0x71,//type
+        0xE0,//type
         7,//target
         4,//length
         0x13,0x48,0x20,0x06,//chain
@@ -59,7 +59,7 @@ TEST(TestColoring, SDFT1) {
 TEST(TestColoring, SDFT2) {
     ////target: 5, (1,9),(3,2),(2,6) row 7
     Inst inst = {
-        0x71,//type
+        0xE0,//type
         4,//target
         3,//length
         0x08,0x21,0x15,//chain
@@ -78,7 +78,7 @@ TEST(TestColoring, SDFT2) {
 TEST(TestColoring, SDFT3) {
     ////target 1: (37),(22)(15)(96)(61) b7
     Inst inst = {
-        0x71,//type
+        0xE0,//type
         0,//target
         5,//length
         0x26,0x11,0x04,0x85,0x50,//chain
