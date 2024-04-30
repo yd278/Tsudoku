@@ -55,8 +55,12 @@ class Grid {
     std::vector<std::vector<std::vector<const Cell*>>> biValuesByCands;
     Inst instructions;
     Exec execution;
+    bool completed();
+    void execute();
 
    public:
+
+    int checkDifficulty();
     inline void sortExec() {
         sort(execution.executees.begin(), execution.executees.end());
         auto it = std::unique (execution.executees.begin(), execution.executees.end());

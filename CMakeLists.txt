@@ -49,6 +49,7 @@ set(HEADER_FILES
     engine/includes/solvers/coloring.h
     engine/includes/solvers/chain.h
     engine/includes/solvers/sdc.h
+    engine/includes/solvers/allSolvers.h
 )
 
 add_library(${PROJECT_NAME} SHARED ${SOURCE_FILES} ${HEADER_FILES} ${CMAKE_JS_SRC})
