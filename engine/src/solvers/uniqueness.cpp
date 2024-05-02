@@ -236,7 +236,7 @@ bool checkURType3(Grid &grid, int houseType, int HC0, int HC, int VC1, int VC2,
         if (tail1->candidates[cand] || tail2->candidates[cand])
             virtualCell[cand] = true;
     }
-
+    if(virtualCell.count()<=1) return false;
     if (findNakedSubsetByPerm(virtualCell, virtualLine, grid, houseType, HC0,
                               HC, VC1, VC2, x, y))
         return true;
@@ -258,18 +258,17 @@ bool checkURType3(Grid &grid, int houseType, int HC0, int HC, int VC1, int VC2,
 bool checkURType4(Grid &grid, int houseType, int HC0, int HC, int VC1, int VC2,
                   int x, int y, bool URCondition, const Cell *tail1,
                   const Cell *tail2) {
-    // FIXME: totally wrong
     int box = findBox(tail1);
     std::bitset<9> mask;
     FOR_ALL(index) {
         auto cell = grid.getCell(houseType, HC, index);
-        if (cell->value) continue;
+        if (cell->value) mask[cell->value-1]= true;
         if (cell == tail1 || cell == tail2) continue;
         mask = mask | cell->candidates;
     }
     if (URCondition) FOR_ALL(index) {
             auto cell = grid.getCell(2, box, index);
-            if (cell->value) continue;
+            if (cell->value) mask[cell->value-1]= true;
             if (cell == tail1 || cell == tail2) continue;
             mask = mask | cell->candidates;
         }
@@ -426,7 +425,7 @@ bool testHR(Grid &grid, const Cell *cell, const Cell *SR, const Cell *SC,
         FOR_ALL(index) {
             auto test = grid.getCell(index, col);
             if (test == SR || test == DI) continue;
-            if (test->candidates[good]) {
+            if (test->candidates[good]||test->value==good+1) {
                 notAHR = true;
                 break;
             };

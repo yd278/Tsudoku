@@ -155,7 +155,7 @@ std::string solve(std::string puzzle) {
     try {
         dlx.dance(0);
     } catch (std::invalid_argument &e) {
-        throw;
+        throw std::invalid_argument(format(dlx));
     }
     if (dlx.flag)
         return format(dlx);

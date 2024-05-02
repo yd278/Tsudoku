@@ -2,6 +2,7 @@
 
 #include <bitset>
 #include <map>
+#include <random>
 #include <utility>
 #include <vector>
 
@@ -11,6 +12,10 @@
 
 void Grid::updateStrongLinks() {
     for (auto &row : strongLinks) row.clear();
+    FOR_ALL(i) FOR_ALL(j){
+        auto &SL = grid[i][j].SL;
+        std::fill(SL.begin(),SL.end(),nullptr);
+    }
     for (int houseType : {0, 1, 2}) {
         FOR_ALL(houseID) {
             FOR_ALL(target) {
@@ -137,8 +142,7 @@ bool Grid::checkWrongCandidates() {
     }
     return true;
 }
-
-void Grid::uniqueness() {
+std::string Grid::compress() {
     std::string compressed = "";
     for (int i = 0; i < 9; i++) {
         for (int j = 0; j < 9; j++) {
@@ -149,13 +153,27 @@ void Grid::uniqueness() {
             }
         }
     }
+    return compressed;
+}
+void Grid::uniqueness(bool keepIt) {
+    std::string compressed = compress();
 
     std::string res;
     try {
-        // will throw exception if there are more than one solution
+        // will throw exception if there are more tsan one solution
+        // debugLog("launching DLX solver with string:\n");
+        // debugLog(compressed, "\n");
         res = solve(compressed);
+        // debugLog("result get\n");
     } catch (std::invalid_argument &e) {
-        throw;
+        if (std::strcmp(e.what(), "No Solution") == 0)
+            throw;
+        else
+            res = e.what();
+        if (keepIt) FOR_ALL(i) FOR_ALL(j) {
+                grid[i][j].ans = res[i * 9 + j] - '0';
+            }
+        throw std::invalid_argument("multiple solutions");
     }
     for (int i = 0; i < 9; i++) {
         for (int j = 0; j < 9; j++) {
@@ -294,7 +312,20 @@ Grid::Grid()
       strongLinks(9),
       filled(3, std::vector<std::bitset<9>>(9)),
       biValuesByCands(9, std::vector<std::vector<const Cell *>>(
-                             9, std::vector<const Cell *>(9))) {}
+                             9, std::vector<const Cell *>(9))),
+      distr(0, 8) {
+    FOR_ALL(i) FOR_ALL(j) {
+        grid[i][j].x = i;
+        grid[i][j].y = j;
+    }
+
+    if (rd.entropy() != 0) {
+        seed = rd();
+    } else {
+        seed = std::chrono::system_clock::now().time_since_epoch().count();
+    }
+    gen.seed(seed);
+}
 Grid::Grid(std::string gridPattern) : Grid() {
     try {
         checkAndFill(gridPattern);
@@ -311,13 +342,6 @@ Grid::Grid(std::string gridPattern) : Grid() {
     if (!checkMissingCandidates())
         throw std::invalid_argument("Missing candidates");
 
-    for (int i = 0; i < 9; i++) {
-        for (int j = 0; j < 9; j++) {
-            grid[i][j].x = i;
-            grid[i][j].y = j;
-        }
-    }
-
     updateCandCouldBe();
     updateBiValues();
     updateStrongLinks();
@@ -325,20 +349,65 @@ Grid::Grid(std::string gridPattern) : Grid() {
     updateFilled();
 }
 
-Grid::Grid(int difficulty) {
-    grid.resize(9);
-    for (auto &row : grid) row.resize(9);
-
+Grid::Grid(int difficulty) : Grid() {
     // TODO: generate sudoku of given difficulty
     // NOTE: during nextStep() and execution, if a value is set, elinimate all
     // the same candidates see that.
+
+    int MAX_TRAIL = 100000;
+    int cnt = 0;
+    while (cnt < MAX_TRAIL) {
+        cnt++;
+        debugLog("try generate full board\n");
+        if (!generateFullBoard()) continue;
+
+        debugLog("try dig hole\n");
+        digHoles();
+
+        FOR_ALL(x) FOR_ALL(y) {
+            if (grid[x][y].given) continue;
+            grid[x][y].candCouldBe.set();
+            grid[x][y].value = 0;
+        }
+        debugLog("try checking difficulty\n");
+        debugLog("with grid ", toString().substr(0, 81), "\n");
+
+        // debugLog("print all values:\n");
+        // FOR_ALL(i){
+        //     FOR_ALL(j) debugLog(grid[i][j].value);
+        //     debugLog("\n");
+        // }
+        // debugLog("\nprint all CCB before update\n");
+        // FOR_ALL(i) FOR_ALL(j) {
+        //     debugLog(grid[i][j].candCouldBe.to_string(),"\n");
+        // }
+        updateCandCouldBe();
+        FOR_ALL(i) FOR_ALL(j) {
+            grid[i][j].candidates = grid[i][j].candCouldBe;
+            // debugLog(grid[i][j].candidates.to_string(),"\n");
+        }
+
+        updateBiValues();
+        updateStrongLinks();
+        updateGraph();
+        updateFilled();
+
+        debugLog("the test string is:\n");
+        debugLog(toTestString(),"\n");
+        int d = checkDifficulty();
+
+        debugLog("difficulty is ", d, "\n");
+        if (d == difficulty) {
+            return;
+        }
+    }
 }
 
 std::string Grid::toString() {
     std::string res = "";
     for (int i = 0; i < 9; i++) {
         for (int j = 0; j < 9; j++) {
-            res += grid[i][j].value + '0';
+            res += (grid[i][j].given ? grid[i][j].value : 0) + '0';
         }
     }
     for (int i = 0; i < 9; i++) {
@@ -384,18 +453,29 @@ void Grid::updateFilled() {
         }
     }
 }
-
+std::string Grid::toTestString() {
+    std::string res = "";
+    FOR_ALL(i) FOR_ALL(j) {
+        auto cell = getCell(i, j);
+        res += cell->given ? "1" : "0";
+        res += cell->value + '0';
+        FOR_ALL(cand) res += cell->candidates[cand]?"1":"0";
+        res += cell->ans + '0';
+    }
+    return res;
+}
 int Grid::checkDifficulty() {
     int maxDifficulty = 0;
-
     while (!completed()) {
+        // debugLog("try find nextStep\n");
         nextStep();
         if (instructions.empty()) {
             return 4;
         }
-        //DEBUG
-        //debugLog(instructions[0] >> 6, (instructions[0] >>4) &3 , (instructions[0] >>2) &3, instructions[0] &3,"\n");
-        //END DEBUG
+        // DEBUG
+        //    debugLog(instructions[0] >> 6, (instructions[0] >> 4) & 3,
+        //             (instructions[0] >> 2) & 3, instructions[0] & 3, "\n");
+        // END DEBUG
         int difficulty = instructions[0] >> 6;
         if (maxDifficulty < difficulty) maxDifficulty = difficulty;
         execute();
@@ -404,7 +484,6 @@ int Grid::checkDifficulty() {
 }
 
 void Grid::execute() {
-
     if (execution.mode) {
         for (auto exec : execution.executees) {
             int x = exec >> 12;
@@ -412,10 +491,10 @@ void Grid::execute() {
             int target = exec & 0xf;
             grid[x][y].value = target + 1;
             grid[x][y].candidates.reset();
-            //debugLog("(",x+1,",",y+1,")=",target+1,"\n");
-            //auto eliminate candidates
-            int box = findBox(x,y);
-            FOR_ALL(index){
+            // debugLog("(", x + 1, ",", y + 1, ")=", target + 1, "\n");
+            //  auto eliminate candidates
+            int box = findBox(x, y);
+            FOR_ALL(index) {
                 grid[x][index].candidates.reset(target);
                 grid[index][y].candidates.reset(target);
                 auto pos = convert(box, index, 2);
@@ -430,7 +509,7 @@ void Grid::execute() {
             int target = exec & 0xf;
             grid[x][y].candidates[target] = false;
 
-            //debugLog("(",x+1,",",y+1,")!=",target+1,"\n");
+            // debugLog("(", x + 1, ",", y + 1, ")!=", target + 1, "\n");
         }
     }
     updateBiValues();
@@ -438,9 +517,124 @@ void Grid::execute() {
     updateGraph();
     updateFilled();
 }
-bool Grid::completed(){
-    FOR_ALL(i) FOR_ALL(j){
-        if(grid[i][j].value==0) return false;
+bool Grid::completed() {
+    FOR_ALL(i) FOR_ALL(j) {
+        if (grid[i][j].value == 0) return false;
     }
     return true;
+}
+
+bool Grid::generateFullBoard() {
+    FOR_ALL(i) FOR_ALL(j) {
+        grid[i][j].value = 0;
+        grid[i][j].given = false;
+        grid[i][j].ans = 0;
+        grid[i][j].candidates.reset();
+        grid[i][j].candCouldBe.set();
+    }
+    int hintCnt = 0;
+    // debugLog("init grid done\n");
+
+    std::vector<int> perm(81);
+    for (int i = 0; i < 81; i++) {
+        perm[i] = i;
+    }
+    std::vector<int> cands(9);
+    int flag = false;
+    for (int i = 0; i < 9; i++) cands[i] = i;
+
+    std::shuffle(perm.begin(), perm.end(), gen);
+    for (auto p : perm) {
+        int i = p / 9;
+        int j = p % 9;
+
+        // debugLog("try putting numbers in (", i, ",", j, ")\n");
+
+        std::shuffle(cands.begin(), cands.end(), gen);
+
+        hintCnt++;
+        for (auto target : cands) {
+            //  debugLog("try putting target:", target, "\n");
+            int box = findBox(i, j);
+            bool valid = true;
+            FOR_ALL(index) {
+                if (grid[i][index].value == target + 1) {
+                    valid = false;
+                    break;
+                }
+                if (grid[index][j].value == target + 1) {
+                    valid = false;
+                    break;
+                }
+                if (getCell(2, box, index)->value == target + 1) {
+                    valid = false;
+                    break;
+                }
+            }
+            if (!valid) continue;
+
+            grid[i][j].value = target + 1;
+            grid[i][j].given = true;
+            // debugLog("hintCnt = ",hintCnt,"\n");
+            if (hintCnt >= 17) {
+                try {
+                    uniqueness(true);
+                    FOR_ALL(ti) FOR_ALL(tj) {
+                        grid[ti][tj].value = grid[ti][tj].ans;
+                        grid[ti][tj].given = true;
+                        debugLog("generated full grid:\n");
+                        debugLog(toString().substr(0, 81));
+                    }
+                    return true;
+                } catch (const std::invalid_argument &e) {
+                    if (std::strcmp(e.what(), "No Solution") == 0) {
+                        if (flag) {
+                            // debugLog("No Solution, use previous ans\n");
+                            FOR_ALL(ti) FOR_ALL(tj) {
+                                grid[ti][tj].value = grid[ti][tj].ans;
+                                grid[ti][tj].given = true;
+                            }
+                            return true;
+                        } else {
+                            // debugLog("No Solution at first, return false\n");
+                            return false;
+                        }
+                    } else {
+                        // debugLog("multiple solutions found, record that and
+                        // keep going on\n");
+                        flag = true;
+                        break;
+                    }
+                }
+            }
+        }
+    }
+    return false;
+}
+
+void Grid::digHoles() {
+    std::vector<int> perm(81);
+    for (int i = 0; i < 81; i++) {
+        perm[i] = i;
+    }
+    std::shuffle(perm.begin(), perm.end(), gen);
+    for (auto i : perm) {
+        int x = i / 9;
+        int y = i % 9;
+
+        // debugLog("making (", x, ",", y, ")empty\n");
+        grid[x][y].given = false;
+        grid[x][y].value = 0;
+        try {
+            // debugLog("checking uniqueness for now\n");
+            uniqueness();
+            // debugLog("still have unique solutions, keep on digging\n");
+
+        } catch (const std::invalid_argument &e) {
+            grid[x][y].given = true;
+            grid[x][y].value = grid[x][y].ans;
+            // debugLog("multiple solutions found, roll back!\n");
+        }
+    }
+    // debugLog("all cells are digged\n");
 }

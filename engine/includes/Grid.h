@@ -4,6 +4,7 @@
 #include <_types/_uint16_t.h>
 
 #include <bitset>
+#include <random>
 #include <string>
 #include <vector>
 typedef std::vector<uint8_t> Inst;
@@ -24,30 +25,41 @@ struct Exec {
         return mode == other.mode && executees == other.executees;
     }
 };
-struct Node{
+struct Node {
     int index;
     bool state;
     int target;
-    int x,y;
+    int x, y;
     std::vector<int> edges;
 };
 class Grid {
    private:
+    std::random_device rd;
+    unsigned seed;
     std::vector<std::vector<Cell>> grid;
 
-   std::vector<std::vector<std::bitset<9>>> filled;
+    std::mt19937 gen;
 
+    std::uniform_int_distribution<> distr;
+    std::vector<std::vector<std::bitset<9>>> filled;
 
+    std::string compress();
     void checkAndFill(std::string gridPattern);
     bool checkWrongValues();
     bool checkMissingCandidates();
     bool checkWrongCandidates();
-    void uniqueness();
+    void uniqueness(bool keepIt = false);
     void updateCandCouldBe();
     void updateGraph();
     void updateBiValues();
     void updateStrongLinks();
     void updateFilled();
+    std::string toTestString();
+    // to generate a board that every value are given
+    bool generateFullBoard();
+    // to set some value not given and check it still has unique solutions
+    void digHoles();
+
     std::vector<Node> nodes;
 
     std::vector<std::vector<std::pair<const Cell*, const Cell*>>> strongLinks;
@@ -59,12 +71,13 @@ class Grid {
     void execute();
 
    public:
-
     int checkDifficulty();
     inline void sortExec() {
         sort(execution.executees.begin(), execution.executees.end());
-        auto it = std::unique (execution.executees.begin(), execution.executees.end());
-        execution.executees.resize( std::distance(execution.executees.begin(),it) );
+        auto it =
+            std::unique(execution.executees.begin(), execution.executees.end());
+        execution.executees.resize(
+            std::distance(execution.executees.begin(), it));
     }
     inline void addExecToInst() {
         for (auto exe : execution.executees) {
@@ -73,8 +86,10 @@ class Grid {
         }
     }
     template <typename... Args>
-    void addInst(Args... args){(void)std::initializer_list<int>{(instructions.push_back(args), 0)...};}
-    void addInst(uint8_t inst){instructions.push_back(inst);}
+    void addInst(Args... args) {
+        (void)std::initializer_list<int>{(instructions.push_back(args), 0)...};
+    }
+    void addInst(uint8_t inst) { instructions.push_back(inst); }
     inline void addExec(uint16_t exec) { execution.executees.push_back(exec); }
     inline void addExec(uint8_t pos, uint8_t cand) {
         execution.executees.push_back((pos << 8) | cand);
@@ -89,18 +104,14 @@ class Grid {
     inline auto getStrongLinks() const -> const decltype(strongLinks)* {
         return &strongLinks;
     }
-    inline auto getFilled() const -> const decltype(filled)* {
-        return &filled;
-    }
+    inline auto getFilled() const -> const decltype(filled)* { return &filled; }
     inline auto getBiValues() const -> const decltype(biValues)* {
         return &biValues;
     }
     inline auto getBiValuesByCands() const -> const decltype(biValuesByCands)* {
         return &biValuesByCands;
     }
-    inline auto getGraph() const -> const decltype(nodes)* {
-        return &nodes;
-    }
+    inline auto getGraph() const -> const decltype(nodes)* { return &nodes; }
     Grid();
     Grid(int difficulty);
     Grid(std::string gridPattern);

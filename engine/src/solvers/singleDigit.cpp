@@ -93,18 +93,13 @@ void findTurbotFish(Grid &grid) {
 void findEmptyRectangle(Grid &grid) {
     FOR_ALL(target) {
         FOR_ALL(box) {
-            bool invalid = false;
+            if(grid.getFilled()->at(2)[box][target])continue;
             int cnt = 0;
             std::vector<const Cell *> cells;
             FOR_ALL(cellId) {
                 auto cell = grid.getCell(2, box, cellId);
-                if (cell->value == target + 1) {
-                    invalid = true;
-                    break;
-                }
                 if (cell->candidates[target]) cells.push_back(cell);
             }
-            if (invalid) continue;
             int row, col;
             bool found;
             int rOffset = (box / 3) * 3;
@@ -120,10 +115,6 @@ void findEmptyRectangle(Grid &grid) {
                     bool outside = false;
                     for (auto c : cells) {
                         if (c->y != tCol && c->x != tRow) {
-                            outside = true;
-                            break;
-                        }
-                        if (c->x != tRow && c->y != tCol) {
                             outside = true;
                             break;
                         }
