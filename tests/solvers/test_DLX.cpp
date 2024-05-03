@@ -7,7 +7,7 @@ TEST(DLXExceptionTest,MultipleSolutionDetection){
     solve("010000000300900020005000007020040003038020150400050060200000900009008002000000030");
     FAIL() << "Cannot catch multiple solution";
     } catch (std::invalid_argument const &e) {
-        EXPECT_STREQ(e.what(), "multiple solutions");
+        EXPECT_EQ(std::strlen(e.what()),81);
     } catch(...){
         FAIL() << "Caught unexpected exception type";
     }
@@ -29,7 +29,7 @@ TEST(DLXExceptionTest,NoSolutionDetection){
     solve("010000000300960020005000017020040003038020150400050060200000900049078002000000030");
     FAIL() << "Cannot catch no solution";
     } catch (std::invalid_argument const &e) {
-        EXPECT_EQ(std::strlen(e.what()),81);
+        EXPECT_STREQ(e.what(), "No Solution");
     } catch(...){
         FAIL() << "Caught unexpected exception type";
     }

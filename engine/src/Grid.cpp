@@ -160,11 +160,7 @@ void Grid::uniqueness(bool keepIt) {
 
     std::string res;
     try {
-        // will throw exception if there are more tsan one solution
-        // debugLog("launching DLX solver with string:\n");
-        // debugLog(compressed, "\n");
         res = solve(compressed);
-        // debugLog("result get\n");
     } catch (std::invalid_argument &e) {
         if (std::strcmp(e.what(), "No Solution") == 0)
             throw;
@@ -246,24 +242,7 @@ void Grid::updateGraph() {
         int xn = lookup[std::make_pair(bv, x)];
         int yn = lookup[std::make_pair(bv, y)];
         nodes[xn].edges.push_back(yn + cnt);
-        // // DEBUG
-        // auto from = nodes[xn];
-        // auto to = nodes[yn + cnt];
-        // debugLog("(", from.x, ",", from.y, ",", from.target, ",", from.state,
-        //          ") -> ");
-        // debugLog("(", to.x, ",", to.y, ",", to.target, ",", to.state, ") \n
-        // ");
-        // // END DEBUG
         nodes[yn].edges.push_back(xn + cnt);
-
-        // // DEBUG
-        // from = nodes[yn];
-        // to = nodes[xn + cnt];
-        // debugLog("(", from.x, ",", from.y, ",", from.target, ",", from.state,
-        //          ") -> ");
-        // debugLog("(", to.x, ",", to.y, ",", to.target, ",", to.state, ") \n
-        // ");
-        // // END DEBUG
     }
 
     // week links
@@ -278,14 +257,6 @@ void Grid::updateGraph() {
                 if (other_target == target) continue;
                 int other = lookup[std::make_pair(cell, other_target)];
                 nodes[cur].edges.push_back(other);
-                // // DEBUG
-                // auto from = nodes[cur];
-                // auto to = nodes[other];
-                // debugLog("(", from.x, ",", from.y, ",", from.target, ",",
-                //          from.state, ") -> ");
-                // debugLog("(", to.x, ",", to.y, ",", to.target, ",", to.state,
-                //          ") \n ");
-                // // END DEBUG
             }
             // different cell:
             FOR_ALL(oi) FOR_ALL(oj) {
@@ -294,14 +265,6 @@ void Grid::updateGraph() {
                 if (other->candidates[target]) {
                     int oth = lookup[std::make_pair(other, target)];
                     nodes[cur].edges.push_back(oth);
-                    // // DEBUG
-                    // auto from = nodes[cur];
-                    // auto to = nodes[oth];
-                    // debugLog("(", from.x, ",", from.y, ",", from.target, ",",
-                    //          from.state, ") -> ");
-                    // debugLog("(", to.x, ",", to.y, ",", to.target, ",",
-                    //          to.state, ") \n ");
-                    // // END DEBUG
                 }
             }
         }
@@ -358,10 +321,7 @@ Grid::Grid(int difficulty) : Grid() {
     int cnt = 0;
     while (cnt < MAX_TRAIL) {
         cnt++;
-        debugLog("try generate full board\n");
         if (!generateFullBoard()) continue;
-
-        debugLog("try dig hole\n");
         digHoles();
 
         FOR_ALL(x) FOR_ALL(y) {
@@ -369,22 +329,9 @@ Grid::Grid(int difficulty) : Grid() {
             grid[x][y].candCouldBe.set();
             grid[x][y].value = 0;
         }
-        debugLog("try checking difficulty\n");
-        debugLog("with grid ", toString().substr(0, 81), "\n");
-
-        // debugLog("print all values:\n");
-        // FOR_ALL(i){
-        //     FOR_ALL(j) debugLog(grid[i][j].value);
-        //     debugLog("\n");
-        // }
-        // debugLog("\nprint all CCB before update\n");
-        // FOR_ALL(i) FOR_ALL(j) {
-        //     debugLog(grid[i][j].candCouldBe.to_string(),"\n");
-        // }
         updateCandCouldBe();
         FOR_ALL(i) FOR_ALL(j) {
             grid[i][j].candidates = grid[i][j].candCouldBe;
-            // debugLog(grid[i][j].candidates.to_string(),"\n");
         }
 
         updateBiValues();
@@ -392,11 +339,8 @@ Grid::Grid(int difficulty) : Grid() {
         updateGraph();
         updateFilled();
 
-        debugLog("the test string is:\n");
-        debugLog(toTestString(),"\n");
         int d = checkDifficulty();
 
-        debugLog("difficulty is ", d, "\n");
         if (d == difficulty) {
             return;
         }
@@ -467,15 +411,10 @@ std::string Grid::toTestString() {
 int Grid::checkDifficulty() {
     int maxDifficulty = 0;
     while (!completed()) {
-        // debugLog("try find nextStep\n");
         nextStep();
         if (instructions.empty()) {
             return 4;
         }
-        // DEBUG
-        //    debugLog(instructions[0] >> 6, (instructions[0] >> 4) & 3,
-        //             (instructions[0] >> 2) & 3, instructions[0] & 3, "\n");
-        // END DEBUG
         int difficulty = instructions[0] >> 6;
         if (maxDifficulty < difficulty) maxDifficulty = difficulty;
         execute();
@@ -491,7 +430,6 @@ void Grid::execute() {
             int target = exec & 0xf;
             grid[x][y].value = target + 1;
             grid[x][y].candidates.reset();
-            // debugLog("(", x + 1, ",", y + 1, ")=", target + 1, "\n");
             //  auto eliminate candidates
             int box = findBox(x, y);
             FOR_ALL(index) {
@@ -508,8 +446,6 @@ void Grid::execute() {
             int y = (exec >> 8) & 0xf;
             int target = exec & 0xf;
             grid[x][y].candidates[target] = false;
-
-            // debugLog("(", x + 1, ",", y + 1, ")!=", target + 1, "\n");
         }
     }
     updateBiValues();
@@ -533,7 +469,6 @@ bool Grid::generateFullBoard() {
         grid[i][j].candCouldBe.set();
     }
     int hintCnt = 0;
-    // debugLog("init grid done\n");
 
     std::vector<int> perm(81);
     for (int i = 0; i < 81; i++) {
@@ -548,13 +483,11 @@ bool Grid::generateFullBoard() {
         int i = p / 9;
         int j = p % 9;
 
-        // debugLog("try putting numbers in (", i, ",", j, ")\n");
 
         std::shuffle(cands.begin(), cands.end(), gen);
 
         hintCnt++;
         for (auto target : cands) {
-            //  debugLog("try putting target:", target, "\n");
             int box = findBox(i, j);
             bool valid = true;
             FOR_ALL(index) {
@@ -575,33 +508,26 @@ bool Grid::generateFullBoard() {
 
             grid[i][j].value = target + 1;
             grid[i][j].given = true;
-            // debugLog("hintCnt = ",hintCnt,"\n");
             if (hintCnt >= 17) {
                 try {
                     uniqueness(true);
                     FOR_ALL(ti) FOR_ALL(tj) {
                         grid[ti][tj].value = grid[ti][tj].ans;
                         grid[ti][tj].given = true;
-                        debugLog("generated full grid:\n");
-                        debugLog(toString().substr(0, 81));
                     }
                     return true;
                 } catch (const std::invalid_argument &e) {
                     if (std::strcmp(e.what(), "No Solution") == 0) {
                         if (flag) {
-                            // debugLog("No Solution, use previous ans\n");
                             FOR_ALL(ti) FOR_ALL(tj) {
                                 grid[ti][tj].value = grid[ti][tj].ans;
                                 grid[ti][tj].given = true;
                             }
                             return true;
                         } else {
-                            // debugLog("No Solution at first, return false\n");
                             return false;
                         }
                     } else {
-                        // debugLog("multiple solutions found, record that and
-                        // keep going on\n");
                         flag = true;
                         break;
                     }
@@ -622,19 +548,14 @@ void Grid::digHoles() {
         int x = i / 9;
         int y = i % 9;
 
-        // debugLog("making (", x, ",", y, ")empty\n");
         grid[x][y].given = false;
         grid[x][y].value = 0;
         try {
-            // debugLog("checking uniqueness for now\n");
             uniqueness();
-            // debugLog("still have unique solutions, keep on digging\n");
 
         } catch (const std::invalid_argument &e) {
             grid[x][y].given = true;
             grid[x][y].value = grid[x][y].ans;
-            // debugLog("multiple solutions found, roll back!\n");
         }
     }
-    // debugLog("all cells are digged\n");
 }
