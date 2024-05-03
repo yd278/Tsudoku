@@ -1,30 +1,51 @@
 <script setup lang="ts">
-import HelloWorld from './components/HelloWorld.vue'
 </script>
 
 <template>
-  <div>
-    <a href="https://electron-vite.github.io" target="_blank">
-      <img src="/electron-vite.svg" class="logo" alt="Vite logo" />
-    </a>
-    <a href="https://vuejs.org/" target="_blank">
-      <img src="./assets/vue.svg" class="logo vue" alt="Vue logo" />
-    </a>
+  <div id = "root">
+    <div id="edit-options">Edit Options</div>
+    <div id = "play-ground">
+      <div id = "main-area">
+        <div id="board">Board</div>
+        <div id="selection">Selection</div>
+      </div>
+      <div id = "extra-tools">Extra Tools</div>
+    </div>
   </div>
-  <HelloWorld msg="Vite + Vue" />
 </template>
 
 <style scoped>
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
+#root {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
 }
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
+#edit-options{
+  padding: 10px;
+  background-color: yellow;
+  text-align: center;
 }
-.logo.vue:hover {
-  filter: drop-shadow(0 0 2em #42b883aa);
+#play-ground{
+  display: flex;
+  flex:1;
+}
+#main-area{
+  display: flex;
+  flex: 3;
+  flex-direction: column;
+}
+#extra-tools {
+  flex: 1;
+  background-color: #e91e63; /* Pink */
+  padding: 20px;
+}
+#board {
+  flex:7;
+  background-color: #8bc34a; /* Light Green */
+  padding: 20px;
+}
+#selection{
+  flex :1;
+  background-color: yellow;
 }
 </style>
