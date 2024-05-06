@@ -18,34 +18,33 @@
 #root {
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  flex-grow: 1;
+  padding: 20px;
 }
 #edit-options{
-  padding: 10px;
   background-color: yellow;
+  height: 50px;
   text-align: center;
 }
 #play-ground{
   display: flex;
-  flex:1;
+  flex-grow: 1;
 }
 #main-area{
   display: flex;
-  flex: 3;
+  flex-grow: 1;
   flex-direction: column;
 }
 #extra-tools {
-  flex: 1;
+  width: 300px;
   background-color: #e91e63; /* Pink */
-  padding: 20px;
 }
 #board {
-  flex:7;
+  flex-grow: 1;
   background-color: #8bc34a; /* Light Green */
-  padding: 20px;
 }
 #selection{
-  flex :1;
+  height: 75px;
   background-color: yellow;
 }
 </style>
