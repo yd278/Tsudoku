@@ -1,9 +1,12 @@
 <script setup lang="ts">
+import editWrapper from './components/edit-options/edit-wrapper.vue';
 </script>
 
 <template>
   <div id = "root">
-    <div id="edit-options">Edit Options</div>
+    <div id="edit-options">
+      <editWrapper></editWrapper>
+    </div>
     <div id = "play-ground">
       <div id = "main-area">
         <div id="board">Board</div>
@@ -22,7 +25,6 @@
   padding: 2px;
 }
 #edit-options{
-  background-color: yellow;
   height: 50px;
   text-align: center;
 }
