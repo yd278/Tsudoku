@@ -19,7 +19,7 @@
   display: flex;
   flex-direction: column;
   flex-grow: 1;
-  padding: 20px;
+  padding: 2px;
 }
 #edit-options{
   background-color: yellow;
