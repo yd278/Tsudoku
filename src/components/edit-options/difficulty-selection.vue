@@ -1,10 +1,7 @@
 <script setup lang="ts">
 import { DropdownOption, NButton, NDropdown } from 'naive-ui';
 import { ref } from 'vue'
-components: {
-      NDropdown
-    }
-const difficulty = ref('Easy');
+const difficulty = ref('Difficulty');
 const options = [
     {
         label: 'Easy',
@@ -40,6 +37,7 @@ const handleSelect = (_: string | number, option: DropdownOption):void  =>  {
 </template>
 <style scoped>
 .n-button{
-    width: 120px;
+    width: 100px;
+    padding:0;
 }
 </style>

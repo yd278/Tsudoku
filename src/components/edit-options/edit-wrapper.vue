@@ -1,16 +1,12 @@
 <script setup lang="ts">
 import difficultySelection from './difficulty-selection.vue';
-
-  import { NButton } from 'naive-ui'
-  components: {
-      NButton
-    }
+import newGameButton from './new-game-button.vue'
 </script>
 
 <template>
 <div id="edit-wrapper">
-    <n-button> New Game</n-button>  
-    <div>difficulty <difficultySelection></difficultySelection> </div>
+    <newGameButton> </newGameButton>
+    <difficultySelection></difficultySelection>
 </div>
 </template>
 
@@ -18,5 +14,7 @@ import difficultySelection from './difficulty-selection.vue';
 #edit-wrapper{
   display: flex;
   justify-content: flex-start;
+  gap:10px;
+  align-item:center;
 }
 </style>
