@@ -25,7 +25,7 @@ function createWindow() {
       preload: path.join(__dirname, 'preload.js'),
     },
     minWidth:1200,
-    minHeight:900,
+    minHeight:800,
   })
 
   // Test active push message to Renderer-process.

@@ -1,20 +1,27 @@
 <script setup lang="ts">
-import difficultySelection from './difficulty-selection.vue';
-import newGameButton from './new-game-button.vue'
+import DifficultySelection from './difficulty-selection.vue';
+import NewGameButton from './new-game-button.vue'
+import { NDivider } from 'naive-ui';
+import undo from './undo.vue';
+import redo from './redo.vue'
 </script>
 
 <template>
-<div id="edit-wrapper">
-    <newGameButton> </newGameButton>
-    <difficultySelection></difficultySelection>
-</div>
+  <div id="edit-wrapper">
+    <NewGameButton @click="$emit('new-game-button-clicked')" />
+    <DifficultySelection @select="(d) => $emit('selectDifficulty', d)" />
+    <n-divider vertical />
+    <undo />
+    <redo />
+
+  </div>
 </template>
 
 <style scoped>
-#edit-wrapper{
+#edit-wrapper {
   display: flex;
   justify-content: flex-start;
-  gap:10px;
-  align-item:center;
+  gap: 10px;
+  align-items: center;
 }
 </style>
