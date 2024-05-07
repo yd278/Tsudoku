@@ -37,7 +37,7 @@ const handleSelect = (key: number, option: DropdownOption):void  =>  {
 
 <template>
     <n-dropdown trigger="hover" :options="options" @select="handleSelect">
-        <n-button>{{ difficulty }}</n-button>
+        <n-button :focusable=false>{{ difficulty }}</n-button>
     </n-dropdown>
 </template>
 <style scoped>

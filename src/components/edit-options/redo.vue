@@ -4,7 +4,7 @@ import { ArrowRedoSharp } from '@vicons/ionicons5'
 </script>
 
 <template>
-    <n-button> <n-icon>
+    <n-button :focusable=false> <n-icon>
             <ArrowRedoSharp />
         </n-icon> </n-button>
 </template>

@@ -1,6 +1,8 @@
 <script setup lang="ts">
 
+import { ref } from 'vue';
 import editWrapper from './components/edit-options/edit-wrapper.vue';
+import numsSwitch from './components/num-selection/num-switch.vue';
 import { darkTheme, NConfigProvider } from 'naive-ui';
 
 const handleNewGameButtonClicked = (): void => { console.log('new game button clicked') }
@@ -11,6 +13,9 @@ const handleDifficultySelected = (n: number): void => {
 
   console.log(`${message} ${n}`);
 }
+
+const buttonType = ref<'default' | 'primary'>('default');
+const remaining = ref(3);
 </script>
 
 <template>
@@ -24,7 +29,10 @@ const handleDifficultySelected = (n: number): void => {
     <div id="play-ground">
       <div id="main-area">
         <div id="board">Board</div>
-        <div id="selection">Selection</div>
+        <div id="selection">
+          <numsSwitch v-model:state="buttonType"  v-model:remaining="remaining">1</numsSwitch>
+          {{ buttonType }}
+        </div>
       </div>
       <div id="extra-tools">Extra Tools</div>
     </div>
@@ -74,7 +82,8 @@ const handleDifficultySelected = (n: number): void => {
 }
 
 #selection {
+  display: flex;
+  align-items: center;
   height: 75px;
-  background-color: yellow;
 }
 </style>

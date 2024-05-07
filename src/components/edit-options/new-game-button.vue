@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { NButton } from 'naive-ui'
+
+
 </script>
 
 <template>
-<n-button> New Game</n-button>  
+<n-button :focusable=false> New Game</n-button>  
 </template>
 
 <style scoped>
