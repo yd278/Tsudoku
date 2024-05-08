@@ -12,7 +12,7 @@ const remaining = defineModel<number>('remaining', {default:0});
 
 <template>
 <n-button :focusable=false :type="buttonType" @click="toggleButtonType"> 
-    <n-badge :value=remaining type="info" :offset="[20, -20]" >
+    <n-badge :value=remaining type="info" :offset="[20, -20]" :show-zero="true" >
 <slot></slot></n-badge>
 </n-button>  
 </template>
