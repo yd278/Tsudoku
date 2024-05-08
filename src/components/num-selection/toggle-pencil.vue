@@ -18,7 +18,7 @@ function toggleButtonType() {
 </script>
 
 <template>
-  <n-button :focusable="false" type="primary" @click="toggleButtonType">
+  <n-button :focusable="false"  @click="toggleButtonType">
     <n-icon>
       <component :is="isPencilIcon ? PencilAlt : Marker" />
     </n-icon>
