@@ -3,11 +3,11 @@ import { NButton } from 'naive-ui'
 import { defineModel } from 'vue';
 import { NBadge } from 'naive-ui';
 
-const buttonType = defineModel<'default' | 'primary'>('state', {default: 'default'});
+const buttonType = defineModel<'default' | 'primary'>('status', {default: 'default'});
 function toggleButtonType() {
   buttonType.value = buttonType.value === 'default' ? 'primary' : 'default';
 }
-const remaining = defineModel<number>('remaining', {default:9});
+const remaining = defineModel<number>('remaining', {default:0});
 </script>
 
 <template>
@@ -22,5 +22,6 @@ const remaining = defineModel<number>('remaining', {default:9});
     width: 60px;
     height:60px;
     padding:0;
+    font-size: x-large;
 }
 </style>
