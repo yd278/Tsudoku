@@ -30,6 +30,6 @@ function toggleButtonType() {
   width: 60px;
   height: 60px;
   padding: 0;
-  font-size: x-large;
+  font-size: xx-large;
 }
 </style>
