@@ -11,11 +11,15 @@ const givenColor = useThemeVars().value.primaryColorSuppl;
 </template>
 <style scoped>
 div{
-    display: flex;
+  display: flex;
     font-size:xx-large;
     font-weight: bolder;
+    flex-grow: 1;
+    justify-content: center;
+    align-items: center;
 }
 .nGiven{
+
     color: v-bind(givenColor)
 }
 </style>

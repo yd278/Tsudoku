@@ -1,10 +1,12 @@
 <script setup lang="ts">
 
-import { ref } from 'vue';
 import editWrapper from './components/edit-options/edit-wrapper.vue';
 import numSelectionWrapper from './components/num-selection/num-selection-wrapper.vue';
 import { darkTheme, NConfigProvider } from 'naive-ui';
 
+import sudokuGrid from './components/main-grid/sudoku-grid.vue';
+import { reactive, ref } from 'vue';
+import { cellInfo } from './interfaces/cellInfo';
 const handleNewGameButtonClicked = (): void => { console.log('new game button clicked') }
 
 const handleDifficultySelected = (n: number): void => {
@@ -19,6 +21,23 @@ type StatusType = 'default' | 'primary';
 
 const parentStatuses = ref<StatusType[]>(Array(9).fill('default'));
 const parentRemainingCounts = ref<number[]>(Array(9).fill(0));
+
+
+function createDefaultCell(): cellInfo {
+  return {
+    isPencil:false,
+    candidates:Array(9).fill(false),
+    reverseY:false,
+    isGiven:false,
+    value:1
+  };
+}
+const cellInfos = reactive(Array.from({length:81},createDefaultCell));
+
+cellInfos[3].isGiven=true;
+cellInfos[5].isPencil = true;
+cellInfos[5].candidates=[true,false,false,false,true,false,true,false,true];
+cellInfos[5].reverseY = false;
 </script>
 
 <template>
@@ -31,7 +50,9 @@ const parentRemainingCounts = ref<number[]>(Array(9).fill(0));
     </div>
     <div id="play-ground">
       <div id="main-area">
-        <div id="board">Board</div>
+        <div id="board" ref="gridContainer">
+          <sudokuGrid :cell-infos="cellInfos"></sudokuGrid>
+        </div>
         <div id="selection">
           <num-selection-wrapper v-model:remaining-counts="parentRemainingCounts" v-model:statuses="parentStatuses"/>
         </div>
@@ -78,9 +99,14 @@ const parentRemainingCounts = ref<number[]>(Array(9).fill(0));
 }
 
 #board {
+  display: flex;
+  flex-direction: column;
   flex-grow: 1;
-  background-color: #8bc34a;
-  /* Light Green */
+  min-height: 0;
+  justify-content: center;
+  align-items: center;
+  flex-shrink: 1;
+  padding: 20px;
 }
 
 #selection {

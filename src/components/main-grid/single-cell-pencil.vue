@@ -5,7 +5,7 @@ defineProps<{
 }>()
 </script>
 <template>
-    <div v-if="reverseY" class="cell">
+    <div v-if="!reverseY" class="cell">
         <div class="row">
             <div :class="['num', { 'hidden': !candidates[0] }]">1</div>
             <div :class="['num', { 'hidden': !candidates[1] }]">2</div>
@@ -44,6 +44,7 @@ defineProps<{
 .cell {
     display: flex;
     flex-direction: column;
+    flex-basis: 0;
 }
 
 .row {
@@ -53,7 +54,10 @@ defineProps<{
 }
 
 .num {
+    display: flex;
     font-size: small;
+    justify-content: center;
+    align-items: center;
     color: darkgrey;
     flex-grow: 1;
     flex-basis: 0;
