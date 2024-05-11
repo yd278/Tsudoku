@@ -2,6 +2,7 @@
 
 import editWrapper from './components/edit-options/edit-wrapper.vue';
 import numSelectionWrapper from './components/num-selection/num-selection-wrapper.vue';
+import toolboxWrapper from './components/toolbox/toolbox-wrapper.vue';
 import { darkTheme, NConfigProvider } from 'naive-ui';
 
 import sudokuGrid from './components/main-grid/sudoku-grid.vue';
@@ -57,7 +58,9 @@ cellInfos[5].reverseY = false;
           <num-selection-wrapper v-model:remaining-counts="parentRemainingCounts" v-model:statuses="parentStatuses"/>
         </div>
       </div>
-      <div id="extra-tools">Extra Tools</div>
+      <div id="extra-tools">
+        <toolboxWrapper />
+      </div>
     </div>
   </div>
 </n-config-provider>
@@ -94,7 +97,9 @@ cellInfos[5].reverseY = false;
 
 #extra-tools {
   width: 300px;
-  background-color: #e91e63;
+  display: flex;
+  flex-direction: column;
+
   /* Pink */
 }
 
