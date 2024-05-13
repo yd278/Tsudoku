@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { NDivider } from 'naive-ui';
 import { NList, NListItem } from 'naive-ui';
 import { NSwitch, NIcon } from 'naive-ui';

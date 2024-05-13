@@ -75,7 +75,7 @@ cellInfos[5].reverseY = false;
   display: flex;
   flex-direction: column;
   flex-grow: 1;
-  padding: 2px;
+  padding: 5px;
 }
 
 #edit-options {
@@ -99,6 +99,7 @@ cellInfos[5].reverseY = false;
   width: 300px;
   display: flex;
   flex-direction: column;
+  gap:10px;
 
   /* Pink */
 }
