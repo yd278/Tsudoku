@@ -9,7 +9,7 @@ import redo from './redo.vue'
 <template>
   <div id="edit-wrapper">
     <NewGameButton @click="$emit('new-game-button-clicked')" />
-    <DifficultySelection @select="(d) => $emit('selectDifficulty', d)" />
+    <DifficultySelection />
     <n-divider vertical />
     <undo />
     <redo />

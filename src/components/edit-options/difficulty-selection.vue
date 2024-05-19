@@ -1,9 +1,8 @@
 <script setup lang="ts">
 import { DropdownOption, NButton, NDropdown } from 'naive-ui';
 import { ref } from 'vue'
-const emit = defineEmits<{
-  (e: 'select', difficulty: number): void
-}>()
+import { useEditStore } from '../../store/edit';
+
 const difficulty = ref('Difficulty');
 const options = [
     {
@@ -27,10 +26,10 @@ const options = [
         key: 4
     }
 ];
+const editStore = useEditStore();
 const handleSelect = (key: number, option: DropdownOption):void  =>  {
     difficulty.value = String(option.label);
-    emit('select',key);
-
+    editStore.difficulty = key;
 };
 
 </script>

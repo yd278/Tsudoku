@@ -8,14 +8,14 @@ import { darkTheme, NConfigProvider } from 'naive-ui';
 import sudokuGrid from './components/main-grid/sudoku-grid.vue';
 import { reactive, ref } from 'vue';
 import { cellInfo } from './interfaces/cellInfo';
-const handleNewGameButtonClicked = (): void => { console.log('new game button clicked') }
 
-const handleDifficultySelected = (n: number): void => {
+import { useEditStore } from './store/edit';
 
-  const message = "selected difficulty is";
+const editStore = useEditStore();
 
-  console.log(`${message} ${n}`);
-}
+const handleNewGameButtonClicked = (): void => { console.log(`new game button clicked with difficulty ${editStore.difficulty}`) }
+
+
 
 
 type StatusType = 'default' | 'primary';
@@ -47,7 +47,7 @@ cellInfos[5].reverseY = false;
 <n-config-provider :theme="darkTheme">
   <div id="root">
     <div id="edit-options">
-      <editWrapper @new-game-button-clicked="handleNewGameButtonClicked" @selectDifficulty="handleDifficultySelected" />
+      <editWrapper @new-game-button-clicked="handleNewGameButtonClicked" />
     </div>
     <div id="play-ground">
       <div id="main-area">
