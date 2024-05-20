@@ -8,12 +8,24 @@ import { darkTheme, NConfigProvider } from 'naive-ui';
 import sudokuGrid from './components/main-grid/sudoku-grid.vue';
 import { reactive, ref } from 'vue';
 import { cellInfo } from './interfaces/cellInfo';
-
 import { useEditStore } from './store/edit';
 
 const editStore = useEditStore();
+const rawSudoku = ref("");
 
-const handleNewGameButtonClicked = (): void => { console.log(`new game button clicked with difficulty ${editStore.difficulty}`) }
+const handleNewGameButtonClicked = (): void => { 
+  console.log(`new game button clicked with difficulty ${editStore.difficulty}`);
+  window.electronAPI.generate(editStore.difficulty).then(response => {
+      rawSudoku.value = response;
+    }).catch(error => {
+      console.error('Error calling yourFunction:', error);
+      rawSudoku.value = 'Error occurred';
+    });;
+  console.log(`raw sudoku generated as:  ${rawSudoku.value}`) ;
+  
+  
+
+}
 
 
 

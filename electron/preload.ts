@@ -1,5 +1,4 @@
 import { ipcRenderer, contextBridge } from 'electron'
-
 // --------- Expose some API to the Renderer process ---------
 contextBridge.exposeInMainWorld('ipcRenderer', {
   on(...args: Parameters<typeof ipcRenderer.on>) {
@@ -17,8 +16,12 @@ contextBridge.exposeInMainWorld('ipcRenderer', {
   invoke(...args: Parameters<typeof ipcRenderer.invoke>) {
     const [channel, ...omit] = args
     return ipcRenderer.invoke(channel, ...omit)
-  },
+  }
 
   // You can expose other APTs you need here.
   // ...
+
 })
+contextBridge.exposeInMainWorld('electronAPI', {
+  generate: (difficulty : number) => ipcRenderer.invoke('generate', difficulty)
+});

@@ -5,12 +5,26 @@ import vue from '@vitejs/plugin-vue'
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  
   plugins: [
     vue(),
     electron({
       main: {
         // Shortcut of `build.lib.entry`.
         entry: 'electron/main.ts',
+        vite:{
+          build: {
+            rollupOptions: {
+              external: ['tsudoku-engine']
+            }
+          },
+          assetsInclude: ['**/*.node'],
+          resolve:{
+            alias:{
+              'tsudoku-engine': path.join(__dirname, 'src/lib/tsudoku-engine'),
+            }
+          }
+        }
       },
       preload: {
         // Shortcut of `build.rollupOptions.input`.
@@ -20,7 +34,12 @@ export default defineConfig({
       // Ployfill the Electron and Node.js API for Renderer process.
       // If you want use Node.js in Renderer process, the `nodeIntegration` needs to be enabled in the Main process.
       // See 👉 https://github.com/electron-vite/vite-plugin-electron-renderer
-      renderer: {},
+      renderer: {
+      },
+      
+      
     }),
+   
   ],
+
 })

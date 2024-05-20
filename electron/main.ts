@@ -1,5 +1,7 @@
-import { app, BrowserWindow } from 'electron'
+import { app, BrowserWindow, ipcMain } from 'electron'
 import path from 'node:path'
+import { generate } from 'tsudoku-engine'
+
 
 // The built directory structure
 //
@@ -62,3 +64,7 @@ app.on('activate', () => {
 })
 
 app.whenReady().then(createWindow)
+
+ipcMain.handle('generate', async (event, difficulty) => {
+  return generate(difficulty);
+});
