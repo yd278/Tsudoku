@@ -13,14 +13,14 @@ import { useEditStore } from './store/edit';
 const editStore = useEditStore();
 const rawSudoku = ref("");
 
-const handleNewGameButtonClicked = (): void => { 
+const handleNewGameButtonClicked = async () => { 
   console.log(`new game button clicked with difficulty ${editStore.difficulty}`);
-  window.electronAPI.generate(editStore.difficulty).then(response => {
-      rawSudoku.value = response;
-    }).catch(error => {
-      console.error('Error calling yourFunction:', error);
-      rawSudoku.value = 'Error occurred';
-    });;
+  try {
+    rawSudoku.value = await window.electronAPI.generate(editStore.difficulty);
+  } catch (error) {
+    console.error('Error calling yourFunction:', error);
+    rawSudoku.value = 'Error occurred';
+  }
   console.log(`raw sudoku generated as:  ${rawSudoku.value}`) ;
   
   
