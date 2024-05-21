@@ -6,14 +6,21 @@ import toolboxWrapper from './components/toolbox/toolbox-wrapper.vue';
 import { darkTheme, NConfigProvider } from 'naive-ui';
 
 import sudokuGrid from './components/main-grid/sudoku-grid.vue';
-import { reactive, ref } from 'vue';
+import { reactive, ref, provide} from 'vue';
 import { cellInfo } from './interfaces/cellInfo';
 import { useEditStore } from './store/edit';
+import { useGridDataStore } from './store/gridData';
+import { handleRedo, handleUndo } from './util/editFunctions';
+import { useOperationStack } from './store/operationStack';
 
 const editStore = useEditStore();
+const operationStackStore = useOperationStack();
+const gridDataStore = useGridDataStore();
 const rawSudoku = ref("");
 
-const handleNewGameButtonClicked = async () => { 
+type buttonClickedEvent =  () => void
+
+const handleNewGameButtonClicked :buttonClickedEvent = async () => { 
   console.log(`new game button clicked with difficulty ${editStore.difficulty}`);
   try {
     rawSudoku.value = await window.electronAPI.generate(editStore.difficulty);
@@ -22,13 +29,27 @@ const handleNewGameButtonClicked = async () => {
     rawSudoku.value = 'Error occurred';
   }
   console.log(`raw sudoku generated as:  ${rawSudoku.value}`) ;
-  
-  
-
 }
 
 
 
+const handleUndoButtonClicked : buttonClickedEvent= () =>{
+  const operation = operationStackStore.undo();
+  if(operation){
+    handleUndo(operation,gridDataStore);
+  }
+}
+
+const handleRedoButtonClicked : buttonClickedEvent= () =>{
+  const operation = operationStackStore.redo();
+  if(operation){
+    handleRedo(operation,gridDataStore);
+  }
+}
+
+provide('newGameEvent',handleNewGameButtonClicked);
+provide('undoEvent',handleUndoButtonClicked);
+provide('redoEvent',handleRedoButtonClicked);
 
 type StatusType = 'default' | 'primary';
 
@@ -59,7 +80,7 @@ cellInfos[5].reverseY = false;
 <n-config-provider :theme="darkTheme">
   <div id="root">
     <div id="edit-options">
-      <editWrapper @new-game-button-clicked="handleNewGameButtonClicked" />
+      <editWrapper/>
     </div>
     <div id="play-ground">
       <div id="main-area">
