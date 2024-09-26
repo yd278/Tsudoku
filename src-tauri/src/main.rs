@@ -5,7 +5,7 @@
 
 #[tauri::command]
 fn generate(difficulty: i32) -> String{
-    "testMessage".to_owned()
+    format!("Generate function called with difficulty {}",difficulty)
 }
 
 

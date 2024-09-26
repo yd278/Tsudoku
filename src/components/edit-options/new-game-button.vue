@@ -11,7 +11,7 @@ const gridDataStore = useGridDataStore();
 const handleNewGameButtonClicked :buttonClickedEvent = async () => { 
   console.log(`new game button clicked with difficulty ${editStore.difficulty}`);
   var rawSudoku = "";
-  rawSudoku = await invoke("generate", { name: editStore.difficulty });
+  rawSudoku = await invoke("generate", { difficulty: editStore.difficulty });
 
   console.log(`raw sudoku generated as:  ${rawSudoku}`) ;
   gridDataStore.setGrid(rawSudoku);
