@@ -58,8 +58,7 @@ const containerBoard = `1px solid ${strongColor}`;
 }
 .square{
   display: flex;
-  flex-grow: 1;
-  aspect-ratio: 1 / 1;
+  flex: 1 0 0%;
   overflow: hidden;
 
 }
