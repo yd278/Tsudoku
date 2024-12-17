@@ -2,6 +2,7 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
+mod game_board;
 
 #[tauri::command]
 fn generate(difficulty: i32) -> String{
