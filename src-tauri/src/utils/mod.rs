@@ -1,3 +1,40 @@
+#[derive(Clone, Copy)]
+pub struct BitMap(u16);
+
+impl BitMap {
+    pub fn all() -> Self{
+        BitMap(0b111111111)
+    }
+
+    pub fn new() -> Self {
+        BitMap(0)
+    }
+
+    pub fn from(num: u8) -> Self {
+        BitMap(1 << num)
+    }
+
+    pub fn contains(self, num: u8) -> bool {
+        self.0 & (1 << num) != 0
+    }
+
+    pub fn insert(&mut self, num: u8) {
+        self.0 |= 1 << num;
+    }
+
+    pub fn remove(&mut self, num: u8) {
+        self.0 &= !(1 << num);
+    }
+
+    pub fn count(self) -> u8 {
+        self.0.count_ones() as u8
+    }
+
+    pub fn trailing_zeros(self) -> u8 {
+        self.0.trailing_zeros() as u8
+    }
+}
+
 pub struct Coord;
 
 impl Coord {

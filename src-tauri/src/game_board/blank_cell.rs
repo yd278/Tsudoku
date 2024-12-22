@@ -1,31 +1,4 @@
-#[derive(Clone, Copy)]
-pub struct BitMap(u16);
-
-impl BitMap {
-    pub fn all() -> Self{
-        BitMap(0b111111111)
-    }
-
-    pub fn new() -> Self {
-        BitMap(0)
-    }
-
-    pub fn from(num: u8) -> Self {
-        BitMap(1 << num)
-    }
-
-    pub fn contains(self, num: u8) -> bool {
-        self.0 & (1 << num) != 0
-    }
-
-    pub fn insert(&mut self, num: u8) {
-        self.0 |= 1 << num;
-    }
-
-    pub fn remove(&mut self, num: u8) {
-        self.0 &= !(1 << num);
-    }
-}
+use crate::utils::BitMap;
 pub struct BlankCell{
     ans: u8,
     pen_mark: Option<u8>,
@@ -42,6 +15,9 @@ impl BlankCell{
         }
     }
 
+    pub fn get_candidates(&self) -> &BitMap {
+        &self.candidates
+    }
 
     // modify candidates and user_deleted with the given function
     pub fn modify<F: FnOnce(&mut BitMap, &mut BitMap)>(&mut self, mutator: F) {

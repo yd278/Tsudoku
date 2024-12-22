@@ -1,18 +1,17 @@
-#![allow(unused_variables)] // 禁用本文件中所有 unused_variables 警告
-#![allow(dead_code)]
 
-mod coord;
-pub use coord::Coord;
 
-mod blank_cell;
-use blank_cell::{BitMap, BlankCell};
 
-enum Cell {
+use crate::utils::Coord;
+use crate::utils::BitMap;
+pub mod blank_cell;
+use blank_cell:: BlankCell;
+
+pub enum Cell {
     Printed(u8),
     Blank(BlankCell),
 }
 
-struct GameBoard {
+pub struct GameBoard {
     grid: [[Cell; 9]; 9],
 }
 
@@ -62,6 +61,11 @@ impl GameBoard {
     }
 
 
+
+    // return a unmutable reference to the cell at (x,y)
+    pub fn get_cell(&self, x: usize, y: usize) -> &Cell {
+        &self.grid[x][y]
+    }
 
     // check if the given target shouldn't be deleted
     // the caller should ensure that the cell is a blank cell
