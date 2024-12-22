@@ -59,4 +59,10 @@ impl Coord {
         let box_id = (x / 3) * 3 + (y / 3);
         Self::box_coords(box_id).filter(move |(xi,yi)| *xi != x || *yi != y)
     }
+    
+    pub fn seeable_cells(x: usize, y: usize) -> impl Iterator<Item = (usize, usize)> {
+        Self::row(x).filter(move |&(_, j)| j != y)
+            .chain(Self::col(y).filter(move |&(i, _)| i != x))
+            .chain(Self::iter_box(x, y))
+    }
 }
