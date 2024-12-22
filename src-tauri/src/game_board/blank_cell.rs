@@ -19,6 +19,9 @@ impl BlankCell {
         &self.candidates
     }
 
+    pub fn get_user_deleted(&self) -> &BitMap {
+        &self.user_deleted
+    }
     // modify candidates and user_deleted with the given function
     pub fn modify<F: FnOnce(&mut BitMap, &mut BitMap)>(&mut self, mutator: F) {
         mutator(&mut self.candidates, &mut self.user_deleted);
@@ -35,6 +38,10 @@ impl BlankCell {
         }
     }
 
+    pub fn set_pencil_mark(&mut self, target: u8) {
+        self.candidates.insert(target);
+    }
+
     pub fn set_pen_mark(&mut self, mark: u8) {
         self.pen_mark = Some(mark);
     }
@@ -45,11 +52,5 @@ impl BlankCell {
         self.pen_mark = None;
     }
 
-    pub fn update_or_collide(&mut self, target: u8, possible_candidates: &mut BitMap) {
-        if let Some(mark) = self.pen_mark {
-            possible_candidates.remove(mark);
-        } else if !self.user_deleted.contains(target) {
-            self.candidates.insert(target);
-        }
-    }
+
 }

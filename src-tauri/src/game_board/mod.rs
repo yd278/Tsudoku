@@ -1,10 +1,7 @@
-
-
-
-use crate::utils::Coord;
 use crate::utils::BitMap;
+use crate::utils::Coord;
 pub mod blank_cell;
-use blank_cell:: BlankCell;
+use blank_cell::BlankCell;
 
 pub enum Cell {
     Printed(u8),
@@ -16,8 +13,6 @@ pub struct GameBoard {
 }
 
 impl GameBoard {
-
-
     // delete target in a cell's candidate list
     // and mark it as user deleted if user_deleted_flag is true
     fn delete_candidate(&mut self, x: usize, y: usize, target: u8, user_deleted_flag: bool) {
@@ -33,8 +28,6 @@ impl GameBoard {
         }
     }
 
-
-
     // check if this cell collides with the target
     fn check_cell_collision(&self, x: usize, y: usize, target: u8) -> Option<(usize, usize)> {
         match &self.grid[x][y] {
@@ -44,23 +37,13 @@ impl GameBoard {
         }
     }
 
-
-
-
     // take an cell at (x,y) and return the vector of coordinates that collide with the target
     // the caller should ensure that the cell is a blank cell
     fn check_clue_collision(&self, x: usize, y: usize, target: u8) -> Vec<(usize, usize)> {
-        let box_coords = Coord::iter_box(x, y);
-
-        Coord::row(x)
-            .filter(move |&(_, j)| j != y)
-            .chain(Coord::col(y).filter(move |&(i, _)| i != x))
-            .chain(box_coords)
+        Coord::seeable_cells(x, y)
             .filter_map(|(xi, yi)| self.check_cell_collision(xi, yi, target))
             .collect()
     }
-
-
 
     // return a unmutable reference to the cell at (x,y)
     pub fn get_cell(&self, x: usize, y: usize) -> &Cell {
@@ -73,8 +56,6 @@ impl GameBoard {
         matches!(self.grid[x][y], Cell::Blank(ref cell) if target == cell.get_answer())
     }
 
-
-
     // check if the given target shouldn't be added
     // the caller should ensure that the cell is a blank cell with no pen mark
     pub fn check_pencil_mark_addition_collision(
@@ -85,8 +66,6 @@ impl GameBoard {
     ) -> Vec<(usize, usize)> {
         self.check_clue_collision(x, y, target)
     }
-
-
 
     // erase an pencil mark in given cell by user
     // the caller should ensure that the cell is a blank cell with no pen mark and the target is in the candidate set
@@ -108,9 +87,6 @@ impl GameBoard {
         }
     }
 
-
-
-
     // check if the given target shouldn't be set as pen mark
     // the caller should ensure that the cell is a blank with no pen mark
     pub fn check_pen_mark_addition_error(
@@ -127,52 +103,44 @@ impl GameBoard {
         }
     }
 
-
-
-
     // set a cell as pen mark by user
     // the caller should ensure that the cell is a blank cell with no pen mark
     pub fn add_pen_mark(&mut self, x: usize, y: usize, target: u8) {
         if let Cell::Blank(cell) = &mut self.grid[x][y] {
             cell.set_pen_mark(target);
 
-            let box_coords = Coord::iter_box(x, y);
-            Coord::row(x)
-                .filter(move |&(_, j)| j != y)
-                .chain(Coord::col(y).filter(move |&(i, _)| i != x))
-                .chain(box_coords)
+            Coord::seeable_cells(x, y)
                 .for_each(|(xi, yi)| self.delete_candidate(xi, yi, target, false));
         }
     }
-
-
 
     // erase a pen mark in given cell by user
     // the caller should ensure that the cell is a blank cell with a pen mark
     pub fn erase_pen_mark(&mut self, x: usize, y: usize) {
         if let Cell::Blank(cell) = &mut self.grid[x][y] {
- 
             if let Some(target) = cell.get_pen_mark() {
                 cell.erase_pen_mark();
-                let mut possible_candidates =  BitMap::all();
-    
-                let box_coords = Coord::iter_box(x, y);
-    
-                Coord::row(x)
-                    .filter(move |&(_, j)| j != y)
-                    .chain(Coord::col(y).filter(move |&(i, _)| i != x))
-                    .chain(box_coords)
-                    .for_each(|(xi, yi)| match self.grid[xi][yi] {
-                        Cell::Printed(ans) => {
-                            possible_candidates.remove(ans);
+                let mut possible_candidates = BitMap::all();
+                let mut to_put_back = Vec::new();
+
+                Coord::seeable_cells(x, y).for_each(|(xi, yi)| match self.grid[xi][yi] {
+                    Cell::Printed(ans) => {
+                        possible_candidates.remove(ans);
+                    }
+                    Cell::Blank(ref mut cell) => {
+                        if let Some(mark) = cell.get_pen_mark() {
+                            possible_candidates.remove(mark);
+                        } else if self.check_clue_collision(xi, yi, target).is_empty(){
+                            to_put_back.push((xi, yi));
                         }
-                        Cell::Blank(ref mut cell) => {
-                            cell.update_or_collide(target, &mut possible_candidates);
-                        }
-                    });
-            }   
+                    }
+                });
+                to_put_back.into_iter().for_each(|(xi, yi)| {
+                    if let Cell::Blank(ref mut cell) = self.grid[xi][yi] {
+                        cell.set_pencil_mark(target);
+                    }
+                });
+            }
         }
     }
-
-
 }
