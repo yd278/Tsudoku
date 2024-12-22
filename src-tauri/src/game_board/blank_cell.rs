@@ -1,13 +1,13 @@
 use crate::utils::BitMap;
-pub struct BlankCell{
+pub struct BlankCell {
     ans: u8,
     pen_mark: Option<u8>,
     candidates: BitMap,
     user_deleted: BitMap,
 }
-impl BlankCell{
-    pub fn new(ans: u8) -> Self{
-        Self{
+impl BlankCell {
+    pub fn new(ans: u8) -> Self {
+        Self {
             ans,
             pen_mark: None,
             candidates: BitMap::all(),
@@ -24,15 +24,14 @@ impl BlankCell{
         mutator(&mut self.candidates, &mut self.user_deleted);
     }
 
-
-    pub fn get_answer(&self) -> u8{
+    pub fn get_answer(&self) -> u8 {
         self.ans
     }
 
     pub fn check_collision(&self, target: u8) -> bool {
         match self.pen_mark {
             Some(mark) => target == mark,
-            None => false
+            None => false,
         }
     }
 
@@ -47,14 +46,10 @@ impl BlankCell{
     }
 
     pub fn update_or_collide(&mut self, target: u8, possible_candidates: &mut BitMap) {
-        if let Some(mark) = self.pen_mark{
+        if let Some(mark) = self.pen_mark {
             possible_candidates.remove(mark);
-        }else{
-            if !self.user_deleted.contains(target){
-                self.candidates.insert(target);
-            }
+        } else if !self.user_deleted.contains(target) {
+            self.candidates.insert(target);
         }
-
     }
-        
 }

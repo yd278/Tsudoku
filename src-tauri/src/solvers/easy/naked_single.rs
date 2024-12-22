@@ -11,7 +11,7 @@ impl Solver for NakedSingle {
         for row in 0..9 {
             for col in 0..9 {
                 if let Cell::Blank(blank_cell) = game_board.get_cell(row, col) {
-                    if let None = blank_cell.get_pen_mark() {
+                    if blank_cell.get_pen_mark().is_none() {
                         let candidates = blank_cell.get_candidates();
                         if candidates.count() == 1 {
                             return Some(SolverResult {
@@ -25,7 +25,7 @@ impl Solver for NakedSingle {
                                     Candidate{
                                         x:row,
                                         y:col,
-                                        candidates: candidates.clone(),
+                                        candidates: *candidates,
                                     }
                                 ],
                             });
