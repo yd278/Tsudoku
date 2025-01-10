@@ -161,10 +161,11 @@ impl GameBoard {
         }
     }
 }
+
+
 #[cfg(test)]
 mod game_board_test {
 
-    use std::env;
 
     use super::*;
 
@@ -207,6 +208,29 @@ mod game_board_test {
         assert!(res.is_ok());
         assert_eq!(to_string(&game_board), "146853279325719864897246153719562348532487691684931725463175982278394516951628437");
    
+    }
+
+    #[test]
+    fn test_no_solution(){
+        let mut game_board = from_string("..4..3......71......7.4.15371...2.4.5.2...6.1.8.9...25463.7.9......94......6.....");
+        let res = dlx_solver::DLXSolver::solve_sudoku(&mut game_board);
+        if let Err(dlx_solver::dlx_solution::DLXSolution::NoSolution) = res {
+            assert!(true);
+        } else {
+            assert!(false);
+        }
+        
+    }
+    #[test]
+
+    fn test_multi_solution(){
+        let mut game_board = from_string("...8...6..58.19.....3...4.87..........16.45..........28.....29....97.18..7...2...");
+        let res = dlx_solver::DLXSolver::solve_sudoku(&mut game_board);
+        if let Err(dlx_solver::dlx_solution::DLXSolution::MultipleSolutions) = res {
+            assert!(true);
+        } else {
+            assert!(false);
+        }
     }
 
     

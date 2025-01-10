@@ -1,5 +1,5 @@
 mod dlx_node;
-mod dlx_solution;
+pub mod dlx_solution;
 use super::super::game_board::{Cell, GameBoard};
 
 use dlx_node::DLXNode;
