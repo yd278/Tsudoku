@@ -33,6 +33,13 @@ impl BitMap {
     pub fn trailing_zeros(self) -> u8 {
         self.0.trailing_zeros() as u8
     }
+
+    pub fn complement(self) -> Self {
+        BitMap(!self.0 & 0b111111111)
+    }
+    pub fn and(self, other: Self) -> Self {
+        BitMap(self.0 & other.0)
+    }
 }
 
 pub struct Coord;

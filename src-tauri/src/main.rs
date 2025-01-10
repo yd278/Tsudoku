@@ -3,6 +3,7 @@
 
 #![allow(unused_variables)] // 禁用本文件中所有 unused_variables 警告
 #![allow(dead_code)]
+
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
 mod game_board;
 mod solvers;

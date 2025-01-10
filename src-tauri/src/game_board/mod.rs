@@ -1,8 +1,10 @@
 use crate::utils::BitMap;
 use crate::utils::Coord;
 pub mod blank_cell;
+pub mod dlx_solver;
 use blank_cell::BlankCell;
 
+#[derive(Clone, Copy)]
 pub enum Cell {
     Printed(u8),
     Blank(BlankCell),
@@ -117,30 +119,95 @@ impl GameBoard {
     // erase a pen mark in given cell by user
     // the caller should ensure that the cell is a blank cell with a pen mark
     pub fn erase_pen_mark(&mut self, x: usize, y: usize) {
-        if let Cell::Blank(cell) = &mut self.grid[x][y] {
-            if let Some(target) = cell.get_pen_mark() {
-                cell.erase_pen_mark();
-                let mut possible_candidates = BitMap::all();
-                let mut to_put_back = Vec::new();
+        let mut possible_candidates = BitMap::all();
+        let mut to_put_back = Vec::new();
 
-                Coord::seeable_cells(x, y).for_each(|(xi, yi)| match self.grid[xi][yi] {
-                    Cell::Printed(ans) => {
-                        possible_candidates.remove(ans);
+        let target = {
+            if let Cell::Blank(ref mut cell) = self.grid[x][y] {
+                if let Some(target) = cell.get_pen_mark() {
+                    cell.erase_pen_mark();
+                    Some(target)
+                } else {
+                    None
+                }
+            } else {
+                None
+            }
+        };
+
+        if let Some(target) = target {
+            Coord::seeable_cells(x, y).for_each(|(xi, yi)| match self.grid[xi][yi] {
+                Cell::Printed(ans) => {
+                    possible_candidates.remove(ans);
+                }
+                Cell::Blank(ref mut cell) => {
+                    if let Some(mark) = cell.get_pen_mark() {
+                        possible_candidates.remove(mark);
+                    } else if self.check_clue_collision(xi, yi, target).is_empty() {
+                        to_put_back.push((xi, yi));
                     }
-                    Cell::Blank(ref mut cell) => {
-                        if let Some(mark) = cell.get_pen_mark() {
-                            possible_candidates.remove(mark);
-                        } else if self.check_clue_collision(xi, yi, target).is_empty(){
-                            to_put_back.push((xi, yi));
-                        }
-                    }
-                });
-                to_put_back.into_iter().for_each(|(xi, yi)| {
-                    if let Cell::Blank(ref mut cell) = self.grid[xi][yi] {
-                        cell.set_pencil_mark(target);
-                    }
-                });
+                }
+            });
+
+            for (xi, yi) in to_put_back {
+                if let Cell::Blank(ref mut cell) = self.grid[xi][yi] {
+                    cell.set_pencil_mark(target);
+                }
             }
         }
+
+        if let Cell::Blank(ref mut cell) = self.grid[x][y] {
+            cell.update_candidates(&possible_candidates);
+        }
     }
+}
+#[cfg(test)]
+mod game_board_test {
+
+    use std::env;
+
+    use super::*;
+
+    fn from_string(input: &str) -> GameBoard {
+        let mut grid = [[Cell::Blank(BlankCell::new_empty_cell()); 9]; 9];
+        for (index, c) in input.chars().enumerate() {
+            let i = index / 9;
+            let j = index % 9;
+            if c.is_digit(10) {
+                grid[i][j] = Cell::Printed(c.to_digit(10).unwrap() as u8 - 1);
+            }
+        }
+        GameBoard { grid }
+
+    }
+    fn to_string(game_board: &GameBoard) -> String {
+        let mut res = String::new();
+        for i in 0..9 {
+            for j in 0..9 {
+                match game_board.get_cell(i, j) {
+                    Cell::Printed(ans) => res.push_str(&(ans+1).to_string()),
+                    Cell::Blank(c) => res.push_str(&(c.get_answer()+1).to_string()),
+                }
+            }
+        }
+        res
+    }
+
+    #[test]
+    fn test_solver_1() {
+        let mut game_board = from_string("...8...6..58.19....23...4.87..........16.45..........28.6...29....97.18..7...2...");
+        let res = dlx_solver::DLXSolver::solve_sudoku(&mut game_board);
+        assert!(res.is_ok());
+        assert_eq!(to_string(&game_board), "147823965658419723923567418794258631281634579365791842816345297532976184479182356");
+    }
+    #[test]
+    fn test_solver_2(){
+        let mut game_board = from_string(".....3......71......7.4.15371...2.4.5.2...6.1.8.9...25463.7.9......94......6.....");
+        let res = dlx_solver::DLXSolver::solve_sudoku(&mut game_board);
+        assert!(res.is_ok());
+        assert_eq!(to_string(&game_board), "146853279325719864897246153719562348532487691684931725463175982278394516951628437");
+   
+    }
+
+    
 }

@@ -1,4 +1,6 @@
 use crate::utils::BitMap;
+
+#[derive(Clone,Copy)]
 pub struct BlankCell {
     ans: u8,
     pen_mark: Option<u8>,
@@ -6,9 +8,21 @@ pub struct BlankCell {
     user_deleted: BitMap,
 }
 impl BlankCell {
+    pub fn set_answer(&mut self, ans: u8) {
+        self.ans = ans;
+    }
     pub fn new(ans: u8) -> Self {
         Self {
             ans,
+            pen_mark: None,
+            candidates: BitMap::all(),
+            user_deleted: BitMap::new(),
+        }
+    }
+
+    pub fn new_empty_cell() -> Self {
+        Self {
+            ans: 0,
             pen_mark: None,
             candidates: BitMap::all(),
             user_deleted: BitMap::new(),
@@ -50,6 +64,9 @@ impl BlankCell {
     }
     pub fn erase_pen_mark(&mut self) {
         self.pen_mark = None;
+    }
+    pub fn update_candidates(&mut self, possible_candidates: &BitMap) {
+        self.candidates = possible_candidates.and(self.user_deleted.complement());
     }
 
 
