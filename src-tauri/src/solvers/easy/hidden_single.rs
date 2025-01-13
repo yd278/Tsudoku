@@ -1,11 +1,10 @@
 use crate::game_board::{Cell, GameBoard};
 use crate::solvers::solver_result::candidate;
 use crate::solvers::solver_result::confirmation::Confirmation;
-use crate::solvers::solver_result::house::House;
 use crate::solvers::solver_result::SolverActionResult;
 use crate::solvers::solver_result::SolverResult;
 use crate::solvers::traits::Solver;
-use crate::utils::{BitMap, Coord};
+use crate::utils::{BitMap, Coord,House};
 
 pub struct HiddenSingle;
 

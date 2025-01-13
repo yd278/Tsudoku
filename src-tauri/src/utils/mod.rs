@@ -73,3 +73,9 @@ impl Coord {
             .chain(Self::iter_box(x, y))
     }
 }
+
+pub enum House {
+    Row(usize),
+    Col(usize),
+    Box(usize),
+}
