@@ -1,17 +1,17 @@
 use crate::utils::BitMap;
 
-#[derive(Clone,Copy)]
+#[derive(Clone, Copy)]
 pub struct BlankCell {
-    ans: u8,
-    pen_mark: Option<u8>,
+    ans: usize,
+    pen_mark: Option<usize>,
     candidates: BitMap,
     user_deleted: BitMap,
 }
 impl BlankCell {
-    pub fn set_answer(&mut self, ans: u8) {
+    pub fn set_answer(&mut self, ans: usize) {
         self.ans = ans;
     }
-    pub fn new(ans: u8) -> Self {
+    pub fn new(ans: usize) -> Self {
         Self {
             ans,
             pen_mark: None,
@@ -41,25 +41,24 @@ impl BlankCell {
         mutator(&mut self.candidates, &mut self.user_deleted);
     }
 
-    pub fn get_answer(&self) -> u8 {
+    pub fn get_answer(&self) -> usize {
         self.ans
     }
 
-    pub fn check_collision(&self, target: u8) -> bool {
+    pub fn check_collision(&self, target: usize) -> bool {
         match self.pen_mark {
             Some(mark) => target == mark,
             None => false,
         }
     }
 
-    pub fn set_pencil_mark(&mut self, target: u8) {
+    pub fn set_pencil_mark(&mut self, target: usize) {
         self.candidates.insert(target);
     }
-
-    pub fn set_pen_mark(&mut self, mark: u8) {
+    pub fn set_pen_mark(&mut self, mark: usize) {
         self.pen_mark = Some(mark);
     }
-    pub fn get_pen_mark(&self) -> Option<u8> {
+    pub fn get_pen_mark(&self) -> Option<usize> {
         self.pen_mark
     }
     pub fn erase_pen_mark(&mut self) {
@@ -68,6 +67,5 @@ impl BlankCell {
     pub fn update_candidates(&mut self, possible_candidates: &BitMap) {
         self.candidates = possible_candidates.and(self.user_deleted.complement());
     }
-
 
 }

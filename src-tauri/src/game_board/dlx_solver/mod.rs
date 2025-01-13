@@ -240,9 +240,9 @@ impl DLXSolver {
                     Cell::Printed(ans) => {
                         let cols = vec![
                             i * 9 + j,
-                            81 + i * 9 + *ans as usize,
-                            162 + j * 9 + *ans as usize,
-                            243 + (i / 3 * 3 + j / 3) * 9 + *ans as usize,
+                            81 + i * 9 + *ans,
+                            162 + j * 9 + *ans,
+                            243 + (i / 3 * 3 + j / 3) * 9 + *ans,
                         ];
                         solver.add_row(row_id, &cols);
                         solution_mapping.push((i, j, *ans));
@@ -257,7 +257,7 @@ impl DLXSolver {
                                 243 + (i / 3 * 3 + j / 3) * 9 + k,
                             ];
                             solver.add_row(row_id, &cols);
-                            solution_mapping.push((i, j, k as u8));
+                            solution_mapping.push((i, j, k));
                             row_id += 1;
                         }
                     }

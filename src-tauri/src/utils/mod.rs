@@ -10,28 +10,28 @@ impl BitMap {
         BitMap(0)
     }
 
-    pub fn from(num: u8) -> Self {
+    pub fn from(num: usize) -> Self {
         BitMap(1 << num)
     }
 
-    pub fn contains(self, num: u8) -> bool {
+    pub fn contains(self, num: usize) -> bool {
         self.0 & (1 << num) != 0
     }
 
-    pub fn insert(&mut self, num: u8) {
+    pub fn insert(&mut self, num: usize) {
         self.0 |= 1 << num;
     }
 
-    pub fn remove(&mut self, num: u8) {
+    pub fn remove(&mut self, num: usize) {
         self.0 &= !(1 << num);
     }
 
-    pub fn count(self) -> u8 {
-        self.0.count_ones() as u8
+    pub fn count(self) -> usize {
+        self.0.count_ones() as usize
     }
 
-    pub fn trailing_zeros(self) -> u8 {
-        self.0.trailing_zeros() as u8
+    pub fn trailing_zeros(self) -> usize {
+        self.0.trailing_zeros() as usize
     }
 
     pub fn complement(self) -> Self {

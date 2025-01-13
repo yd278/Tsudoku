@@ -12,7 +12,7 @@ pub struct HiddenSingle;
 impl Solver for HiddenSingle {
     fn solve(&self, game_board: &GameBoard) -> Option<crate::solvers::solver_result::SolverResult> {
         let form_result =
-            |x: usize, y: usize, target: u8, clue: House, index: usize| -> SolverResult {
+            |x: usize, y: usize, target: usize, clue: House, index: usize| -> SolverResult {
                 let actions = vec![SolverActionResult::Confirmation(Confirmation {
                     x,
                     y,
