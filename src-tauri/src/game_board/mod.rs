@@ -52,7 +52,13 @@ impl GameBoard {
         &self.grid[x][y]
     }
 
-
+    //return the cell specified by x and y contains candidate target
+    pub fn contains_candidate(&self, x: usize, y: usize, target: usize) -> bool {
+        match &self.grid[x][y] {
+            Cell::Blank(cell) if !cell.is_pen_mark() => cell.contains_candidate(target),
+            _ => false,
+        }
+    }
     // check if the given target shouldn't be deleted
     // the caller should ensure that the cell is a blank cell
     pub fn check_pencil_mark_deletion_error(&self, x: usize, y: usize, target: usize) -> bool {

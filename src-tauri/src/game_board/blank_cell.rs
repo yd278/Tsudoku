@@ -67,5 +67,11 @@ impl BlankCell {
     pub fn update_candidates(&mut self, possible_candidates: &BitMap) {
         self.candidates = possible_candidates.and(self.user_deleted.complement());
     }
+    pub fn is_pen_mark(&self) -> bool {
+        self.pen_mark.is_some()
+    }
 
+    pub fn contains_candidate(&self, target: usize) -> bool {
+        self.candidates.contains(target)
+    }
 }
