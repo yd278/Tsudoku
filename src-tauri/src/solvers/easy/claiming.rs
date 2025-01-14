@@ -11,7 +11,7 @@ impl Solver for Claiming {
     fn solve(&self, game_board: &GameBoard) -> Option<SolverResult> {
         for i in 0..9 {
             for target in 0..9 {
-                for line in vec![House::Row(i), House::Col(i)] {
+                for line in [House::Row(i), House::Col(i)] {
                     let mut candidate_clues = Vec::new();
                     if let Some(box_id) = Coord::house(&line)
                         .filter_map(|(x, y)| {

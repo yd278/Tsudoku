@@ -9,7 +9,7 @@ use crate::utils::{BitMap, Coord};
 
 fn solve_naked_subset(n: usize, game_board: &GameBoard) -> Option<SolverResult> {
     for i in 0..9 {
-        for clue in vec![Box(i), Row(i), Col(i)] {
+        for clue in [Box(i), Row(i), Col(i)] {
             let combos = BitMap::get_combinations(n);
             'combo: for combo in combos {
                 let mut eliminations: Vec<SolverActionResult> = Vec::new();

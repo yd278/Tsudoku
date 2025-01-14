@@ -1,4 +1,4 @@
-use crate::{solvers::solver_result::candidate, utils::BitMap};
+use crate::utils::BitMap;
 
 #[derive(Clone, Copy)]
 pub struct BlankCell {

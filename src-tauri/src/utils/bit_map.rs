@@ -26,27 +26,17 @@ impl BitMap {
         let mask = (1 << (n - 1)) - 1;
         let rest = num & mask;
         if cur {
-            if let Some(res) = Self::next_combination_rec(rest, n - 1, k - 1) {
-                return Some((1 << (n - 1)) | res);
-            } else {
-                return None;
-            }
+            Self::next_combination_rec(rest, n - 1, k - 1).map(|res| (1 << (n - 1)) | res)
+        } else if let Some(res) = Self::next_combination_rec(rest, n - 1, k) {
+            Some(res)
         } else {
-            if let Some(res) = Self::next_combination_rec(rest, n - 1, k) {
-                return Some(res);
-            } else {
-                return Some(1 << (n - 1) | ((1 << (k - 1)) - 1));
-            }
+            Some(1 << (n - 1) | ((1 << (k - 1)) - 1))
         }
     }
 
     fn next_combination(&self) -> Option<Self> {
         let k = self.0.count_ones() as usize;
-        if let Some(res) = Self::next_combination_rec(self.0, 9, k) {
-            Some(BitMap(res))
-        } else {
-            None
-        }
+        Self::next_combination_rec(self.0, 9, k).map(BitMap)
     }
 
     pub fn get_combinations(n: usize) -> impl Iterator<Item = BitMap> {
@@ -85,8 +75,8 @@ impl BitMap {
         BitMap(self.0 | other.0)
     }
 
-    pub fn get_raw(&self) -> u16{
-        return self.0;
+    pub fn get_raw(&self) -> u16 {
+        self.0
     }
 }
 
