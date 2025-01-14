@@ -10,6 +10,14 @@ impl Coord {
             House::Row(r) => Box::new(Self::row(r)),
         }
     }
+
+    pub fn is_in_house(x:usize, y:usize, h:&House) -> bool{
+        match *h{
+            House::Col(c) => y==c,
+            House::Row(r) => x==r,
+            House::Box(b) => Self::get_box_id(x, y)==b,
+        }
+    }
     
     pub fn row(x: usize) -> impl Iterator<Item = (usize, usize)> {
         (0..9).map(move |y| (x,y))
