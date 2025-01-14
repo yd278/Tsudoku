@@ -20,3 +20,6 @@ fn main() {
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
+
+#[cfg(test)] #[macro_use]
+extern crate assert_matches;
