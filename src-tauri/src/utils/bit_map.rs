@@ -14,7 +14,7 @@ impl BitMap {
         BitMap(1 << num)
     }
 
-    pub fn first_combination(size: usize) -> Self {
+    fn first_combination(size: usize) -> Self {
         BitMap((1 << size) - 1)
     }
 
@@ -40,7 +40,7 @@ impl BitMap {
         }
     }
 
-    pub fn next_combination(&self) -> Option<Self> {
+    fn next_combination(&self) -> Option<Self> {
         let k = self.0.count_ones() as usize;
         if let Some(res) = Self::next_combination_rec(self.0, 9, k) {
             Some(BitMap(res))
@@ -49,7 +49,13 @@ impl BitMap {
         }
     }
 
-    pub fn contains(self, num: usize) -> bool {
+    pub fn get_combinations(n : usize) -> impl Iterator<Item = BitMap>{
+        std::iter::successors(Some(BitMap::first_combination(n)), |&prev| {
+            prev.next_combination()
+        })
+    }
+
+    pub fn contains(&self, num: usize) -> bool {
         self.0 & (1 << num) != 0
     }
 
@@ -61,20 +67,21 @@ impl BitMap {
         self.0 &= !(1 << num);
     }
 
-    pub fn count(self) -> usize {
+    pub fn count(&self) -> usize {
         self.0.count_ones() as usize
     }
 
-    pub fn trailing_zeros(self) -> usize {
+    pub fn trailing_zeros(&self) -> usize {
         self.0.trailing_zeros() as usize
     }
 
-    pub fn complement(self) -> Self {
+    pub fn complement(&self) -> Self {
         BitMap(!self.0 & 0b111111111)
     }
-    pub fn and(self, other: Self) -> Self {
+    pub fn intersect(&self, other: &Self) -> Self {
         BitMap(self.0 & other.0)
     }
+
 }
 
 #[cfg(test)]
