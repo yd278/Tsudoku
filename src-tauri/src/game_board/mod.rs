@@ -183,18 +183,33 @@ impl GameBoard {
 
 
 #[cfg(test)]
-mod game_board_test {
+pub mod game_board_test {
 
 
     use super::*;
 
-    fn from_string(input: &str) -> GameBoard {
+    pub fn from_string(input: &str) -> GameBoard {
         let mut grid = [[Cell::Blank(BlankCell::new_empty_cell()); 9]; 9];
         for (index, c) in input.chars().enumerate() {
             let i = index / 9;
             let j = index % 9;
             if c.is_digit(10) {
                 grid[i][j] = Cell::Printed(c.to_digit(10).unwrap() as usize - 1);
+            }
+        }
+        for (index, c) in input.chars().enumerate() {
+            let i = index / 9;
+            let j = index % 9;
+            if !c.is_digit(10) {
+                let mut  possible_candidates = BitMap::all();
+                for (x,y) in Coord::seeable_cells(i, j){
+                    if let Cell::Printed(num) =  grid[x][y]{
+                        possible_candidates.remove(num);
+                    }
+                }
+                if let Cell::Blank(ref mut  cell) = grid[i][j]{
+                    cell.set_candidates(possible_candidates);
+                }
             }
         }
         GameBoard { grid }

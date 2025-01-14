@@ -1,4 +1,4 @@
-use crate::utils::BitMap;
+use crate::{solvers::solver_result::candidate, utils::BitMap};
 
 #[derive(Clone, Copy)]
 pub struct BlankCell {
@@ -31,6 +31,10 @@ impl BlankCell {
 
     pub fn get_candidates(&self) -> &BitMap {
         &self.candidates
+    }
+
+    pub fn set_candidates(&mut self, candidates: BitMap) {
+        self.candidates = candidates;
     }
 
     pub fn get_user_deleted(&self) -> &BitMap {

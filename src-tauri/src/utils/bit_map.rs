@@ -84,6 +84,10 @@ impl BitMap {
     pub fn union(&self, other: &Self) -> Self {
         BitMap(self.0 | other.0)
     }
+
+    pub fn get_raw(&self) -> u16{
+        return self.0;
+    }
 }
 
 #[cfg(test)]
