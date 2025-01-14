@@ -67,4 +67,15 @@ mod naked_single_test {
         assert_eq!(y, 3);
         assert_eq!(candidates.get_raw(), 256)
     }
+
+    #[test]
+    fn naked_single_no_solution_test(){
+        let board = from_string(".7.9..8633..78.294..9...1754...........637...........17.....4....1.49..7624..8.19");
+    
+        let naked_single_solver = NakedSingle;
+        let res = naked_single_solver.solve(&board);
+        assert!(res.is_none());
+
+
+    }
 }
