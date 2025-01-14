@@ -167,6 +167,18 @@ impl GameBoard {
             cell.update_candidates(&possible_candidates);
         }
     }
+
+    pub fn get_candidates(&self, x:usize, y:usize) -> Option<BitMap>{
+        if let Cell::Blank(cell) = self.grid[x][y]{
+            if !cell.is_pen_mark(){
+                let res = cell.get_candidates();
+                return Some(*res);
+            }else{
+                return None;
+            }
+        }
+        None
+    }
 }
 
 

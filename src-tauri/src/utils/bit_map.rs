@@ -49,7 +49,7 @@ impl BitMap {
         }
     }
 
-    pub fn get_combinations(n : usize) -> impl Iterator<Item = BitMap>{
+    pub fn get_combinations(n: usize) -> impl Iterator<Item = BitMap> {
         std::iter::successors(Some(BitMap::first_combination(n)), |&prev| {
             prev.next_combination()
         })
@@ -81,7 +81,9 @@ impl BitMap {
     pub fn intersect(&self, other: &Self) -> Self {
         BitMap(self.0 & other.0)
     }
-
+    pub fn union(&self, other: &Self) -> Self {
+        BitMap(self.0 | other.0)
+    }
 }
 
 #[cfg(test)]
@@ -101,10 +103,10 @@ mod bit_map_test {
             for j in 0..i {
                 res *= 9 - j;
             }
-            for j in 1..=i{
+            for j in 1..=i {
                 res /= j;
             }
-            assert_eq!(count,res);
+            assert_eq!(count, res);
         }
     }
 }

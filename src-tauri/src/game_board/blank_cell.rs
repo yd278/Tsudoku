@@ -65,7 +65,7 @@ impl BlankCell {
         self.pen_mark = None;
     }
     pub fn update_candidates(&mut self, possible_candidates: &BitMap) {
-        self.candidates = possible_candidates.and(self.user_deleted.complement());
+        self.candidates = possible_candidates.intersect(&self.user_deleted.complement());
     }
     pub fn is_pen_mark(&self) -> bool {
         self.pen_mark.is_some()
