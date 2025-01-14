@@ -4,12 +4,12 @@ use crate::solvers::solver_result::confirmation::Confirmation;
 use crate::solvers::solver_result::SolverActionResult;
 use crate::solvers::solver_result::SolverResult;
 use crate::solvers::traits::Solver;
-use crate::utils::{BitMap, Coord,House};
+use crate::utils::{BitMap, Coord, House};
 
 pub struct HiddenSingle;
 
 impl Solver for HiddenSingle {
-    fn solve(&self, game_board: &GameBoard) -> Option<crate::solvers::solver_result::SolverResult> {
+    fn solve(&self, game_board: &GameBoard) -> Option<SolverResult> {
         let form_result =
             |x: usize, y: usize, target: usize, clue: House, index: usize| -> SolverResult {
                 let actions = vec![SolverActionResult::Confirmation(Confirmation {

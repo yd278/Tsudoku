@@ -1,5 +1,4 @@
-
-use crate::game_board::{ Cell, GameBoard};
+use crate::game_board::{Cell, GameBoard};
 use crate::solvers::solver_result::candidate::Candidate;
 use crate::solvers::solver_result::confirmation::Confirmation;
 use crate::solvers::solver_result::{SolverActionResult, SolverResult};
@@ -7,7 +6,7 @@ use crate::solvers::traits::Solver;
 pub struct NakedSingle;
 
 impl Solver for NakedSingle {
-    fn solve(&self, game_board: &GameBoard) -> Option<crate::solvers::solver_result::SolverResult> {
+    fn solve(&self, game_board: &GameBoard) -> Option<SolverResult> {
         for row in 0..9 {
             for col in 0..9 {
                 if let Cell::Blank(blank_cell) = game_board.get_cell(row, col) {
@@ -21,13 +20,11 @@ impl Solver for NakedSingle {
                                     target: candidates.trailing_zeros(),
                                 })],
                                 house_clues: vec![],
-                                candidate_clues: vec![
-                                    Candidate{
-                                        x:row,
-                                        y:col,
-                                        candidates: *candidates,
-                                    }
-                                ],
+                                candidate_clues: vec![Candidate {
+                                    x: row,
+                                    y: col,
+                                    candidates: *candidates,
+                                }],
                             });
                         }
                     }

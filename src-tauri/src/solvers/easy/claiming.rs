@@ -1,3 +1,4 @@
+use crate::game_board::GameBoard;
 use crate::solvers::solver_result::candidate::Candidate;
 use crate::solvers::solver_result::elimination::Elimination;
 use crate::solvers::solver_result::{SolverActionResult, SolverResult};
@@ -7,10 +8,7 @@ use crate::utils::{AllEqualValue, BitMap, Coord, House};
 pub struct Claiming;
 
 impl Solver for Claiming {
-    fn solve(
-        &self,
-        game_board: &crate::game_board::GameBoard,
-    ) -> Option<crate::solvers::solver_result::SolverResult> {
+    fn solve(&self, game_board: &GameBoard) -> Option<SolverResult> {
         for i in 0..9 {
             for target in 0..9 {
                 for line in vec![House::Row(i), House::Col(i)] {
