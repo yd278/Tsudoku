@@ -72,3 +72,72 @@ impl Solver for Pointing {
         None
     }
 }
+
+
+#[cfg(test)]
+mod pointing_test {
+
+
+    use super::*;
+    use crate::game_board::game_board_test::from_string;
+
+    #[test]
+    fn pointing_found_test() {
+        let board = from_string(
+            "95..62.8....51..........25416..7.5.2295...7.88.7.25.695.9..........57....8.39...5",
+        );
+        let pointing_solver = Pointing;
+        let res = pointing_solver.solve(&board).unwrap();
+        let actions = res.actions;
+        let house_clues = res.house_clues;
+        let candidate_clues = res.candidate_clues;
+        assert_eq!(actions.len(),1);
+        if let SolverActionResult::Elimination(Elimination{x,y,target}) = &actions[0]{
+            assert_eq!(*x,0);
+            assert_eq!(*y,2);
+            assert_eq!(target.get_raw(),1);
+        }
+        else{
+            panic!();
+        }
+        assert_eq!(house_clues.len(),2);
+        if let House::Box(x) = &house_clues[0]{
+            assert_eq!(*x,2);
+        }
+        else{
+            panic!()
+        }
+        if let House::Row(x) = &house_clues[1]{
+            assert_eq!(*x,0);
+        }
+        else{
+            panic!()
+        }
+        assert_eq!(candidate_clues.len(),2);
+        let Candidate{x,y,candidates} = &candidate_clues[0];
+            assert_eq!(*x, 0);
+            assert_eq!(*y,6);
+            assert_eq!(candidates.get_raw(), 1);
+        
+        let Candidate{x,y,candidates} = &candidate_clues[1];
+            assert_eq!(*x, 0);
+            assert_eq!(*y,8);
+            assert_eq!(candidates.get_raw(), 1);
+        
+
+        
+        
+        
+    }
+
+    #[test]
+    fn pointing_no_solution_test(){
+        let board = from_string("5.47......26.5.....8..912..3.....8..2...3...4..8.....7..132..6.....1.49......93.1");
+    
+        let pointing_solver = Pointing;
+        let res = pointing_solver.solve(&board);
+        assert!(res.is_none());
+
+
+    }
+}
