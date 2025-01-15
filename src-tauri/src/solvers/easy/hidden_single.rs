@@ -25,7 +25,10 @@ impl Solver for HiddenSingle {
         for target in 0..9 {
             let contains_target = |(x, y): &(usize, usize)| -> bool {
                 let cell = game_board.get_cell(*x, *y);
-                if let Cell::Blank(cell) = cell {
+                if let Cell::Blank(cell) = cell{
+                    if cell.is_pen_mark(){
+                        return false
+                    }
                     return cell.get_candidates().contains(target);
                 }
                 false
