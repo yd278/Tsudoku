@@ -6,6 +6,7 @@ pub mod blank_cell;
 pub mod dlx_solver;
 use blank_cell::BlankCell;
 
+
 #[derive(Clone, Copy)]
 pub enum Cell {
     Printed(usize),
@@ -29,6 +30,12 @@ impl GameBoard {
                     }
                 }
             });
+        }
+    }
+    pub fn get_answer(&self,x:usize, y:usize) -> usize{
+        match &self.grid[x][y]{
+            Cell::Printed(num) => *num,
+            Cell::Blank(blank_cell) => blank_cell.get_answer(),
         }
     }
 
@@ -185,6 +192,19 @@ impl GameBoard {
         None
     }
 
+    pub fn finished(&self) -> bool{
+        for i in 0..9{
+            for j in 0..9{
+                if let Cell::Blank(cell) = self.grid[i][j]{
+                    if !cell.is_pen_mark(){
+                        return false;
+                    }
+                }
+            }
+        }
+        true
+    }
+
     fn execute(&mut self, action: Action) {
         match action {
             Confirmation(ConfirmationDetails { x, y, target }) => {
@@ -202,7 +222,9 @@ impl GameBoard {
 }
 
 #[cfg(test)]
+
 impl GameBoard {
+
     pub fn from_string(input: &str) -> Self {
         let mut grid = [[Cell::Blank(BlankCell::new_empty_cell()); 9]; 9];
         for (index, c) in input.chars().enumerate() {
@@ -255,6 +277,8 @@ impl GameBoard {
 
 #[cfg(test)]
 pub mod game_board_test {
+
+    use crate::solvers::easy;
 
     use super::*;
 
@@ -320,5 +344,35 @@ pub mod game_board_test {
         } else {
             assert!(false);
         }
+    }
+    #[test]
+    fn test_easy_solvers(){
+        let mut game_board = GameBoard::from_string("..68532..2.36...1..........6.......2..59.47..3.......8..........2...63.7..47829..");
+        let res = dlx_solver::DLXSolver::solve_sudoku(&mut game_board);
+        assert!(res.is_ok());
+        let solvers = easy::get_easy_solvers();
+        while !game_board.finished() {
+            for solver in &solvers{
+                if let Some(solution) = solver.solve(&game_board){
+                    for action in solution.actions{
+                        match &action{
+                            Confirmation(confirmation_details) => {
+                                let ConfirmationDetails{x,y,target} = confirmation_details;
+                                assert_eq! (game_board.get_answer(*x, *y),*target);
+                            },
+                            Elimination(elimination_details) =>{
+                                let EliminationDetails{x,y,target} = elimination_details;
+                                for i in (0..9).filter(|x| target.contains(*x)){
+                                    assert_ne!(game_board.get_answer(*x, *y),i);
+                                }
+                            }
+                        }
+                        game_board.execute(action);
+                    }
+                    break
+                }
+            }
+        }
+        
     }
 }

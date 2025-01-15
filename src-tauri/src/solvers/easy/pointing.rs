@@ -69,6 +69,10 @@ impl Solver for Pointing {
         }
         None
     }
+    
+    fn solver_id(&self) -> usize {
+        2
+    }
 }
 
 #[cfg(test)]
