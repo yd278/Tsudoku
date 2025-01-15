@@ -57,11 +57,10 @@ impl Solver for HiddenSingle {
 #[cfg(test)]
 mod hidden_single_test {
     use super::*;
-    use crate::game_board::game_board_test::from_string;
 
     #[test]
     fn naked_single_found_test() {
-        let board = from_string(
+        let board = GameBoard::from_string(
             ".7.9..8633..78.294..9...1754...........637...........17.....4....1.49..7624..8.19",
         );
         let hidden_single_solver = HiddenSingle;
@@ -94,7 +93,7 @@ mod hidden_single_test {
 
     #[test]
     fn naked_single_no_solution_test() {
-        let board = from_string(
+        let board = GameBoard::from_string(
             "95..62.8....51..........25416..7.5.2295...7.88.7.25.695.9..........57....8.39...5",
         );
 

@@ -37,11 +37,10 @@ impl Solver for NakedSingle {
 #[cfg(test)]
 mod naked_single_test {
     use super::*;
-    use crate::game_board::game_board_test::from_string;
 
     #[test]
     fn naked_single_found_test() {
-        let board = from_string(
+        let board = GameBoard::from_string(
             "..24...5...92..7.334..8.....3.1....495.....378....3.1.....7..616.5..23...9...84..",
         );
         let naked_single_solver = NakedSingle;
@@ -68,7 +67,7 @@ mod naked_single_test {
 
     #[test]
     fn naked_single_no_solution_test() {
-        let board = from_string(
+        let board = GameBoard::from_string(
             ".7.9..8633..78.294..9...1754...........637...........17.....4....1.49..7624..8.19",
         );
 

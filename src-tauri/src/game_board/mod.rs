@@ -206,11 +206,8 @@ impl GameBoard {
 }
 
 #[cfg(test)]
-pub mod game_board_test {
-
-    use super::*;
-
-    pub fn from_string(input: &str) -> GameBoard {
+impl GameBoard{
+    pub fn from_string(input: &str) -> Self {
         let mut grid = [[Cell::Blank(BlankCell::new_empty_cell()); 9]; 9];
         for (index, c) in input.chars().enumerate() {
             let i = index / 9;
@@ -236,6 +233,14 @@ pub mod game_board_test {
         }
         GameBoard { grid }
     }
+}
+
+#[cfg(test)]
+pub mod game_board_test {
+
+    use super::*;
+
+    
     fn to_string(game_board: &GameBoard) -> String {
         let mut res = String::new();
         for i in 0..9 {
@@ -251,7 +256,7 @@ pub mod game_board_test {
 
     #[test]
     fn test_solver_1() {
-        let mut game_board = from_string(
+        let mut game_board = GameBoard::from_string(
             "...8...6..58.19....23...4.87..........16.45..........28.6...29....97.18..7...2...",
         );
         let res = dlx_solver::DLXSolver::solve_sudoku(&mut game_board);
@@ -263,7 +268,7 @@ pub mod game_board_test {
     }
     #[test]
     fn test_solver_2() {
-        let mut game_board = from_string(
+        let mut game_board = GameBoard::from_string(
             ".....3......71......7.4.15371...2.4.5.2...6.1.8.9...25463.7.9......94......6.....",
         );
         let res = dlx_solver::DLXSolver::solve_sudoku(&mut game_board);
@@ -276,7 +281,7 @@ pub mod game_board_test {
 
     #[test]
     fn test_no_solution() {
-        let mut game_board = from_string(
+        let mut game_board = GameBoard::from_string(
             "..4..3......71......7.4.15371...2.4.5.2...6.1.8.9...25463.7.9......94......6.....",
         );
         let res = dlx_solver::DLXSolver::solve_sudoku(&mut game_board);
@@ -289,7 +294,7 @@ pub mod game_board_test {
     #[test]
 
     fn test_multi_solution() {
-        let mut game_board = from_string(
+        let mut game_board = GameBoard::from_string(
             "...8...6..58.19.....3...4.87..........16.45..........28.....29....97.18..7...2...",
         );
         let res = dlx_solver::DLXSolver::solve_sudoku(&mut game_board);

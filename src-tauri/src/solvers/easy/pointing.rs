@@ -1,3 +1,4 @@
+use crate::game_board::GameBoard;
 use crate::solvers::solution::candidate::Candidate;
 use crate::solvers::solution::elimination_details::EliminationDetails;
 use crate::solvers::solution::{Action, Solution};
@@ -9,7 +10,7 @@ pub struct Pointing;
 impl Solver for Pointing {
     fn solve(
         &self,
-        game_board: &crate::game_board::GameBoard,
+        game_board: &GameBoard,
     ) -> Option<crate::solvers::solution::Solution> {
         for box_id in 0..9 {
             'target: for target in 0..9 {
@@ -77,11 +78,10 @@ impl Solver for Pointing {
 mod pointing_test {
 
     use super::*;
-    use crate::game_board::game_board_test::from_string;
 
     #[test]
     fn pointing_found_test() {
-        let board = from_string(
+        let board = GameBoard::from_string(
             "95..62.8....51..........25416..7.5.2295...7.88.7.25.695.9..........57....8.39...5",
         );
         let pointing_solver = Pointing;
@@ -122,7 +122,7 @@ mod pointing_test {
 
     #[test]
     fn pointing_no_solution_test() {
-        let board = from_string(
+        let board = GameBoard::from_string(
             "5.47......26.5.....8..912..3.....8..2...3...4..8.....7..132..6.....1.49......93.1",
         );
 
