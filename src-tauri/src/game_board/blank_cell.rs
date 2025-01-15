@@ -79,3 +79,4 @@ impl BlankCell {
         self.candidates.contains(target)
     }
 }
+

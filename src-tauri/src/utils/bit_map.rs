@@ -1,4 +1,4 @@
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy,Debug)]
 pub struct BitMap(u16);
 
 impl BitMap {

@@ -5,6 +5,7 @@ use crate::utils::House;
 pub use candidate::Candidate;
 pub use confirmation_details::ConfirmationDetails;
 pub use elimination_details::EliminationDetails;
+#[derive(Debug)]
 pub enum Action {
     Confirmation(ConfirmationDetails),
     Elimination(EliminationDetails),

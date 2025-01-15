@@ -233,6 +233,28 @@ impl GameBoard{
         }
         GameBoard { grid }
     }
+
+    pub fn from_array(arr:[u16;81])->Self{
+        let mut i = 0;
+        let mut j = 0;
+        let mut grid =  [[Cell::Blank(BlankCell::new_empty_cell()); 9]; 9];
+        for raw in arr{
+            let candidates = BitMap::from_raw(raw);
+            if candidates.count()==1 {
+                grid[i][j] = Cell::Printed(candidates.trailing_zeros());
+            }else{
+                if let Cell::Blank(ref mut cell) = grid[i][j]{
+                    cell.set_candidates(candidates);
+                }
+            }
+            j += 1;
+            if j == 9{
+                j = 0;
+                i += 1;
+            }
+        }
+        GameBoard{grid}
+    }
 }
 
 #[cfg(test)]
