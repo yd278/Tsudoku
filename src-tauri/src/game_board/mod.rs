@@ -1,4 +1,9 @@
-use crate::solvers::solution::Action;
+use crate::solvers::solution::Action::{
+    self,
+    Confirmation,
+    Elimination,
+};
+use crate::solvers::solution::{ConfirmationDetails, EliminationDetails};
 use crate::utils::BitMap;
 use crate::utils::Coord;
 pub mod blank_cell;
@@ -41,7 +46,6 @@ impl GameBoard {
     }
 
     // take an cell at (x,y) and return the vector of coordinates that collide with the target
-    // the caller should ensure that the cell is a blank cell
     fn check_clue_collision(&self, x: usize, y: usize, target: usize) -> Vec<(usize, usize)> {
         Coord::seeable_cells(x, y)
             .filter_map(|(xi, yi)| self.check_cell_collision(xi, yi, target))
@@ -114,9 +118,11 @@ impl GameBoard {
     }
 
     // set a cell as pen mark by user
-    // the caller should ensure that the cell is a blank cell with no pen mark
     pub fn add_pen_mark(&mut self, x: usize, y: usize, target: usize) {
         if let Cell::Blank(cell) = &mut self.grid[x][y] {
+            if cell.is_pen_mark(){
+                return
+            }
             cell.set_pen_mark(target);
 
             Coord::seeable_cells(x, y)
@@ -125,13 +131,15 @@ impl GameBoard {
     }
 
     // erase a pen mark in given cell by user
-    // the caller should ensure that the cell is a blank cell with a pen mark
     pub fn erase_pen_mark(&mut self, x: usize, y: usize) {
         let mut possible_candidates = BitMap::all();
         let mut to_put_back = Vec::new();
 
         let target = {
             if let Cell::Blank(ref mut cell) = self.grid[x][y] {
+                if !cell.is_pen_mark(){
+                    return;
+                }
                 if let Some(target) = cell.get_pen_mark() {
                     cell.erase_pen_mark();
                     Some(target)
@@ -181,7 +189,20 @@ impl GameBoard {
         None
     }
 
-    fn execute(&mut self, action: Action) {}
+    fn execute(&mut self, action: Action) {
+        match action{
+            Confirmation(ConfirmationDetails{x,y,target}) => {
+                self.add_pen_mark(x, y, target);
+            },
+            Elimination(EliminationDetails{x,y,target}) => {
+                for i in 0..9{
+                    if target.contains(i){
+                        self.erase_pencil_mark(x, y, i);
+                    }
+                }
+            },
+        }
+    }
 }
 
 #[cfg(test)]
