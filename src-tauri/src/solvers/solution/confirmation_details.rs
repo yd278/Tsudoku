@@ -1,10 +1,5 @@
-
-
-
-
-pub struct Confirmation {
+pub struct ConfirmationDetails {
     pub x: usize,
     pub y: usize,
     pub target: usize,
-
 }

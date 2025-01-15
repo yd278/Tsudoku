@@ -1,6 +1,5 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
-
 #![allow(unused_variables)] // 禁用本文件中所有 unused_variables 警告
 #![allow(dead_code)]
 
@@ -9,10 +8,9 @@ mod game_board;
 mod solvers;
 mod utils;
 #[tauri::command]
-fn generate(difficulty: i32) -> String{
-    format!("Generate function called with difficulty {}",difficulty)
+fn generate(difficulty: i32) -> String {
+    format!("Generate function called with difficulty {}", difficulty)
 }
-
 
 fn main() {
     tauri::Builder::default()
@@ -21,5 +19,6 @@ fn main() {
         .expect("error while running tauri application");
 }
 
-#[cfg(test)] #[macro_use]
+#[cfg(test)]
+#[macro_use]
 extern crate assert_matches;

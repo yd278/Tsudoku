@@ -1,6 +1,6 @@
 use crate::game_board::GameBoard;
-use crate::solvers::solver_result::SolverResult;
+use crate::solvers::solution::Solution;
 
 pub trait Solver {
-    fn solve(&self, game_board: &GameBoard) -> Option<SolverResult>;
+    fn solve(&self, game_board: &GameBoard) -> Option<Solution>;
 }

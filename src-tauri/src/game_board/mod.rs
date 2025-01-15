@@ -1,3 +1,4 @@
+use crate::solvers::solution::Action;
 use crate::utils::BitMap;
 use crate::utils::Coord;
 pub mod blank_cell;
@@ -168,23 +169,23 @@ impl GameBoard {
         }
     }
 
-    pub fn get_candidates(&self, x:usize, y:usize) -> Option<BitMap>{
-        if let Cell::Blank(cell) = self.grid[x][y]{
-            if !cell.is_pen_mark(){
+    pub fn get_candidates(&self, x: usize, y: usize) -> Option<BitMap> {
+        if let Cell::Blank(cell) = self.grid[x][y] {
+            if !cell.is_pen_mark() {
                 let res = cell.get_candidates();
                 return Some(*res);
-            }else{
+            } else {
                 return None;
             }
         }
         None
     }
-}
 
+    fn execute(&mut self, action: Action) {}
+}
 
 #[cfg(test)]
 pub mod game_board_test {
-
 
     use super::*;
 
@@ -201,27 +202,26 @@ pub mod game_board_test {
             let i = index / 9;
             let j = index % 9;
             if !c.is_digit(10) {
-                let mut  possible_candidates = BitMap::all();
-                for (x,y) in Coord::seeable_cells(i, j){
-                    if let Cell::Printed(num) =  grid[x][y]{
+                let mut possible_candidates = BitMap::all();
+                for (x, y) in Coord::seeable_cells(i, j) {
+                    if let Cell::Printed(num) = grid[x][y] {
                         possible_candidates.remove(num);
                     }
                 }
-                if let Cell::Blank(ref mut  cell) = grid[i][j]{
+                if let Cell::Blank(ref mut cell) = grid[i][j] {
                     cell.set_candidates(possible_candidates);
                 }
             }
         }
         GameBoard { grid }
-
     }
     fn to_string(game_board: &GameBoard) -> String {
         let mut res = String::new();
         for i in 0..9 {
             for j in 0..9 {
                 match game_board.get_cell(i, j) {
-                    Cell::Printed(ans) => res.push_str(&(ans+1).to_string()),
-                    Cell::Blank(c) => res.push_str(&(c.get_answer()+1).to_string()),
+                    Cell::Printed(ans) => res.push_str(&(ans + 1).to_string()),
+                    Cell::Blank(c) => res.push_str(&(c.get_answer() + 1).to_string()),
                 }
             }
         }
@@ -230,35 +230,47 @@ pub mod game_board_test {
 
     #[test]
     fn test_solver_1() {
-        let mut game_board = from_string("...8...6..58.19....23...4.87..........16.45..........28.6...29....97.18..7...2...");
+        let mut game_board = from_string(
+            "...8...6..58.19....23...4.87..........16.45..........28.6...29....97.18..7...2...",
+        );
         let res = dlx_solver::DLXSolver::solve_sudoku(&mut game_board);
         assert!(res.is_ok());
-        assert_eq!(to_string(&game_board), "147823965658419723923567418794258631281634579365791842816345297532976184479182356");
+        assert_eq!(
+            to_string(&game_board),
+            "147823965658419723923567418794258631281634579365791842816345297532976184479182356"
+        );
     }
     #[test]
-    fn test_solver_2(){
-        let mut game_board = from_string(".....3......71......7.4.15371...2.4.5.2...6.1.8.9...25463.7.9......94......6.....");
+    fn test_solver_2() {
+        let mut game_board = from_string(
+            ".....3......71......7.4.15371...2.4.5.2...6.1.8.9...25463.7.9......94......6.....",
+        );
         let res = dlx_solver::DLXSolver::solve_sudoku(&mut game_board);
         assert!(res.is_ok());
-        assert_eq!(to_string(&game_board), "146853279325719864897246153719562348532487691684931725463175982278394516951628437");
-   
+        assert_eq!(
+            to_string(&game_board),
+            "146853279325719864897246153719562348532487691684931725463175982278394516951628437"
+        );
     }
 
     #[test]
-    fn test_no_solution(){
-        let mut game_board = from_string("..4..3......71......7.4.15371...2.4.5.2...6.1.8.9...25463.7.9......94......6.....");
+    fn test_no_solution() {
+        let mut game_board = from_string(
+            "..4..3......71......7.4.15371...2.4.5.2...6.1.8.9...25463.7.9......94......6.....",
+        );
         let res = dlx_solver::DLXSolver::solve_sudoku(&mut game_board);
         if let Err(dlx_solver::dlx_solution::DLXSolution::NoSolution) = res {
             assert!(true);
         } else {
             assert!(false);
         }
-        
     }
     #[test]
 
-    fn test_multi_solution(){
-        let mut game_board = from_string("...8...6..58.19.....3...4.87..........16.45..........28.....29....97.18..7...2...");
+    fn test_multi_solution() {
+        let mut game_board = from_string(
+            "...8...6..58.19.....3...4.87..........16.45..........28.....29....97.18..7...2...",
+        );
         let res = dlx_solver::DLXSolver::solve_sudoku(&mut game_board);
         if let Err(dlx_solver::dlx_solution::DLXSolution::MultipleSolutions) = res {
             assert!(true);
@@ -266,6 +278,4 @@ pub mod game_board_test {
             assert!(false);
         }
     }
-
-    
 }

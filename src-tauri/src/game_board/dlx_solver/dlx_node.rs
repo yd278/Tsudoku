@@ -1,17 +1,17 @@
-use std::rc::Rc;
 use std::cell::RefCell;
+use std::rc::Rc;
 
 pub type Link = Option<Rc<RefCell<DLXNode>>>;
 
-#[derive(Debug,PartialEq)]
+#[derive(Debug, PartialEq)]
 pub struct DLXNode {
     pub left: Link,
     pub right: Link,
     pub up: Link,
     pub down: Link,
     pub column: Link, // 列头节点
-    pub row_id: usize, 
-    pub col_id: usize, 
+    pub row_id: usize,
+    pub col_id: usize,
 }
 
 impl DLXNode {
@@ -26,5 +26,4 @@ impl DLXNode {
             col_id,
         }))
     }
-    
 }

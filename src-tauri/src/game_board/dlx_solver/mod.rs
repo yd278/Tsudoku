@@ -58,9 +58,9 @@ impl DLXSolver {
             //将新节点插入到列中
             new_node.borrow_mut().up = col_node.borrow().up.clone();
             new_node.borrow_mut().down = Some(col_node.clone());
-            
+
             new_node.borrow_mut().up.as_ref().unwrap().borrow_mut().down = Some(new_node.clone());
-            
+
             col_node.borrow_mut().up = Some(new_node.clone());
 
             self.col_count[col_id] += 1;
@@ -153,7 +153,6 @@ impl DLXSolver {
         if Rc::ptr_eq(&self.header, self.header.borrow().right.as_ref().unwrap()) {
             return DLXSolution::Solution(acc.clone());
         }
-
 
         // 选择节点数最少的列
         let mut min = usize::MAX;

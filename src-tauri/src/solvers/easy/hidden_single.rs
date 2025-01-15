@@ -1,29 +1,22 @@
 use crate::game_board::{Cell, GameBoard};
-use crate::solvers::solver_result::candidate::Candidate;
-use crate::solvers::solver_result::confirmation::Confirmation;
-use crate::solvers::solver_result::SolverActionResult;
-use crate::solvers::solver_result::SolverResult;
-use crate::solvers::traits::Solver;
+use crate::solvers::solution::{Action::Confirmation, Candidate, ConfirmationDetails, Solution};
+use crate::solvers::Solver;
 use crate::utils::{BitMap, Coord, House};
 
 pub struct HiddenSingle;
 
 impl Solver for HiddenSingle {
-    fn solve(&self, game_board: &GameBoard) -> Option<SolverResult> {
+    fn solve(&self, game_board: &GameBoard) -> Option<Solution> {
         let form_result =
-            |x: usize, y: usize, target: usize, clue: House, index: usize| -> SolverResult {
-                let actions = vec![SolverActionResult::Confirmation(Confirmation {
-                    x,
-                    y,
-                    target,
-                })];
+            |x: usize, y: usize, target: usize, clue: House, index: usize| -> Solution {
+                let actions = vec![Confirmation(ConfirmationDetails { x, y, target })];
                 let house_clues = vec![clue];
                 let candidate_clues = vec![Candidate {
                     x,
                     y,
                     candidates: BitMap::from(target),
                 }];
-                SolverResult {
+                Solution {
                     actions,
                     house_clues,
                     candidate_clues,
@@ -76,7 +69,7 @@ mod hidden_single_test {
         let actions = res.actions;
         assert_eq!(actions.len(), 1);
         let action = &actions[0];
-        if let SolverActionResult::Confirmation(Confirmation { x, y, target }) = action {
+        if let Confirmation(ConfirmationDetails { x, y, target }) = action {
             assert_eq!(*x, 0);
             assert_eq!(*y, 5);
             assert_eq!(*target, 3);
@@ -84,13 +77,12 @@ mod hidden_single_test {
             assert!(false);
         }
         let house_clues = res.house_clues;
-        assert_eq!(house_clues.len(),1);
+        assert_eq!(house_clues.len(), 1);
         let house_clue = &house_clues[0];
-        match *house_clue{
-            House::Row(i) => assert_eq!(i,0),
+        match *house_clue {
+            House::Row(i) => assert_eq!(i, 0),
             House::Col(_) => panic!(),
             House::Box(_) => panic!(),
-            
         }
         let candidate_clues = res.candidate_clues;
         assert_eq!(candidate_clues.len(), 1);
@@ -101,13 +93,13 @@ mod hidden_single_test {
     }
 
     #[test]
-    fn naked_single_no_solution_test(){
-        let board = from_string("95..62.8....51..........25416..7.5.2295...7.88.7.25.695.9..........57....8.39...5");
-    
+    fn naked_single_no_solution_test() {
+        let board = from_string(
+            "95..62.8....51..........25416..7.5.2295...7.88.7.25.695.9..........57....8.39...5",
+        );
+
         let hidden_single_solver = HiddenSingle;
         let res = hidden_single_solver.solve(&board);
         assert!(res.is_none());
-
-
     }
 }

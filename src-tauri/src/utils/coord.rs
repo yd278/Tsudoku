@@ -30,7 +30,7 @@ impl Coord {
         }
     }
 
-    pub fn get_index_from_house(h: &House, x:usize, y:usize) -> usize{
+    pub fn get_index_from_house(h: &House, x: usize, y: usize) -> usize {
         match *h {
             House::Col(c) => x,
             House::Row(r) => y,
