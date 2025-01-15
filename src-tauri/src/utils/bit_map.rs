@@ -1,4 +1,4 @@
-#[derive(Clone, Copy,Debug)]
+#[derive(Clone, Copy, Debug)]
 pub struct BitMap(u16);
 
 impl BitMap {
@@ -80,7 +80,7 @@ impl BitMap {
     }
 
     #[cfg(test)]
-    pub fn from_raw(raw: u16) -> Self{
+    pub fn from_raw(raw: u16) -> Self {
         Self(raw)
     }
 }

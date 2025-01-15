@@ -1,8 +1,4 @@
-use crate::solvers::solution::Action::{
-    self,
-    Confirmation,
-    Elimination,
-};
+use crate::solvers::solution::Action::{self, Confirmation, Elimination};
 use crate::solvers::solution::{ConfirmationDetails, EliminationDetails};
 use crate::utils::BitMap;
 use crate::utils::Coord;
@@ -120,8 +116,8 @@ impl GameBoard {
     // set a cell as pen mark by user
     pub fn add_pen_mark(&mut self, x: usize, y: usize, target: usize) {
         if let Cell::Blank(cell) = &mut self.grid[x][y] {
-            if cell.is_pen_mark(){
-                return
+            if cell.is_pen_mark() {
+                return;
             }
             cell.set_pen_mark(target);
 
@@ -137,7 +133,7 @@ impl GameBoard {
 
         let target = {
             if let Cell::Blank(ref mut cell) = self.grid[x][y] {
-                if !cell.is_pen_mark(){
+                if !cell.is_pen_mark() {
                     return;
                 }
                 if let Some(target) = cell.get_pen_mark() {
@@ -190,23 +186,23 @@ impl GameBoard {
     }
 
     fn execute(&mut self, action: Action) {
-        match action{
-            Confirmation(ConfirmationDetails{x,y,target}) => {
+        match action {
+            Confirmation(ConfirmationDetails { x, y, target }) => {
                 self.add_pen_mark(x, y, target);
-            },
-            Elimination(EliminationDetails{x,y,target}) => {
-                for i in 0..9{
-                    if target.contains(i){
+            }
+            Elimination(EliminationDetails { x, y, target }) => {
+                for i in 0..9 {
+                    if target.contains(i) {
                         self.erase_pencil_mark(x, y, i);
                     }
                 }
-            },
+            }
         }
     }
 }
 
 #[cfg(test)]
-impl GameBoard{
+impl GameBoard {
     pub fn from_string(input: &str) -> Self {
         let mut grid = [[Cell::Blank(BlankCell::new_empty_cell()); 9]; 9];
         for (index, c) in input.chars().enumerate() {
@@ -234,26 +230,26 @@ impl GameBoard{
         GameBoard { grid }
     }
 
-    pub fn from_array(arr:[u16;81])->Self{
+    pub fn from_array(arr: [u16; 81]) -> Self {
         let mut i = 0;
         let mut j = 0;
-        let mut grid =  [[Cell::Blank(BlankCell::new_empty_cell()); 9]; 9];
-        for raw in arr{
+        let mut grid = [[Cell::Blank(BlankCell::new_empty_cell()); 9]; 9];
+        for raw in arr {
             let candidates = BitMap::from_raw(raw);
-            if candidates.count()==1 {
+            if candidates.count() == 1 {
                 grid[i][j] = Cell::Printed(candidates.trailing_zeros());
-            }else{
-                if let Cell::Blank(ref mut cell) = grid[i][j]{
+            } else {
+                if let Cell::Blank(ref mut cell) = grid[i][j] {
                     cell.set_candidates(candidates);
                 }
             }
             j += 1;
-            if j == 9{
+            if j == 9 {
                 j = 0;
                 i += 1;
             }
         }
-        GameBoard{grid}
+        GameBoard { grid }
     }
 }
 
@@ -262,7 +258,6 @@ pub mod game_board_test {
 
     use super::*;
 
-    
     fn to_string(game_board: &GameBoard) -> String {
         let mut res = String::new();
         for i in 0..9 {

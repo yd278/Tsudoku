@@ -8,10 +8,7 @@ use crate::utils::{BitMap, Coord, House};
 pub struct Pointing;
 
 impl Solver for Pointing {
-    fn solve(
-        &self,
-        game_board: &GameBoard,
-    ) -> Option<crate::solvers::solution::Solution> {
+    fn solve(&self, game_board: &GameBoard) -> Option<crate::solvers::solution::Solution> {
         for box_id in 0..9 {
             'target: for target in 0..9 {
                 // for a fixed box and target
