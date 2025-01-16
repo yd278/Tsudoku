@@ -6,7 +6,6 @@ pub mod blank_cell;
 pub mod dlx_solver;
 use blank_cell::BlankCell;
 
-
 #[derive(Clone, Copy)]
 pub enum Cell {
     Printed(usize),
@@ -15,6 +14,9 @@ pub enum Cell {
 
 pub struct GameBoard {
     grid: [[Cell; 9]; 9],
+    row_occupied: [BitMap; 9], // row_occupied[i] .contains(j) : row-j is occupied by number i
+    col_occupied: [BitMap; 9],
+    box_occupied: [BitMap; 9],
 }
 
 impl GameBoard {
@@ -32,8 +34,8 @@ impl GameBoard {
             });
         }
     }
-    pub fn get_answer(&self,x:usize, y:usize) -> usize{
-        match &self.grid[x][y]{
+    pub fn get_answer(&self, x: usize, y: usize) -> usize {
+        match &self.grid[x][y] {
             Cell::Printed(num) => *num,
             Cell::Blank(blank_cell) => blank_cell.get_answer(),
         }
@@ -127,6 +129,9 @@ impl GameBoard {
                 return;
             }
             cell.set_pen_mark(target);
+            self.row_occupied[target].insert(x);
+            self.col_occupied[target].insert(y);
+            self.box_occupied[target].insert(Coord::get_box_id(x, y));
 
             Coord::seeable_cells(x, y)
                 .for_each(|(xi, yi)| self.delete_candidate(xi, yi, target, false));
@@ -145,6 +150,28 @@ impl GameBoard {
                 }
                 if let Some(target) = cell.get_pen_mark() {
                     cell.erase_pen_mark();
+                    if Coord::row(x)
+                        .filter(|&(x, y)| self.is_clue(x, y, target))
+                        .count()
+                        == 0
+                    {
+                        self.row_occupied[target].remove(x);
+                    }
+                    if Coord::col(y)
+                        .filter(|&(x, y)| self.is_clue(x, y, target))
+                        .count()
+                        == 0
+                    {
+                        self.col_occupied[target].remove(y);
+                    }
+                    let box_id = Coord::get_box_id(x, y);
+                    if Coord::box_coords(box_id)
+                        .filter(|&(x, y)| self.is_clue(x, y, target))
+                        .count()
+                        == 0
+                    {
+                        self.box_occupied[target].remove(box_id);
+                    }
                     Some(target)
                 } else {
                     None
@@ -192,11 +219,24 @@ impl GameBoard {
         None
     }
 
-    pub fn finished(&self) -> bool{
-        for i in 0..9{
-            for j in 0..9{
-                if let Cell::Blank(cell) = self.grid[i][j]{
-                    if !cell.is_pen_mark(){
+    pub fn is_clue(&self, x: usize, y: usize, target: usize) -> bool {
+        match &self.grid[x][y] {
+            Cell::Printed(num) => *num == target,
+            Cell::Blank(blank_cell) => {
+                if let Some(num) = blank_cell.get_pen_mark() {
+                    num == target
+                } else {
+                    false
+                }
+            }
+        }
+    }
+
+    pub fn finished(&self) -> bool {
+        for i in 0..9 {
+            for j in 0..9 {
+                if let Cell::Blank(cell) = self.grid[i][j] {
+                    if !cell.is_pen_mark() {
                         return false;
                     }
                 }
@@ -219,19 +259,36 @@ impl GameBoard {
             }
         }
     }
+
+    pub fn box_occupied(&self) -> &[BitMap; 9] {
+        &self.box_occupied
+    }
+
+    pub fn col_occupied(&self) -> &[BitMap; 9] {
+        &self.col_occupied
+    }
+    pub fn row_occupied(&self) -> &[BitMap; 9] {
+        &self.row_occupied
+    }
 }
 
 #[cfg(test)]
 
 impl GameBoard {
-
     pub fn from_string(input: &str) -> Self {
         let mut grid = [[Cell::Blank(BlankCell::new_empty_cell()); 9]; 9];
+        let mut row_occupied = [BitMap::new(); 9];
+        let mut col_occupied = [BitMap::new(); 9];
+        let mut box_occupied = [BitMap::new(); 9];
         for (index, c) in input.chars().enumerate() {
             let i = index / 9;
             let j = index % 9;
             if c.is_digit(10) {
-                grid[i][j] = Cell::Printed(c.to_digit(10).unwrap() as usize - 1);
+                let num = c.to_digit(10).unwrap() as usize - 1;
+                grid[i][j] = Cell::Printed(num);
+                row_occupied[num].insert(i);
+                col_occupied[num].insert(j);
+                box_occupied[num].insert(Coord::get_box_id(i, j));
             }
         }
         for (index, c) in input.chars().enumerate() {
@@ -249,17 +306,30 @@ impl GameBoard {
                 }
             }
         }
-        GameBoard { grid }
+        GameBoard {
+            grid,
+            row_occupied,
+            col_occupied,
+            box_occupied,
+        }
     }
 
     pub fn from_array(arr: [u16; 81]) -> Self {
         let mut i = 0;
         let mut j = 0;
         let mut grid = [[Cell::Blank(BlankCell::new_empty_cell()); 9]; 9];
+        let mut row_occupied = [BitMap::new(); 9];
+        let mut col_occupied = [BitMap::new(); 9];
+        let mut box_occupied = [BitMap::new(); 9];
         for raw in arr {
             let candidates = BitMap::from_raw(raw);
             if candidates.count() == 1 {
-                grid[i][j] = Cell::Printed(candidates.trailing_zeros());
+                let num = candidates.trailing_zeros();
+
+                grid[i][j] = Cell::Printed(num);
+                row_occupied[num].insert(i);
+                col_occupied[num].insert(j);
+                box_occupied[num].insert(Coord::get_box_id(i, j));
             } else {
                 if let Cell::Blank(ref mut cell) = grid[i][j] {
                     cell.set_candidates(candidates);
@@ -271,7 +341,12 @@ impl GameBoard {
                 i += 1;
             }
         }
-        GameBoard { grid }
+        GameBoard {
+            grid,
+            row_occupied,
+            col_occupied,
+            box_occupied,
+        }
     }
 }
 
@@ -346,33 +421,34 @@ pub mod game_board_test {
         }
     }
     #[test]
-    fn test_easy_solvers(){
-        let mut game_board = GameBoard::from_string("..68532..2.36...1..........6.......2..59.47..3.......8..........2...63.7..47829..");
+    fn test_easy_solvers() {
+        let mut game_board = GameBoard::from_string(
+            "..68532..2.36...1..........6.......2..59.47..3.......8..........2...63.7..47829..",
+        );
         let res = dlx_solver::DLXSolver::solve_sudoku(&mut game_board);
         assert!(res.is_ok());
         let solvers = easy::get_easy_solvers();
         while !game_board.finished() {
-            for solver in &solvers{
-                if let Some(solution) = solver.solve(&game_board){
-                    for action in solution.actions{
-                        match &action{
+            for solver in &solvers {
+                if let Some(solution) = solver.solve(&game_board) {
+                    for action in solution.actions {
+                        match &action {
                             Confirmation(confirmation_details) => {
-                                let ConfirmationDetails{x,y,target} = confirmation_details;
-                                assert_eq! (game_board.get_answer(*x, *y),*target);
-                            },
-                            Elimination(elimination_details) =>{
-                                let EliminationDetails{x,y,target} = elimination_details;
-                                for i in (0..9).filter(|x| target.contains(*x)){
-                                    assert_ne!(game_board.get_answer(*x, *y),i);
+                                let ConfirmationDetails { x, y, target } = confirmation_details;
+                                assert_eq!(game_board.get_answer(*x, *y), *target);
+                            }
+                            Elimination(elimination_details) => {
+                                let EliminationDetails { x, y, target } = elimination_details;
+                                for i in (0..9).filter(|x| target.contains(*x)) {
+                                    assert_ne!(game_board.get_answer(*x, *y), i);
                                 }
                             }
                         }
                         game_board.execute(action);
                     }
-                    break
+                    break;
                 }
             }
         }
-        
     }
 }

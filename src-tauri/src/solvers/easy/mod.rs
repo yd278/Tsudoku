@@ -1,9 +1,9 @@
 use super::Solver;
 mod claiming;
 mod hidden_single;
-mod hidden_subset;
+pub mod hidden_subset;
 mod naked_single;
-mod naked_subset;
+pub mod naked_subset;
 mod pointing;
 pub fn get_easy_solvers() -> Vec<Box<dyn Solver>> {
     vec![

@@ -1,4 +1,5 @@
 pub mod easy;
+pub mod medium;
 pub mod solution;
 pub mod traits;
 
