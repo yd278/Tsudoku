@@ -4,7 +4,7 @@ use crate::{
         solution::{Action, Candidate, EliminationDetails, Solution},
         Solver,
     },
-    utils::{BitMap, Coord, House},
+    utils::{BitMap, Coord, House,Dimension},
 };
 
 fn find_eliminable(
@@ -35,26 +35,7 @@ fn find_eliminable(
 
 }
 
-#[derive(Clone)]
-enum Dimension {
-    Row,
-    Col,
-}
 
-impl Dimension {
-    fn other(&self) -> Dimension {
-        match self {
-            Dimension::Row => Dimension::Col,
-            Dimension::Col => Dimension::Row,
-        }
-    }
-    fn house(&self, x: usize) -> House {
-        match self {
-            Dimension::Row => House::Row(x),
-            Dimension::Col => House::Col(x),
-        }
-    }
-}
 fn cover_sets_from_appearance(appearance: BitMap, dim: Dimension) -> Vec<House> {
     appearance.iter_ones().map(|x| dim.house(x)).collect()
 }
