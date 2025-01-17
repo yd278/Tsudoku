@@ -1,9 +1,6 @@
 use super::Solver;
 
-// X-wing
-// swordfish
-// Naked/Hidden Quadruples
-// Jellyfish
+
 // remote pair
 // BUG+1
 // Skyscraper
@@ -22,7 +19,10 @@ use super::Solver;
 mod fish;
 pub fn get_medium_solvers() -> Vec<Box<dyn Solver>> {
     vec![
+        Box::new(super::medium::fish::XWing),
+        Box::new(super::medium::fish::Swordfish),
         Box::new(super::easy::naked_subset::NakedQuadruple),
+        Box::new(super::medium::fish::Jellyfish),
         Box::new(super::easy::hidden_subset::HiddenQuadruple),
     ]
 }
