@@ -55,7 +55,7 @@ impl Solver for HiddenSingle {
         }
         None
     }
-    
+
     fn solver_id(&self) -> usize {
         1
     }

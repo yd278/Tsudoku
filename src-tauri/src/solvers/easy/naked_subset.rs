@@ -62,7 +62,7 @@ impl Solver for NakedPair {
     fn solve(&self, game_board: &GameBoard) -> Option<Solution> {
         solve_naked_subset(2, game_board)
     }
-    
+
     fn solver_id(&self) -> usize {
         4
     }
@@ -74,7 +74,7 @@ impl Solver for NakedTriple {
     fn solve(&self, game_board: &GameBoard) -> Option<Solution> {
         solve_naked_subset(3, game_board)
     }
-    
+
     fn solver_id(&self) -> usize {
         6
     }
@@ -86,7 +86,7 @@ impl Solver for NakedQuadruple {
     fn solve(&self, game_board: &GameBoard) -> Option<Solution> {
         solve_naked_subset(4, game_board)
     }
-    
+
     fn solver_id(&self) -> usize {
         8
     }

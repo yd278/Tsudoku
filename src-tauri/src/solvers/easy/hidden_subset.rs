@@ -85,7 +85,7 @@ impl Solver for HiddenPair {
     fn solve(&self, game_board: &GameBoard) -> Option<Solution> {
         solve_hidden_subset(2, game_board)
     }
-    
+
     fn solver_id(&self) -> usize {
         5
     }
@@ -97,7 +97,7 @@ impl Solver for HiddenTriple {
     fn solve(&self, game_board: &GameBoard) -> Option<Solution> {
         solve_hidden_subset(3, game_board)
     }
-    
+
     fn solver_id(&self) -> usize {
         7
     }
@@ -109,7 +109,7 @@ impl Solver for HiddenQuadruple {
     fn solve(&self, game_board: &GameBoard) -> Option<Solution> {
         solve_hidden_subset(4, game_board)
     }
-    
+
     fn solver_id(&self) -> usize {
         9
     }

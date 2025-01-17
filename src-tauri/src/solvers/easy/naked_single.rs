@@ -32,7 +32,7 @@ impl Solver for NakedSingle {
 
         None
     }
-    
+
     fn solver_id(&self) -> usize {
         0
     }

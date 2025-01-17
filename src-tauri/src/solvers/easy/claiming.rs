@@ -56,7 +56,7 @@ impl Solver for Claiming {
         }
         None
     }
-    
+
     fn solver_id(&self) -> usize {
         3
     }
