@@ -46,7 +46,7 @@ impl BitMap {
     }
 
     pub fn get_combo_with_mask(n: usize, mask: &BitMap) -> impl Iterator<Item = BitMap> + '_ {
-        Self::get_combinations(n).filter(|combo| combo.intersect(mask).count() != 0)
+        Self::get_combinations(n).filter(|combo| combo.intersect(mask).count() == 0)
     }
 
     pub fn contains(&self, num: usize) -> bool {
@@ -80,6 +80,9 @@ impl BitMap {
     }
     pub fn iter_ones(&self) -> impl Iterator<Item = usize> + '_ {
         (0..9).filter(|x| self.contains(*x))
+    }    
+    pub fn iter_zeros(&self) -> impl Iterator<Item = usize> + '_ {
+        (0..9).filter(|x| !self.contains(*x))
     }
     #[cfg(test)]
     pub fn get_raw(&self) -> u16 {
