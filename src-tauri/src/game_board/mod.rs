@@ -1,6 +1,6 @@
 use crate::solvers::solution::Action::{self, Confirmation, Elimination};
 use crate::solvers::solution::{ConfirmationDetails, EliminationDetails};
-use crate::utils::BitMap;
+use crate::utils::{BitMap, Dimension};
 use crate::utils::Coord;
 pub mod blank_cell;
 pub mod dlx_solver;
@@ -269,6 +269,13 @@ impl GameBoard {
     }
     pub fn row_occupied(&self) -> &[BitMap; 9] {
         &self.row_occupied
+    }
+
+    pub fn occupied_by(&self, dim: &Dimension, target: usize) -> &BitMap{
+        match dim {
+            Dimension::Row => &self.row_occupied[target],
+            Dimension::Col => &self.col_occupied[target],
+        }
     }
 }
 

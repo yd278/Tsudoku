@@ -1,5 +1,5 @@
 use crate::utils::BitMap;
-#[derive(Debug)]
+#[derive(Debug,Clone)]
 pub struct Candidate {
     pub x: usize,
     pub y: usize,

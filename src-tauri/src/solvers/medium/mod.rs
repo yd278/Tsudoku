@@ -17,12 +17,17 @@ use super::Solver;
 // simple colors
 //multi colors
 mod fish;
+mod finned;
 pub fn get_medium_solvers() -> Vec<Box<dyn Solver>> {
     vec![
         Box::new(super::medium::fish::XWing),
         Box::new(super::medium::fish::Swordfish),
         Box::new(super::easy::naked_subset::NakedQuadruple),
+        Box::new(super::medium::finned::FinnedXWing),
         Box::new(super::medium::fish::Jellyfish),
         Box::new(super::easy::hidden_subset::HiddenQuadruple),
+        Box::new(super::medium::finned::FinnedSwordfish),
+        Box::new(super::medium::finned::FinnedJellyfish),
     ]
 }
+
