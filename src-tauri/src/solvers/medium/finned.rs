@@ -29,9 +29,9 @@ fn get_coords_with_target_by_masks<'a>(
 
 fn find_finned_fish(game_board: &GameBoard, base_dim: &Dimension, n: usize) -> Option<Solution> {
     for target in 0..9 {
-        for base in BitMap::get_combo_with_mask(n, game_board.occupied_by(base_dim, target)) {
+        for base in BitMap::get_combo_with_mask(n, game_board.line_occupied_by(base_dim, target)) {
             for cover in
-                BitMap::get_combo_with_mask(n, game_board.occupied_by(&base_dim.other(), target))
+                BitMap::get_combo_with_mask(n, game_board.line_occupied_by(&base_dim.other(), target))
             {
                 let cover_comp = cover.complement();
                 let base_comp = base.complement();
