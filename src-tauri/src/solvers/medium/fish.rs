@@ -44,6 +44,7 @@ fn check_base_set_combo(
     base_dim: &HouseType,
     target: usize,
     combo: &BitMap,
+    solver_id: usize,
 ) -> Option<Solution> {
     let mut appearance = BitMap::new();
     for base in combo.iter_ones() {
@@ -94,6 +95,7 @@ fn check_base_set_combo(
                         candidates: BitMap::from(target),
                     })
                     .collect(),
+                solver_id,
             });
         } else {
             return None;
@@ -102,11 +104,18 @@ fn check_base_set_combo(
     None
 }
 
-fn check_fish_with_dim(game_board: &GameBoard, n: usize, base_dim: &HouseType) -> Option<Solution> {
+fn check_fish_with_dim(
+    game_board: &GameBoard,
+    n: usize,
+    base_dim: &HouseType,
+    solver_id: usize,
+) -> Option<Solution> {
     for target in 0..9 {
         let mask = game_board.occupied()[base_dim.as_index()][target];
         for combo in BitMap::get_combo_with_mask(n, &mask) {
-            if let Some(solution) = check_base_set_combo(game_board, n, base_dim, target, &combo) {
+            if let Some(solution) =
+                check_base_set_combo(game_board, n, base_dim, target, &combo, solver_id)
+            {
                 return Some(solution);
             }
         }
@@ -114,42 +123,51 @@ fn check_fish_with_dim(game_board: &GameBoard, n: usize, base_dim: &HouseType) -
     None
 }
 
-pub struct XWing;
+pub struct XWing {
+    id: usize,
+}
+impl XWing {
+    pub fn with_id(id: usize) -> Self {
+        Self { id }
+    }
+}
 impl Solver for XWing {
     fn solve(&self, game_board: &GameBoard) -> Option<Solution> {
         [HouseType::Row, HouseType::Col]
             .into_iter()
-            .find_map(|base_dim| check_fish_with_dim(game_board, 2, &base_dim))
-    }
-
-    fn solver_id(&self) -> usize {
-        todo!()
+            .find_map(|base_dim| check_fish_with_dim(game_board, 2, &base_dim, self.id))
     }
 }
 
-pub struct Swordfish;
+pub struct Swordfish {
+    id: usize,
+}
+impl Swordfish {
+    pub fn with_id(id: usize) -> Self {
+        Self { id }
+    }
+}
 impl Solver for Swordfish {
     fn solve(&self, game_board: &GameBoard) -> Option<Solution> {
         [HouseType::Row, HouseType::Col]
             .into_iter()
-            .find_map(|base_dim| check_fish_with_dim(game_board, 3, &base_dim))
-    }
-
-    fn solver_id(&self) -> usize {
-        todo!()
+            .find_map(|base_dim| check_fish_with_dim(game_board, 3, &base_dim, self.id))
     }
 }
 
-pub struct Jellyfish;
+pub struct Jellyfish {
+    id: usize,
+}
+impl Jellyfish {
+    pub fn with_id(id: usize) -> Self {
+        Self { id }
+    }
+}
 impl Solver for Jellyfish {
     fn solve(&self, game_board: &GameBoard) -> Option<Solution> {
         [HouseType::Row, HouseType::Col]
             .into_iter()
-            .find_map(|base_dim| check_fish_with_dim(game_board, 4, &base_dim))
-    }
-
-    fn solver_id(&self) -> usize {
-        todo!()
+            .find_map(|base_dim| check_fish_with_dim(game_board, 4, &base_dim, self.id))
     }
 }
 
@@ -167,11 +185,12 @@ mod fish_test {
             8, 4, 2, 368, 89, 353, 377, 273, 128, 321, 257, 8, 336, 2, 128, 337, 32, 4, 321,
         ];
         let game_board = GameBoard::from_array(raws);
-        let solver = XWing;
+        let solver = XWing::with_id(1);
         let Solution {
             actions,
             house_clues,
             candidate_clues,
+            solver_id: _,
         } = solver.solve(&game_board).unwrap();
 
         let action_len = 3;
@@ -210,11 +229,12 @@ mod fish_test {
             129, 2, 24, 276, 132, 72, 257, 32, 272, 136, 32, 280, 336, 65, 4, 2, 129,
         ];
         let game_board = GameBoard::from_array(raws);
-        let solver = Swordfish;
+        let solver = Swordfish::with_id(1);
         let Solution {
             actions,
             house_clues,
             candidate_clues,
+            solver_id: _,
         } = solver.solve(&game_board).unwrap();
 
         let action_len = 1;
@@ -263,11 +283,12 @@ mod fish_test {
             1, 4, 8, 2, 256, 128, 32, 16, 8, 258, 16, 128, 32, 1, 262, 260, 64,
         ];
         let game_board = GameBoard::from_array(raws);
-        let solver = Jellyfish;
+        let solver = Jellyfish::with_id(1);
         let Solution {
             actions,
             house_clues,
             candidate_clues,
+            solver_id: _,
         } = solver.solve(&game_board).unwrap();
 
         let action_len = 1;

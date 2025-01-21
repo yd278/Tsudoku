@@ -1,5 +1,6 @@
 use crate::solvers::solution::Action::{self, Confirmation, Elimination};
-use crate::solvers::solution::{ConfirmationDetails, EliminationDetails};
+use crate::solvers::solution::{self, ConfirmationDetails, EliminationDetails, Solution};
+use crate::solvers::Solver;
 use crate::utils::Coord;
 use crate::utils::{BitMap, HouseType};
 pub mod blank_cell;
@@ -18,7 +19,7 @@ pub struct GameBoard {
     occupied: [[BitMap; 9]; 3], // row_occupied[i] .contains(j) : row-j is occupied by number i
 }
 
-///  This section contains game board information inquiries
+///  This section contains game board information
 impl GameBoard {
     /// Get the cell
     pub fn get_cell(&self, x: usize, y: usize) -> &Cell {
@@ -75,6 +76,16 @@ impl GameBoard {
 
     pub fn occupied(&self) -> &[[BitMap; 9]; 3] {
         &self.occupied
+    }
+
+    pub fn get_hard_link(
+        &self,
+        x: usize,
+        y: usize,
+        target: usize,
+        dim: HouseType,
+    ) -> Option<(usize, usize)> {
+        self.hard_links[dim.as_index()][x][y][target]
     }
 }
 
@@ -136,7 +147,6 @@ impl GameBoard {
     /// - doesn't contains the target candidate
     pub fn erase_pencil_mark(&mut self, x: usize, y: usize, target: usize) {
         self.delete_candidate(x, y, target, true);
-        self.update_cell_hard_link(x, y, target);
     }
 
     /// Add an pencil mark in given cell by user
@@ -155,7 +165,6 @@ impl GameBoard {
                         user_deleted.remove(target);
                     }
                 });
-                self.update_cell_hard_link(x, y, target);
             }
         }
     }
@@ -170,7 +179,7 @@ impl GameBoard {
                 return;
             }
             cell.set_pen_mark(target);
-            
+
             let components = Coord::components_array(x, y);
             for i in 0..3 {
                 self.occupied[i][target].insert(components[i]);
@@ -178,8 +187,6 @@ impl GameBoard {
 
             Coord::seeable_cells(x, y)
                 .for_each(|(xi, yi)| self.delete_candidate(xi, yi, target, false));
-            self.update_grid_hard_link();
-
         }
     }
     /// Erase the pen mark in cell (x,y)
@@ -244,7 +251,6 @@ impl GameBoard {
         if let Cell::Blank(ref mut cell) = self.grid[x][y] {
             cell.update_candidates(&possible_candidates);
         }
-        self.update_grid_hard_link();
     }
 }
 
@@ -266,7 +272,7 @@ impl GameBoard {
 
     /// Execute an action
 
-    fn execute(&mut self, action: Action) {
+    fn execute_action(&mut self, action: Action) {
         match action {
             Confirmation(ConfirmationDetails { x, y, target }) => {
                 self.set_pen_mark(x, y, target);
@@ -280,20 +286,37 @@ impl GameBoard {
             }
         }
     }
+
+    fn execute_solution(&mut self, solution: Solution) {
+        let actions = solution.actions;
+        for action in actions {
+            self.execute_action(action);
+        }
+    }
+
+    /// Find the next possible step
+
+    pub fn next_step(&mut self) -> Option<Solution> {
+        self.update_hard_link();
+        // gather all possible solvers
+        let solvers: Vec<Box<dyn Solver>> = todo!();
+
+        // try it one-by one until one of them give an answer
+        solvers.into_iter().find_map(|solver| solver.solve(self))
+    }
 }
 
 /// This section contains some private APIs for internal use
 impl GameBoard {
-    fn update_grid_hard_link(&mut self){
-        self.hard_links = [[[[None;9];9];9];3];
-        for dim in 0..3{
+    fn update_hard_link(&mut self) {
+        self.hard_links = [[[[None; 9]; 9]; 9]; 3];
+        for dim in 0..3 {
             for house_index in 0..9 {
                 for target in 0..9 {
                     let appearance: Vec<_> = HouseType::from_index(dim)
                         .house(house_index)
                         .to_iter()
-                        .filter(|&(x, y)| 
-                        self.contains_candidate(x, y, target))
+                        .filter(|&(x, y)| self.contains_candidate(x, y, target))
                         .collect();
 
                     if appearance.len() == 2 {
@@ -306,28 +329,6 @@ impl GameBoard {
             }
         }
     }
-    fn update_cell_hard_link(&mut self, x: usize, y: usize, target: usize) {
-        let components = Coord::components_array(x, y);
-        for dim in 0..3 {
-            let mut appearance = Vec::with_capacity(9);
-            for (x,y) in HouseType::from_index(dim)
-                .house(components[dim])
-                .to_iter(){
-                    self.hard_links[dim][x][y][target] = None;
-                    if self.contains_candidate(x, y, target){
-                        appearance.push((x,y));
-                    }
-                }
-                
-            if appearance.len() == 2 {
-                let (x1, y1) = appearance[0];
-                let (x2, y2) = appearance[1];
-                self.hard_links[dim][x1][y1][target] = Some((x2, y2));
-                self.hard_links[dim][x2][y2][target] = Some((x1, y1));
-            }
-        }
-    }
-
 
     // delete target in a cell's candidate list
     // and mark it as user deleted if user_deleted_flag is true
@@ -367,33 +368,6 @@ pub mod game_board_test {
     use crate::solvers::easy;
 
     use super::*;
-    fn compute_hard_links(grid: [[Cell; 9]; 9]) -> [[[CellHardLink; 9]; 9]; 3] {
-        let mut res = [[[[None; 9]; 9]; 9]; 3];
-        for dim in 0..3 {
-            for house_index in 0..9 {
-                for target in 0..9 {
-                    let appearance: Vec<_> = HouseType::from_index(dim)
-                        .house(house_index)
-                        .to_iter()
-                        .filter(|&(x, y)| match grid[x][y] {
-                            Cell::Printed(_) => false,
-                            Cell::Blank(blank_cell) => {
-                                !blank_cell.is_pen_mark() && blank_cell.contains_candidate(target)
-                            }
-                        })
-                        .collect();
-
-                    if appearance.len() == 2 {
-                        let (x1, y1) = appearance[0];
-                        let (x2, y2) = appearance[1];
-                        res[dim][x1][y1][target] = Some((x2, y2));
-                        res[dim][x2][y2][target] = Some((x1, y1));
-                    }
-                }
-            }
-        }
-        res
-    }
 
     impl GameBoard {
         pub fn from_string(input: &str) -> Self {
@@ -430,7 +404,7 @@ pub mod game_board_test {
             GameBoard {
                 grid,
                 occupied: [row_occupied, col_occupied, box_occupied],
-                hard_links: compute_hard_links(grid),
+                hard_links: [[[[None; 9]; 9]; 9]; 3],
             }
         }
 
@@ -464,7 +438,7 @@ pub mod game_board_test {
             GameBoard {
                 grid,
                 occupied: [row_occupied, col_occupied, box_occupied],
-                hard_links: compute_hard_links(grid),
+                hard_links: [[[[None; 9]; 9]; 9]; 3],
             }
         }
     }
@@ -556,7 +530,7 @@ pub mod game_board_test {
                                 }
                             }
                         }
-                        game_board.execute(action);
+                        game_board.execute_action(action);
                     }
                     break;
                 }

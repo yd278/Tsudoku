@@ -5,8 +5,14 @@ use crate::solvers::solution::{Action, Solution};
 use crate::solvers::Solver;
 
 use crate::utils::{BitMap, Coord, House};
-pub struct Pointing;
-
+pub struct Pointing {
+    id: usize,
+}
+impl Pointing {
+    pub fn with_id(id: usize) -> Self {
+        Self { id }
+    }
+}
 impl Solver for Pointing {
     fn solve(&self, game_board: &GameBoard) -> Option<crate::solvers::solution::Solution> {
         for box_id in 0..9 {
@@ -63,15 +69,12 @@ impl Solver for Pointing {
                         actions: eliminations,
                         house_clues: vec![House::Box(box_id), clue],
                         candidate_clues,
+                        solver_id: self.id,
                     });
                 }
             }
         }
         None
-    }
-
-    fn solver_id(&self) -> usize {
-        2
     }
 }
 
@@ -85,7 +88,7 @@ mod pointing_test {
         let board = GameBoard::from_string(
             "95..62.8....51..........25416..7.5.2295...7.88.7.25.695.9..........57....8.39...5",
         );
-        let pointing_solver = Pointing;
+        let pointing_solver = Pointing::with_id(1);
         let res = pointing_solver.solve(&board).unwrap();
         let actions = res.actions;
         let house_clues = res.house_clues;
@@ -127,7 +130,7 @@ mod pointing_test {
             "5.47......26.5.....8..912..3.....8..2...3...4..8.....7..132..6.....1.49......93.1",
         );
 
-        let pointing_solver = Pointing;
+        let pointing_solver = Pointing::with_id(1);
         let res = pointing_solver.solve(&board);
         assert!(res.is_none());
     }

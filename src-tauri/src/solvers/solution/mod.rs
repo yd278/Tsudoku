@@ -14,4 +14,5 @@ pub struct Solution {
     pub actions: Vec<Action>,
     pub house_clues: Vec<House>,
     pub candidate_clues: Vec<Candidate>,
+    pub solver_id: usize,
 }

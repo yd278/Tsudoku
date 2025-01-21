@@ -5,8 +5,14 @@ use crate::solvers::solution::{Action, Candidate, EliminationDetails};
 use crate::solvers::Solver;
 use crate::utils::{AllEqualValue, BitMap, Coord, House};
 
-pub struct Claiming;
-
+pub struct Claiming {
+    id: usize,
+}
+impl Claiming {
+    pub fn with_id(id: usize) -> Self {
+        Self { id }
+    }
+}
 impl Solver for Claiming {
     fn solve(&self, game_board: &GameBoard) -> Option<Solution> {
         for i in 0..9 {
@@ -48,6 +54,7 @@ impl Solver for Claiming {
                                 actions: eliminations,
                                 house_clues: vec![House::Box(box_id), line],
                                 candidate_clues,
+                                solver_id: self.id,
                             });
                         }
                     }
@@ -55,10 +62,6 @@ impl Solver for Claiming {
             }
         }
         None
-    }
-
-    fn solver_id(&self) -> usize {
-        3
     }
 }
 
@@ -75,11 +78,12 @@ mod claiming_test {
             128, 1, 16, 8, 228, 132, 256, 100, 100, 2, 32, 128, 4, 8, 2, 80, 256, 65, 17,
         ];
         let game_board = GameBoard::from_array(raws);
-        let solver = Claiming;
+        let solver = Claiming::with_id(3);
         let Solution {
             actions,
             house_clues,
             candidate_clues,
+            solver_id: _,
         } = solver.solve(&game_board).unwrap();
 
         assert_eq!(actions.len(), 1);
@@ -102,7 +106,7 @@ mod claiming_test {
             128, 1, 16, 8, 228, 132, 256, 100, 100, 2, 32, 128, 4, 8, 2, 80, 256, 65, 17,
         ];
         let game_board = GameBoard::from_array(raws);
-        let solver = Claiming;
+        let solver = Claiming::with_id(3);
         let solution = solver.solve(&game_board);
         assert!(solution.is_none());
     }

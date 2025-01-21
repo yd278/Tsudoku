@@ -6,7 +6,7 @@ use crate::solvers::Solver;
 use crate::utils::House::{Box, Col, Row};
 use crate::utils::{BitMap, Coord};
 
-fn solve_hidden_subset(n: usize, game_board: &GameBoard) -> Option<Solution> {
+fn solve_hidden_subset(n: usize, game_board: &GameBoard, solver_id: usize) -> Option<Solution> {
     for i in 0..9 {
         for clue in [Box(i), Row(i), Col(i)] {
             let combos = BitMap::get_combinations(n);
@@ -71,6 +71,7 @@ fn solve_hidden_subset(n: usize, game_board: &GameBoard) -> Option<Solution> {
                             actions: eliminations,
                             house_clues: vec![clue],
                             candidate_clues,
+                            solver_id,
                         });
                     }
                 }
@@ -79,39 +80,46 @@ fn solve_hidden_subset(n: usize, game_board: &GameBoard) -> Option<Solution> {
     }
     None
 }
-pub struct HiddenPair;
-
+pub struct HiddenPair {
+    id: usize,
+}
+impl HiddenPair {
+    pub fn with_id(id: usize) -> Self {
+        Self { id }
+    }
+}
 impl Solver for HiddenPair {
     fn solve(&self, game_board: &GameBoard) -> Option<Solution> {
-        solve_hidden_subset(2, game_board)
-    }
-
-    fn solver_id(&self) -> usize {
-        5
+        solve_hidden_subset(2, game_board, self.id)
     }
 }
 
-pub struct HiddenTriple;
+pub struct HiddenTriple {
+    id: usize,
+}
 
+impl HiddenTriple {
+    pub fn with_id(id: usize) -> Self {
+        Self { id }
+    }
+}
 impl Solver for HiddenTriple {
     fn solve(&self, game_board: &GameBoard) -> Option<Solution> {
-        solve_hidden_subset(3, game_board)
-    }
-
-    fn solver_id(&self) -> usize {
-        7
+        solve_hidden_subset(3, game_board, self.id)
     }
 }
 
-pub struct HiddenQuadruple;
-
+pub struct HiddenQuadruple {
+    id: usize,
+}
+impl HiddenQuadruple {
+    pub fn with_id(id: usize) -> Self {
+        Self { id }
+    }
+}
 impl Solver for HiddenQuadruple {
     fn solve(&self, game_board: &GameBoard) -> Option<Solution> {
-        solve_hidden_subset(4, game_board)
-    }
-
-    fn solver_id(&self) -> usize {
-        9
+        solve_hidden_subset(4, game_board, self.id)
     }
 }
 
@@ -128,11 +136,12 @@ mod hidden_subset_test {
             1, 48, 56, 92, 6, 94, 74, 1, 98, 128, 256, 56, 32, 1, 136, 136, 256, 16, 2, 64, 4,
         ];
         let game_board = GameBoard::from_array(raws);
-        let solver = HiddenPair;
+        let solver = HiddenPair::with_id(2);
         let Solution {
             actions,
             house_clues,
             candidate_clues,
+            solver_id: _,
         } = solver.solve(&game_board).unwrap();
 
         let action_len = 1;
@@ -167,7 +176,7 @@ mod hidden_subset_test {
             144, 2, 128, 33, 321, 16, 321, 4, 8, 96, 68, 8, 17, 65, 132, 32, 144, 256, 2,
         ];
         let game_board = GameBoard::from_array(raws);
-        let solver = HiddenPair;
+        let solver = HiddenPair::with_id(2);
         let solution = solver.solve(&game_board);
         assert!(solution.is_none());
     }
@@ -180,11 +189,12 @@ mod hidden_subset_test {
             306, 16, 96, 128, 8, 257, 2, 96, 257, 4, 256, 2, 8, 17, 100, 68, 128, 81, 49,
         ];
         let game_board = GameBoard::from_array(raws);
-        let solver = HiddenTriple;
+        let solver = HiddenTriple::with_id(2);
         let Solution {
             actions,
             house_clues,
             candidate_clues,
+            solver_id: _,
         } = solver.solve(&game_board).unwrap();
 
         let action_len = 2;
@@ -219,7 +229,7 @@ mod hidden_subset_test {
             144, 2, 128, 33, 321, 16, 321, 4, 8, 96, 68, 8, 17, 65, 132, 32, 144, 256, 2,
         ];
         let game_board = GameBoard::from_array(raws);
-        let solver = HiddenTriple;
+        let solver = HiddenTriple::with_id(1);
         let solution = solver.solve(&game_board);
         assert!(solution.is_none());
     }
@@ -233,11 +243,12 @@ mod hidden_subset_test {
             144, 2, 128, 33, 321, 16, 321, 4, 8, 96, 68, 8, 17, 65, 132, 32, 144, 256, 2,
         ];
         let game_board = GameBoard::from_array(raws);
-        let solver = HiddenQuadruple;
+        let solver = HiddenQuadruple::with_id(1);
         let Solution {
             actions,
             house_clues,
             candidate_clues,
+            solver_id: _,
         } = solver.solve(&game_board).unwrap();
 
         let action_len = 1;
@@ -272,7 +283,7 @@ mod hidden_subset_test {
             144, 2, 128, 33, 321, 16, 321, 4, 8, 96, 68, 8, 17, 65, 132, 32, 144, 256, 2,
         ];
         let game_board = GameBoard::from_array(raws);
-        let solver = HiddenQuadruple;
+        let solver = HiddenQuadruple::with_id(1);
         let solution = solver.solve(&game_board);
         assert!(solution.is_none());
     }

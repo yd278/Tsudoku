@@ -1,5 +1,6 @@
-use super::Solver;
+use crate::solvers::easy::{hidden_subset::HiddenQuadruple, naked_subset::NakedQuadruple};
 
+use super::Solver;
 
 // remote pair
 // BUG+1
@@ -15,18 +16,22 @@ use super::Solver;
 //avoidable rectangle 1/2
 // simple colors
 //multi colors
-mod fish;
 mod finned;
+mod fish;
 mod single_digit_patterns;
+use single_digit_patterns::Skyscraper;
+
+use finned::FinnedXWing;
+use fish::{Jellyfish, Swordfish, XWing};
+#[rustfmt::skip]
 pub fn get_medium_solvers() -> Vec<Box<dyn Solver>> {
     vec![
-        Box::new(super::medium::fish::XWing),
-        Box::new(super::medium::fish::Swordfish),
-        Box::new(super::easy::naked_subset::NakedQuadruple),
-        Box::new(super::medium::single_digit_patterns::Skyscraper),
-        Box::new(super::medium::finned::FinnedXWing),
-        Box::new(super::medium::fish::Jellyfish),
-        Box::new(super::easy::hidden_subset::HiddenQuadruple),
+        Box::new(XWing          ::with_id(8)),
+        Box::new(Swordfish      ::with_id(9)),
+        Box::new(NakedQuadruple ::with_id(10)),
+        Box::new(Skyscraper     ::with_id(11)),
+        Box::new(FinnedXWing    ::with_id(12)),
+        Box::new(Jellyfish      ::with_id(13)),
+        Box::new(HiddenQuadruple::with_id(14)),
     ]
 }
-
