@@ -4,7 +4,7 @@ use crate::{
         solution::{Action, Candidate, EliminationDetails, Solution},
         Solver,
     },
-    utils::{BitMap, Coord, House,Dimension},
+    utils::{BitMap, Coord, House,HouseType},
 };
 pub struct Skyscraper;
 impl Solver for Skyscraper {

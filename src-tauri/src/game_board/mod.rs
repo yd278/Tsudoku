@@ -1,7 +1,7 @@
 use crate::solvers::solution::Action::{self, Confirmation, Elimination};
 use crate::solvers::solution::{ConfirmationDetails, EliminationDetails};
 use crate::utils::Coord;
-use crate::utils::{BitMap, Dimension, House};
+use crate::utils::{BitMap, HouseType};
 pub mod blank_cell;
 pub mod dlx_solver;
 use blank_cell::BlankCell;
@@ -14,14 +14,11 @@ pub enum Cell {
 
 pub struct GameBoard {
     grid: [[Cell; 9]; 9],
-    row_occupied: [BitMap; 9], // row_occupied[i] .contains(j) : row-j is occupied by number i
-    col_occupied: [BitMap; 9],
-    box_occupied: [BitMap; 9],
+    occupied: [[BitMap; 9]; 3], // row_occupied[i] .contains(j) : row-j is occupied by number i
 }
 
 ///  This section contains game board information inquiries
 impl GameBoard {
-    
     /// Get the cell
     pub fn get_cell(&self, x: usize, y: usize) -> &Cell {
         &self.grid[x][y]
@@ -47,7 +44,7 @@ impl GameBoard {
         }
         None
     }
-    
+
     ///Returns true if cell (x,y) contains the target as candidate
     pub fn contains_candidate(&self, x: usize, y: usize, target: usize) -> bool {
         match &self.grid[x][y] {
@@ -55,7 +52,7 @@ impl GameBoard {
             _ => false,
         }
     }
-    
+
     /// Returns true if cell (x,y) is a clue
     pub fn is_clue(&self, x: usize, y: usize, target: usize) -> bool {
         match &self.grid[x][y] {
@@ -69,31 +66,15 @@ impl GameBoard {
             }
         }
     }
-    
-    /// Returns the box occupied array
-    pub fn box_occupied(&self) -> &[BitMap; 9] {
-        &self.box_occupied
-    }
-    
-    /// Returns the col occupied array
-    pub fn col_occupied(&self) -> &[BitMap; 9] {
-        &self.col_occupied
-    }
 
-    /// Returns the row occupied array
-    pub fn row_occupied(&self) -> &[BitMap; 9] {
-        &self.row_occupied
-    }
-    
     /// Returns a bitmap indicating which line are occupied by the target
-    pub fn line_occupied_by(&self, dim: &Dimension, target: usize) -> &BitMap {
-        match dim {
-            Dimension::Row => &self.row_occupied[target],
-            Dimension::Col => &self.col_occupied[target],
-        }
+    pub fn line_occupied_by(&self, dim: &HouseType, target: usize) -> &BitMap {
+        &self.occupied[dim.as_index()][target]
     }
-
     
+    pub fn occupied(&self) -> &[[BitMap; 9]; 3] {
+        &self.occupied
+    }
 }
 
 ///  This section contains game board operation sanity checks
@@ -184,10 +165,10 @@ impl GameBoard {
                 return;
             }
             cell.set_pen_mark(target);
-            self.row_occupied[target].insert(x);
-            self.col_occupied[target].insert(y);
-            self.box_occupied[target].insert(Coord::get_box_id(x, y));
-
+            let components = Coord::components_array(x, y);
+            for i in 0..3 {
+                self.occupied[i][target].insert(components[i]);
+            }
             Coord::seeable_cells(x, y)
                 .for_each(|(xi, yi)| self.delete_candidate(xi, yi, target, false));
         }
@@ -209,27 +190,17 @@ impl GameBoard {
                 }
                 if let Some(target) = cell.get_pen_mark() {
                     cell.erase_pen_mark();
-                    if Coord::row(x)
-                        .filter(|&(x, y)| self.is_clue(x, y, target))
-                        .count()
-                        == 0
-                    {
-                        self.row_occupied[target].remove(x);
-                    }
-                    if Coord::col(y)
-                        .filter(|&(x, y)| self.is_clue(x, y, target))
-                        .count()
-                        == 0
-                    {
-                        self.col_occupied[target].remove(y);
-                    }
-                    let box_id = Coord::get_box_id(x, y);
-                    if Coord::box_coords(box_id)
-                        .filter(|&(x, y)| self.is_clue(x, y, target))
-                        .count()
-                        == 0
-                    {
-                        self.box_occupied[target].remove(box_id);
+                    let components = Coord::components_array(x, y);
+                    for i in 0..3 {
+                        if HouseType::from_index(i)
+                            .house(components[i])
+                            .to_iter()
+                            .filter(|&(x, y)| self.is_clue(x, y, target))
+                            .count()
+                            == 0
+                        {
+                            self.occupied[i][target].remove(x);
+                        }
                     }
                     Some(target)
                 } else {
@@ -374,9 +345,7 @@ pub mod game_board_test {
             }
             GameBoard {
                 grid,
-                row_occupied,
-                col_occupied,
-                box_occupied,
+                occupied: [row_occupied, col_occupied, box_occupied],
             }
         }
 
@@ -409,9 +378,7 @@ pub mod game_board_test {
             }
             GameBoard {
                 grid,
-                row_occupied,
-                col_occupied,
-                box_occupied,
+                occupied: [row_occupied, col_occupied, box_occupied],
             }
         }
     }

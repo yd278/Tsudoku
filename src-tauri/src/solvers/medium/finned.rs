@@ -4,35 +4,33 @@ use crate::{
         solution::{Action, Candidate, EliminationDetails, Solution},
         Solver,
     },
-    utils::{AllEqualValue, BitMap, Coord, Dimension},
+    utils::{AllEqualValue, BitMap, Coord, HouseType},
 };
 
 fn get_coords_with_target_by_masks<'a>(
     game_board: &'a GameBoard,
     first: &'a BitMap,
     second: &'a BitMap,
-    first_dim: &'a Dimension,
+    first_dim: &'a HouseType,
     target: usize,
 ) -> impl Iterator<Item = (usize, usize)> + 'a {
     first
         .iter_ones()
         .flat_map(move |first_index| {
-            second
-                .iter_ones()
-                .map(move |second_index| match &first_dim {
-                    Dimension::Row => (first_index, second_index),
-                    Dimension::Col => (second_index, first_index),
-                })
+            second.iter_ones().map(move |second_index| {
+                Coord::from_house_and_index(&first_dim.house(first_index), second_index)
+            })
         })
         .filter(move |&(x, y)| game_board.contains_candidate(x, y, target))
 }
 
-fn find_finned_fish(game_board: &GameBoard, base_dim: &Dimension, n: usize) -> Option<Solution> {
+fn find_finned_fish(game_board: &GameBoard, base_dim: &HouseType, n: usize) -> Option<Solution> {
     for target in 0..9 {
         for base in BitMap::get_combo_with_mask(n, game_board.line_occupied_by(base_dim, target)) {
-            for cover in
-                BitMap::get_combo_with_mask(n, game_board.line_occupied_by(&base_dim.other(), target))
-            {
+            for cover in BitMap::get_combo_with_mask(
+                n,
+                game_board.line_occupied_by(&base_dim.other(), target),
+            ) {
                 let cover_comp = cover.complement();
                 let base_comp = base.complement();
                 let body_clues: Vec<_> =
@@ -116,7 +114,7 @@ fn find_finned_fish(game_board: &GameBoard, base_dim: &Dimension, n: usize) -> O
 pub struct FinnedXWing;
 impl Solver for FinnedXWing {
     fn solve(&self, game_board: &GameBoard) -> Option<Solution> {
-        [Dimension::Row, Dimension::Col]
+        [HouseType::Row, HouseType::Col]
             .into_iter()
             .find_map(|base_dim| find_finned_fish(game_board, &base_dim, 2))
     }
@@ -128,7 +126,7 @@ impl Solver for FinnedXWing {
 pub struct FinnedSwordfish;
 impl Solver for FinnedSwordfish {
     fn solve(&self, game_board: &GameBoard) -> Option<Solution> {
-        [Dimension::Row, Dimension::Col]
+        [HouseType::Row, HouseType::Col]
             .into_iter()
             .find_map(|base_dim| find_finned_fish(game_board, &base_dim, 3))
     }
@@ -141,7 +139,7 @@ impl Solver for FinnedSwordfish {
 pub struct FinnedJellyfish;
 impl Solver for FinnedJellyfish {
     fn solve(&self, game_board: &GameBoard) -> Option<Solution> {
-        [Dimension::Row, Dimension::Col]
+        [HouseType::Row, HouseType::Col]
             .into_iter()
             .find_map(|base_dim| find_finned_fish(game_board, &base_dim, 4))
     }
@@ -275,7 +273,7 @@ mod finned_test {
                 78,
             ],
             1,
-            vec![(4,8), (5,8)],
+            vec![(4, 8), (5, 8)],
             vec![
                 Row(1),
                 Row(3),
@@ -287,7 +285,15 @@ mod finned_test {
                 Col(8),
             ],
             vec![
-                (1,2), (1,8), (3,0), (3,8), (7,0), (7,5), (8,2), (8,5),(3,6),
+                (1, 2),
+                (1, 8),
+                (3, 0),
+                (3, 8),
+                (7, 0),
+                (7, 5),
+                (8, 2),
+                (8, 5),
+                (3, 6),
             ],
         );
     }
@@ -314,13 +320,16 @@ mod finned_test {
     fn test_s3() {
         test_function(
             FinnedSwordfish,
-            [34,42,256,64,128,36,16,5,9,128,16,64,265,257,12,32,268,2,40,4,1,312,304,2,128,328,320,96,96,2,128,8,1,4,272,272,5,256,12,48,112,112,2,128,9,9,128,16,2,4,256,64,9,32,336,72,40,4,368,120,1,2,128,90,74,128,25,81,88,256,32,4,260,1,36,288,2,128,8,80,80],
-            8,
-            vec![ (7,0),],
-            vec![Col(1), Col(2), Col(8),Row(0), Row(4), Row(7),],
-            vec![
-                (0,1), (7,1), (4,2), (0,8), (4,8),(6,1), (6,2),
+            [
+                34, 42, 256, 64, 128, 36, 16, 5, 9, 128, 16, 64, 265, 257, 12, 32, 268, 2, 40, 4,
+                1, 312, 304, 2, 128, 328, 320, 96, 96, 2, 128, 8, 1, 4, 272, 272, 5, 256, 12, 48,
+                112, 112, 2, 128, 9, 9, 128, 16, 2, 4, 256, 64, 9, 32, 336, 72, 40, 4, 368, 120, 1,
+                2, 128, 90, 74, 128, 25, 81, 88, 256, 32, 4, 260, 1, 36, 288, 2, 128, 8, 80, 80,
             ],
+            8,
+            vec![(7, 0)],
+            vec![Col(1), Col(2), Col(8), Row(0), Row(4), Row(7)],
+            vec![(0, 1), (7, 1), (4, 2), (0, 8), (4, 8), (6, 1), (6, 2)],
         );
     }
     #[test]

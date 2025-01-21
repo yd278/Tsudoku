@@ -4,7 +4,7 @@ use crate::{
         solution::{Action, Candidate, EliminationDetails, Solution},
         Solver,
     },
-    utils::{BitMap, Coord, House,Dimension},
+    utils::{BitMap, Coord, House, HouseType},
 };
 
 fn find_eliminable(
@@ -13,11 +13,10 @@ fn find_eliminable(
     cover_sets: Vec<House>,
     target: usize,
 ) -> Vec<Action> {
-
-        cover_sets.into_iter().flat_map(|house|{
-            base_sets
-            .iter_zeros()
-            .filter_map(move |x| {
+    cover_sets
+        .into_iter()
+        .flat_map(|house| {
+            base_sets.iter_zeros().filter_map(move |x| {
                 let (x, y) = Coord::from_house_and_index(&house, x);
                 game_board.get_candidates(x, y).and_then(|candidates| {
                     if candidates.contains(target) {
@@ -31,19 +30,18 @@ fn find_eliminable(
                     }
                 })
             })
-        }).collect()
-
+        })
+        .collect()
 }
 
-
-fn cover_sets_from_appearance(appearance: BitMap, dim: Dimension) -> Vec<House> {
+fn cover_sets_from_appearance(appearance: BitMap, dim: HouseType) -> Vec<House> {
     appearance.iter_ones().map(|x| dim.house(x)).collect()
 }
 
 fn check_base_set_combo(
     game_board: &GameBoard,
     n: usize,
-    base_dim: &Dimension,
+    base_dim: &HouseType,
     target: usize,
     combo: &BitMap,
 ) -> Option<Solution> {
@@ -81,10 +79,11 @@ fn check_base_set_combo(
                     .iter_ones()
                     .flat_map(|base_index| {
                         appearance.iter_ones().map({
-                            let value = base_dim.clone();
-                            move |cover_index| match value {
-                                Dimension::Row => (base_index, cover_index),
-                                Dimension::Col => (cover_index, base_index),
+                            move |cover_index| {
+                                Coord::from_house_and_index(
+                                    &base_dim.house(base_index),
+                                    cover_index,
+                                )
                             }
                         })
                     })
@@ -103,12 +102,9 @@ fn check_base_set_combo(
     None
 }
 
-fn check_fish_with_dim(game_board: &GameBoard, n: usize, base_dim: &Dimension) -> Option<Solution> {
+fn check_fish_with_dim(game_board: &GameBoard, n: usize, base_dim: &HouseType) -> Option<Solution> {
     for target in 0..9 {
-        let mask = match base_dim{
-            Dimension::Row=> game_board.row_occupied()[target],
-            Dimension::Col=> game_board.col_occupied()[target],
-        };
+        let mask = game_board.occupied()[base_dim.as_index()][target];
         for combo in BitMap::get_combo_with_mask(n, &mask) {
             if let Some(solution) = check_base_set_combo(game_board, n, base_dim, target, &combo) {
                 return Some(solution);
@@ -121,7 +117,7 @@ fn check_fish_with_dim(game_board: &GameBoard, n: usize, base_dim: &Dimension) -
 pub struct XWing;
 impl Solver for XWing {
     fn solve(&self, game_board: &GameBoard) -> Option<Solution> {
-        [Dimension::Row, Dimension::Col]
+        [HouseType::Row, HouseType::Col]
             .into_iter()
             .find_map(|base_dim| check_fish_with_dim(game_board, 2, &base_dim))
     }
@@ -134,7 +130,7 @@ impl Solver for XWing {
 pub struct Swordfish;
 impl Solver for Swordfish {
     fn solve(&self, game_board: &GameBoard) -> Option<Solution> {
-        [Dimension::Row, Dimension::Col]
+        [HouseType::Row, HouseType::Col]
             .into_iter()
             .find_map(|base_dim| check_fish_with_dim(game_board, 3, &base_dim))
     }
@@ -147,7 +143,7 @@ impl Solver for Swordfish {
 pub struct Jellyfish;
 impl Solver for Jellyfish {
     fn solve(&self, game_board: &GameBoard) -> Option<Solution> {
-        [Dimension::Row, Dimension::Col]
+        [HouseType::Row, HouseType::Col]
             .into_iter()
             .find_map(|base_dim| check_fish_with_dim(game_board, 4, &base_dim))
     }
@@ -286,7 +282,16 @@ mod fish_test {
 
         // house_clue data
         let house_clues_len = 8;
-        let house_clues_std = [Row(1),Row(2),Row(4), Row(5), Col(0), Col(1), Col(3), Col(8)];
+        let house_clues_std = [
+            Row(1),
+            Row(2),
+            Row(4),
+            Row(5),
+            Col(0),
+            Col(1),
+            Col(3),
+            Col(8),
+        ];
 
         assert_eq!(house_clues.len(), house_clues_len);
         for i in 0..house_clues_len {
@@ -294,7 +299,17 @@ mod fish_test {
         }
 
         let clues_len = 9;
-        let clues_std = [(1,3,4),(1,8,4),(2,0,4),(2,1,4),(4,1,4),(4,3,4),(4,8,4),(5,0,4),(5,3,4)];
+        let clues_std = [
+            (1, 3, 4),
+            (1, 8, 4),
+            (2, 0, 4),
+            (2, 1, 4),
+            (4, 1, 4),
+            (4, 3, 4),
+            (4, 8, 4),
+            (5, 0, 4),
+            (5, 3, 4),
+        ];
 
         assert_eq!(candidate_clues.len(), clues_len);
         for i in 0..clues_len {
