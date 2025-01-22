@@ -432,11 +432,13 @@ pub mod game_board_test {
                     i += 1;
                 }
             }
-            GameBoard {
+            let mut res = GameBoard {
                 grid,
                 occupied: [row_occupied, col_occupied, box_occupied],
                 hard_links: [[[[None; 9]; 9]; 9]; 3],
-            }
+            };
+            res.update_hard_link();
+            res
         }
     }
 
