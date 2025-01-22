@@ -5,3 +5,12 @@ pub struct Candidate {
     pub y: usize,
     pub candidates: BitMap,
 }
+impl Candidate {
+    pub fn new_single(x: usize, y: usize, target: usize) -> Self {
+        Self {
+            x,
+            y,
+            candidates: BitMap::from(target),
+        }
+    }
+}

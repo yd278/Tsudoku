@@ -9,6 +9,6 @@ pub enum House {
 
 impl House {
     pub fn to_iter(&self) -> Box<dyn Iterator<Item = (usize, usize)>> {
-        Coord::house(&self)
+        Coord::house(self)
     }
 }

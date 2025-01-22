@@ -1,5 +1,5 @@
 use crate::solvers::solution::Action::{self, Confirmation, Elimination};
-use crate::solvers::solution::{self, ConfirmationDetails, EliminationDetails, Solution};
+use crate::solvers::solution::{ConfirmationDetails, EliminationDetails, Solution};
 use crate::solvers::Solver;
 use crate::utils::Coord;
 use crate::utils::{BitMap, HouseType};
@@ -122,7 +122,6 @@ impl GameBoard {
     /// - a vector of coordinates of collided clues if it's invalid
     /// - an empty vector if it's invalid but no current clue collision
     /// - None if it's valid
-
     pub fn get_pen_mark_addition_collisions(
         &self,
         x: usize,
@@ -181,8 +180,8 @@ impl GameBoard {
             cell.set_pen_mark(target);
 
             let components = Coord::components_array(x, y);
-            for i in 0..3 {
-                self.occupied[i][target].insert(components[i]);
+            for (i, component) in components.iter().enumerate() {
+                self.occupied[i][target].insert(*component);
             }
 
             Coord::seeable_cells(x, y)
@@ -207,9 +206,9 @@ impl GameBoard {
                 if let Some(target) = cell.get_pen_mark() {
                     cell.erase_pen_mark();
                     let components = Coord::components_array(x, y);
-                    for i in 0..3 {
+                    for (i, component) in components.iter().enumerate() {
                         if HouseType::from_index(i)
-                            .house(components[i])
+                            .house(*component)
                             .to_iter()
                             .filter(|&(x, y)| self.is_clue(x, y, target))
                             .count()
@@ -271,7 +270,6 @@ impl GameBoard {
     }
 
     /// Execute an action
-
     fn execute_action(&mut self, action: Action) {
         match action {
             Confirmation(ConfirmationDetails { x, y, target }) => {
@@ -295,11 +293,10 @@ impl GameBoard {
     }
 
     /// Find the next possible step
-
     pub fn next_step(&mut self) -> Option<Solution> {
         self.update_hard_link();
         // gather all possible solvers
-        let solvers: Vec<Box<dyn Solver>> = todo!();
+        let solvers: Vec<Box<dyn Solver>> = crate::solvers::easy::get_easy_solvers();
 
         // try it one-by one until one of them give an answer
         solvers.into_iter().find_map(|solver| solver.solve(self))

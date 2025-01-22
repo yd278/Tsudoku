@@ -74,4 +74,20 @@ impl Coord {
     pub fn components_array(x: usize, y: usize) -> [usize; 3] {
         [x, y, Self::get_box_id(x, y)]
     }
+
+    pub fn all_cells() -> impl Iterator<Item = (usize, usize)> {
+        (0..9).flat_map(|x| (0..9).map(move |y| (x, y)))
+    }
+    pub fn sees(x1: usize, y1: usize, x2: usize, y2: usize) -> bool {
+        (x1 == x2 || y1 == y2 || Coord::get_box_id(x1, y1) == Coord::get_box_id(x2, y2))
+            && !(x1 == x2 && y1 == y2)
+    }
+    pub fn components_proj(x: usize, y: usize, dim: usize) -> usize {
+        match dim {
+            0 => x,
+            1 => y,
+            2 => Self::get_box_id(x, y),
+            _ => panic!(),
+        }
+    }
 }
