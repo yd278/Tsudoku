@@ -1,11 +1,21 @@
+use std::vec;
+
 use crate::{
     game_board::GameBoard,
     solvers::{
-        solution::{Action, Candidate, EliminationDetails, Solution},
+        solution::{ Action, Candidate, EliminationDetails, Solution},
         Solver,
     },
-    utils::{BitMap, Coord, HouseType},
+    utils::{BitMap, Coord, House, HouseType},
 };
+static EMPTY_RECTANGLE_MASK: [u16; 9] = [79, 151, 295, 121, 186, 316, 457, 466, 484];
+
+fn check_empty_rectangle(ids: BitMap) -> Option<(usize, usize)> {
+    EMPTY_RECTANGLE_MASK
+        .iter()
+        .position(|&mask| ids.subset_of_raw(mask))
+        .map(|index| (index / 3, index % 3))
+}
 
 fn check_turbot(
     game_board: &GameBoard,
@@ -36,7 +46,7 @@ fn check_turbot(
                                 .filter(|&(u, v)| Coord::sees(p1, q1, u, v))
                                 .filter(|&(u, v)| Coord::sees(p2, q2, u, v))
                                 .filter(|&(u, v)| (u != x1 || v != y1) && (u != x2 || v != y2))
-                                .filter(|&(u,v)| game_board.contains_candidate(u, v, target))
+                                .filter(|&(u, v)| game_board.contains_candidate(u, v, target))
                                 .map(|(u, v)| {
                                     Action::Elimination(EliminationDetails {
                                         x: u,
@@ -85,6 +95,107 @@ pub struct EmptyRectangle {
 impl EmptyRectangle {
     pub fn with_id(id: usize) -> Self {
         Self { id }
+    }
+}
+
+impl Solver for EmptyRectangle {
+
+    fn solve(&self, game_board: &GameBoard) -> Option<Solution> {
+        (0..9).find_map(|box_id| {
+            game_board
+                .house_occupied_by(&HouseType::Box, box_id)
+                .iter_zeros()
+                .find_map(|target| {
+                    let (clues, ids) = (0..9)
+                        .filter_map(|cell_id| {
+                            let (cx, cy) =
+                                Coord::from_house_and_index(&House::Box(box_id), cell_id);
+                            game_board
+                                .contains_candidate(cx, cy, target)
+                                .then_some((cx, cy, cell_id))
+                        })
+                        .fold(
+                            (Vec::new(), BitMap::new()),
+                            |(mut clues, mut ids), (cx, cy, cell_id)| {
+                                clues.push((cx, cy));
+                                ids.insert(cell_id);
+                                (clues, ids)
+                            },
+                        );
+                    (clues.len() > 1)
+                        .then(|| check_empty_rectangle(ids))
+                        .flatten()
+                        .and_then(|(row_val, col_val)| {
+                            (0..2).find_map(|dim| {
+                                let p_house_type = HouseType::from_index(dim);
+                                let p_house = p_house_type
+                                    .house(Coord::components_proj(row_val, col_val, dim));
+
+                                Coord::house(&p_house)
+                                    .filter(|&(px, py)| {
+                                        game_board.contains_candidate(px, py, target)
+                                            && Coord::get_box_id(px, py) != box_id
+                                    })
+                                    .find_map(|(px, py)| {
+                                        game_board
+                                            .get_hard_link(px, py, target, p_house_type.other())
+                                            .and_then(|(qx, qy)| {
+                                                let r_house_type = HouseType::from_index(1 - dim);
+                                                let r_house =
+                                                    r_house_type.house(Coord::components_proj(
+                                                        row_val,
+                                                        col_val,
+                                                        1 - dim,
+                                                    ));
+                                                let (rx, ry) = Coord::from_house_and_index(
+                                                    &r_house,
+                                                    Coord::components_proj(qx, qy, dim),
+                                                );
+
+                                                game_board.contains_candidate(rx, ry, target).then(
+                                                    || {
+                                                        let candidate_clues = clues
+                                                            .iter()
+                                                            .map(|&(cx, cy)| Candidate {
+                                                                x: cx,
+                                                                y: cy,
+                                                                candidates: BitMap::from(target),
+                                                            })
+                                                            .chain([(px, py), (qx, qy)].iter().map(
+                                                                |&(x, y)| Candidate {
+                                                                    x,
+                                                                    y,
+                                                                    candidates: BitMap::from(
+                                                                        target,
+                                                                    ),
+                                                                },
+                                                            ))
+                                                            .collect();
+
+                                                        Solution {
+                                                            actions: vec![Action::Elimination(
+                                                                EliminationDetails {
+                                                                    x: rx,
+                                                                    y: ry,
+                                                                    target: BitMap::from(target),
+                                                                },
+                                                            )],
+                                                            house_clues: vec![
+                                                                House::Box(box_id),
+                                                                p_house.clone(),
+                                                                r_house,
+                                                            ],
+                                                            candidate_clues,
+                                                            solver_id: self.id,
+                                                        }
+                                                    },
+                                                )
+                                            })
+                                    })
+                            })
+                        })
+                })
+        })
     }
 }
 pub struct Skyscraper {
@@ -195,6 +306,22 @@ mod single_digit_patterns_test {
             let clue = &candidate_clues[i];
             assert_matches!(clue,Candidate{x,y,candidates} if candidates.get_raw()==raw);
         }
+    }
+    #[test]
+    fn test_empty_rectangle() {
+        test_function(
+            EmptyRectangle::with_id(1),
+            [
+                1, 66, 128, 256, 96, 16, 8, 6, 36, 258, 98, 288, 8, 4, 66, 128, 16, 1, 8, 16, 4,
+                162, 33, 129, 64, 258, 288, 130, 131, 67, 4, 16, 66, 256, 32, 8, 32, 4, 66, 66, 8,
+                256, 16, 1, 128, 16, 256, 8, 1, 128, 32, 4, 64, 2, 388, 161, 16, 224, 353, 133, 2,
+                8, 260, 64, 8, 288, 160, 2, 132, 1, 388, 16, 134, 131, 3, 16, 257, 8, 32, 388, 64,
+            ],
+            2,
+            vec![(3, 1)],
+            vec![Box(0), Row(1), Col(1)],
+            vec![(0, 1), (1, 0), (1, 1), (1, 5), (3, 5)],
+        );
     }
     #[test]
     fn test_skyscraper() {

@@ -1,6 +1,6 @@
 use super::Coord;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq,Clone)]
 pub enum House {
     Row(usize),
     Col(usize),

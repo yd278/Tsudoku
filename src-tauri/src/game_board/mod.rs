@@ -70,8 +70,8 @@ impl GameBoard {
     }
 
     /// Returns a bitmap indicating which line are occupied by the target
-    pub fn line_occupied_by(&self, dim: &HouseType, target: usize) -> &BitMap {
-        &self.occupied[dim.as_index()][target]
+    pub fn house_occupied_by(&self, dim: &HouseType, house_id: usize) -> &BitMap {
+        &self.occupied[dim.as_index()][house_id]
     }
 
     pub fn occupied(&self) -> &[[BitMap; 9]; 3] {

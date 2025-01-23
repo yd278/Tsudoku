@@ -88,6 +88,9 @@ impl BitMap {
     pub fn iter_zeros(&self) -> impl Iterator<Item = usize> + '_ {
         (0..9).filter(|x| !self.contains(*x))
     }
+    pub fn subset_of_raw(&self, other: u16) -> bool{
+        (self.0 & other) == self.0
+    }
     #[cfg(test)]
     pub fn get_raw(&self) -> u16 {
         self.0
