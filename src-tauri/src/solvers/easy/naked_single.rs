@@ -1,14 +1,11 @@
 use crate::game_board::{Cell, GameBoard};
+use crate::impl_with_id;
 use crate::solvers::solution::*;
 use crate::solvers::traits::Solver;
 pub struct NakedSingle {
     id: usize,
 }
-impl NakedSingle {
-    pub fn with_id(id: usize) -> Self {
-        Self { id }
-    }
-}
+impl_with_id!(NakedSingle);
 impl Solver for NakedSingle {
     fn solve(&self, game_board: &GameBoard) -> Option<Solution> {
         for row in 0..9 {

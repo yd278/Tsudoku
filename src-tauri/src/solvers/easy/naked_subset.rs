@@ -1,8 +1,12 @@
 use crate::game_board::GameBoard;
+use crate::impl_with_id;
 use crate::solvers::solution::{Action, Candidate, EliminationDetails, Solution};
 use crate::solvers::Solver;
 use crate::utils::House::{Box, Col, Row};
 use crate::utils::{BitMap, Coord};
+
+
+impl_with_id!(NakedPair,NakedTriple,NakedQuadruple);
 
 fn solve_naked_subset(n: usize, game_board: &GameBoard, solver_id: usize) -> Option<Solution> {
     for i in 0..9 {
@@ -60,11 +64,7 @@ fn solve_naked_subset(n: usize, game_board: &GameBoard, solver_id: usize) -> Opt
 pub struct NakedPair {
     id: usize,
 }
-impl NakedPair {
-    pub fn with_id(id: usize) -> Self {
-        Self { id }
-    }
-}
+
 impl Solver for NakedPair {
     fn solve(&self, game_board: &GameBoard) -> Option<Solution> {
         solve_naked_subset(2, game_board, self.id)
@@ -74,11 +74,7 @@ impl Solver for NakedPair {
 pub struct NakedTriple {
     id: usize,
 }
-impl NakedTriple {
-    pub fn with_id(id: usize) -> Self {
-        Self { id }
-    }
-}
+
 impl Solver for NakedTriple {
     fn solve(&self, game_board: &GameBoard) -> Option<Solution> {
         solve_naked_subset(3, game_board, self.id)
@@ -88,11 +84,7 @@ impl Solver for NakedTriple {
 pub struct NakedQuadruple {
     id: usize,
 }
-impl NakedQuadruple {
-    pub fn with_id(id: usize) -> Self {
-        Self { id }
-    }
-}
+
 impl Solver for NakedQuadruple {
     fn solve(&self, game_board: &GameBoard) -> Option<Solution> {
         solve_naked_subset(4, game_board, self.id)

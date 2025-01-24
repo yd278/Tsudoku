@@ -11,6 +11,8 @@ use hidden_subset::{HiddenPair, HiddenTriple};
 use naked_single::NakedSingle;
 use naked_subset::{NakedPair, NakedTriple};
 use pointing::Pointing;
+
+
 #[rustfmt::skip]
 pub fn get_easy_solvers() -> Vec<Box<dyn Solver>> {
     vec![

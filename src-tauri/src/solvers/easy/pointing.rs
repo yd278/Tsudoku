@@ -1,4 +1,5 @@
 use crate::game_board::GameBoard;
+use crate::impl_with_id;
 use crate::solvers::solution::candidate::Candidate;
 use crate::solvers::solution::elimination_details::EliminationDetails;
 use crate::solvers::solution::{Action, Solution};
@@ -8,11 +9,7 @@ use crate::utils::{BitMap, Coord, House};
 pub struct Pointing {
     id: usize,
 }
-impl Pointing {
-    pub fn with_id(id: usize) -> Self {
-        Self { id }
-    }
-}
+impl_with_id!(Pointing);
 impl Solver for Pointing {
     fn solve(&self, game_board: &GameBoard) -> Option<crate::solvers::solution::Solution> {
         for box_id in 0..9 {

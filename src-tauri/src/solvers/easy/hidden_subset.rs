@@ -1,6 +1,7 @@
 use std::vec;
 
 use crate::game_board::{Cell, GameBoard};
+use crate::impl_with_id;
 use crate::solvers::solution::{Action, Candidate, EliminationDetails, Solution};
 use crate::solvers::Solver;
 use crate::utils::House::{Box, Col, Row};
@@ -83,11 +84,6 @@ fn solve_hidden_subset(n: usize, game_board: &GameBoard, solver_id: usize) -> Op
 pub struct HiddenPair {
     id: usize,
 }
-impl HiddenPair {
-    pub fn with_id(id: usize) -> Self {
-        Self { id }
-    }
-}
 impl Solver for HiddenPair {
     fn solve(&self, game_board: &GameBoard) -> Option<Solution> {
         solve_hidden_subset(2, game_board, self.id)
@@ -98,11 +94,7 @@ pub struct HiddenTriple {
     id: usize,
 }
 
-impl HiddenTriple {
-    pub fn with_id(id: usize) -> Self {
-        Self { id }
-    }
-}
+
 impl Solver for HiddenTriple {
     fn solve(&self, game_board: &GameBoard) -> Option<Solution> {
         solve_hidden_subset(3, game_board, self.id)
@@ -112,11 +104,7 @@ impl Solver for HiddenTriple {
 pub struct HiddenQuadruple {
     id: usize,
 }
-impl HiddenQuadruple {
-    pub fn with_id(id: usize) -> Self {
-        Self { id }
-    }
-}
+impl_with_id!(HiddenPair,HiddenQuadruple,HiddenTriple);
 impl Solver for HiddenQuadruple {
     fn solve(&self, game_board: &GameBoard) -> Option<Solution> {
         solve_hidden_subset(4, game_board, self.id)

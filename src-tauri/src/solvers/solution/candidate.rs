@@ -13,4 +13,10 @@ impl Candidate {
             candidates: BitMap::from(target),
         }
     }
+
+    pub fn new(x:usize, y:usize, candidates: BitMap) -> Self{
+        Self{
+            x,y,candidates
+        }
+    }
 }

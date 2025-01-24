@@ -4,15 +4,12 @@ use crate::solvers::solution::Solution;
 use crate::solvers::solution::{Action, Candidate, EliminationDetails};
 use crate::solvers::Solver;
 use crate::utils::{AllEqualValue, BitMap, Coord, House};
-
+use crate::impl_with_id;
 pub struct Claiming {
     id: usize,
 }
-impl Claiming {
-    pub fn with_id(id: usize) -> Self {
-        Self { id }
-    }
-}
+impl_with_id!(Claiming);
+
 impl Solver for Claiming {
     fn solve(&self, game_board: &GameBoard) -> Option<Solution> {
         for i in 0..9 {

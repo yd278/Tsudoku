@@ -15,6 +15,7 @@ use super::Solver;
 mod finned;
 mod fish;
 mod single_digit_patterns;
+mod uniqueness;
 use single_digit_patterns::{EmptyRectangle, Skyscraper, TurbotFish, TwoStringKite};
 
 use finned::FinnedXWing;

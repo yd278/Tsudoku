@@ -1,12 +1,11 @@
 use crate::{
-    game_board::GameBoard,
-    solvers::{
+    game_board::GameBoard, impl_with_id, solvers::{
         solution::{Action, Candidate, EliminationDetails, Solution},
         Solver,
-    },
-    utils::{AllEqualValue, BitMap, Coord, HouseType},
+    }, utils::{AllEqualValue, BitMap, Coord, HouseType}
 };
 
+impl_with_id!(FinnedXWing,FinnedSwordfish,FinnedJellyfish);
 fn get_coords_with_target_by_masks<'a>(
     game_board: &'a GameBoard,
     first: &'a BitMap,
@@ -120,11 +119,7 @@ fn find_finned_fish(
 pub struct FinnedXWing {
     id: usize,
 }
-impl FinnedXWing {
-    pub fn with_id(id: usize) -> Self {
-        Self { id }
-    }
-}
+
 impl Solver for FinnedXWing {
     fn solve(&self, game_board: &GameBoard) -> Option<Solution> {
         let solver_id = self.id;
@@ -136,11 +131,7 @@ impl Solver for FinnedXWing {
 pub struct FinnedSwordfish {
     id: usize,
 }
-impl FinnedSwordfish {
-    pub fn with_id(id: usize) -> Self {
-        Self { id }
-    }
-}
+
 impl Solver for FinnedSwordfish {
     fn solve(&self, game_board: &GameBoard) -> Option<Solution> {
         let solver_id = self.id;
@@ -153,11 +144,7 @@ impl Solver for FinnedSwordfish {
 pub struct FinnedJellyfish {
     id: usize,
 }
-impl FinnedJellyfish {
-    pub fn with_id(id: usize) -> Self {
-        Self { id }
-    }
-}
+
 impl Solver for FinnedJellyfish {
     fn solve(&self, game_board: &GameBoard) -> Option<Solution> {
         let solver_id = self.id;

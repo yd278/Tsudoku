@@ -1,4 +1,5 @@
 use crate::game_board::{Cell, GameBoard};
+use crate::impl_with_id;
 use crate::solvers::solution::{Action::Confirmation, Candidate, ConfirmationDetails, Solution};
 use crate::solvers::Solver;
 use crate::utils::{BitMap, Coord, House};
@@ -6,11 +7,7 @@ use crate::utils::{BitMap, Coord, House};
 pub struct HiddenSingle {
     id: usize,
 }
-impl HiddenSingle {
-    pub fn with_id(id: usize) -> Self {
-        Self { id }
-    }
-}
+impl_with_id!(HiddenSingle);
 
 impl Solver for HiddenSingle {
     fn solve(&self, game_board: &GameBoard) -> Option<Solution> {

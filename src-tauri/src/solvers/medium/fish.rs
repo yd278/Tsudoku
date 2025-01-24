@@ -1,11 +1,11 @@
 use crate::{
-    game_board::GameBoard,
-    solvers::{
+    game_board::GameBoard, impl_with_id, solvers::{
         solution::{Action, Candidate, EliminationDetails, Solution},
         Solver,
-    },
-    utils::{BitMap, Coord, House, HouseType},
+    }, utils::{BitMap, Coord, House, HouseType}
 };
+
+impl_with_id!(XWing,Swordfish,Jellyfish);
 
 fn find_eliminable(
     game_board: &GameBoard,
@@ -126,11 +126,7 @@ fn check_fish_with_dim(
 pub struct XWing {
     id: usize,
 }
-impl XWing {
-    pub fn with_id(id: usize) -> Self {
-        Self { id }
-    }
-}
+
 impl Solver for XWing {
     fn solve(&self, game_board: &GameBoard) -> Option<Solution> {
         [HouseType::Row, HouseType::Col]
@@ -142,11 +138,7 @@ impl Solver for XWing {
 pub struct Swordfish {
     id: usize,
 }
-impl Swordfish {
-    pub fn with_id(id: usize) -> Self {
-        Self { id }
-    }
-}
+
 impl Solver for Swordfish {
     fn solve(&self, game_board: &GameBoard) -> Option<Solution> {
         [HouseType::Row, HouseType::Col]
@@ -158,11 +150,7 @@ impl Solver for Swordfish {
 pub struct Jellyfish {
     id: usize,
 }
-impl Jellyfish {
-    pub fn with_id(id: usize) -> Self {
-        Self { id }
-    }
-}
+
 impl Solver for Jellyfish {
     fn solve(&self, game_board: &GameBoard) -> Option<Solution> {
         [HouseType::Row, HouseType::Col]

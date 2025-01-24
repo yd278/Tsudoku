@@ -1,13 +1,12 @@
 use std::vec;
 
 use crate::{
-    game_board::GameBoard,
-    solvers::{
+    game_board::GameBoard, impl_with_id, solvers::{
         solution::{ Action, Candidate, EliminationDetails, Solution},
         Solver,
-    },
-    utils::{BitMap, Coord, House, HouseType},
+    }, utils::{BitMap, Coord, House, HouseType}
 };
+impl_with_id!(Skyscraper,TwoStringKite,TurbotFish,EmptyRectangle);
 static EMPTY_RECTANGLE_MASK: [u16; 9] = [79, 151, 295, 121, 186, 316, 457, 466, 484];
 
 fn check_empty_rectangle(ids: BitMap) -> Option<(usize, usize)> {
@@ -92,11 +91,7 @@ fn check_turbot(
 pub struct EmptyRectangle {
     id: usize,
 }
-impl EmptyRectangle {
-    pub fn with_id(id: usize) -> Self {
-        Self { id }
-    }
-}
+
 
 impl Solver for EmptyRectangle {
 
@@ -201,11 +196,7 @@ impl Solver for EmptyRectangle {
 pub struct Skyscraper {
     id: usize,
 }
-impl Skyscraper {
-    pub fn with_id(id: usize) -> Self {
-        Self { id }
-    }
-}
+
 
 impl Solver for Skyscraper {
     fn solve(&self, game_board: &GameBoard) -> Option<Solution> {
@@ -216,11 +207,7 @@ impl Solver for Skyscraper {
 pub struct TwoStringKite {
     id: usize,
 }
-impl TwoStringKite {
-    pub fn with_id(id: usize) -> Self {
-        Self { id }
-    }
-}
+
 impl Solver for TwoStringKite {
     fn solve(&self, game_board: &GameBoard) -> Option<Solution> {
         check_turbot(game_board, 2, 0, 1, self.id)
@@ -230,11 +217,7 @@ impl Solver for TwoStringKite {
 pub struct TurbotFish {
     id: usize,
 }
-impl TurbotFish {
-    pub fn with_id(id: usize) -> Self {
-        Self { id }
-    }
-}
+
 impl Solver for TurbotFish {
     fn solve(&self, game_board: &GameBoard) -> Option<Solution> {
         (0..2).find_map(|x| check_turbot(game_board, x, 2, 1 - x, self.id))
