@@ -90,4 +90,37 @@ impl Coord {
             _ => panic!(),
         }
     }
+    pub fn pinched_by(px:usize, py:usize, qx:usize, qy:usize) -> impl Iterator<Item = (usize,usize)>{
+        let mut res = vec![];
+        if px == qx{
+            for y in 0..9{
+                if y==py || y == qy{
+                    continue;
+                }
+                res.push((px,y));
+            }
+            if py/3==qy/3 {
+                for(ux,uy) in Coord::iter_box(px, py).filter(|&(ux,_)|ux!=px){
+                    res.push((ux,uy));
+                }
+            }
+            return res.into_iter();
+        }
+        if py == qy{
+            for x in 0..9{
+                if x==px || x == qx{
+                    continue;
+                }
+                res.push((x,py));
+            }
+            if px/3==qx/3{
+                for(ux,uy) in Coord::iter_box(px, py).filter(|&(_,uy)|uy!=py){
+                    res.push((ux,uy));
+                }
+            }
+            return res.into_iter();
+        }
+        vec![(px,qy),(qx,py)].into_iter()
+
+    }
 }
