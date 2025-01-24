@@ -92,6 +92,9 @@ impl Coord {
     }
     pub fn pinched_by(px:usize, py:usize, qx:usize, qy:usize) -> impl Iterator<Item = (usize,usize)>{
         let mut res = vec![];
+        if px == qx && py == qy {
+            return res.into_iter();
+        }
         if px == qx{
             for y in 0..9{
                 if y==py || y == qy{
