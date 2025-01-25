@@ -1,3 +1,5 @@
+use std::thread::AccessError;
+
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct BitMap(u16);
 
@@ -45,8 +47,8 @@ impl BitMap {
         })
     }
 
-    pub fn get_combo_with_mask(n: usize, mask: &BitMap) -> impl Iterator<Item = BitMap> + '_ {
-        Self::get_combinations(n).filter(|combo| combo.intersect(mask).count() == 0)
+    pub fn get_combo_with_mask(n: usize, mask: BitMap) -> impl Iterator<Item = BitMap> {
+        Self::get_combinations(n).filter(move |combo| combo.intersect(&mask).count() == 0)
     }
 
     pub fn contains(&self, num: usize) -> bool {
@@ -102,6 +104,15 @@ impl BitMap {
     #[cfg(test)]
     pub fn from_raw(raw: u16) -> Self {
         Self(raw)
+    }
+}
+
+impl FromIterator<usize> for BitMap{
+    fn from_iter<T: IntoIterator<Item = usize>>(iter: T) -> Self {
+        iter.into_iter().fold(Self::new(), |mut acc, x|{
+            acc.insert(x);
+            acc
+        })
     }
 }
 

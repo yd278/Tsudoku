@@ -1,8 +1,10 @@
+use std::{iter::Cycle, ops::Not};
+
 use crate::{
     game_board::GameBoard,
     impl_with_id,
     solvers::{
-        solution::{Action, Candidate, EliminationDetails, Solution},
+        solution::{candidate, Action, Candidate, EliminationDetails, Solution},
         Solver,
     },
     utils::{BitMap, Coord, House, HouseType},
@@ -31,7 +33,65 @@ fn find_base_line(
         })
 }
 
-impl_with_id!(UniquenessTest1, UniquenessTest2);
+struct SemiPossibleUR {
+    base_house: House,
+    base_bi_value: BitMap,
+    first_index: usize,
+    second_index: usize,
+    span_house: House,
+    first_span_candidates: BitMap,
+    second_span_candidates: BitMap,
+}
+/// This functions is for Uniqueness Test 2 and 3
+/// The side with two cells only contains UR candidates is called Base House
+/// and the side with two cells contains extra candidates is called Span House
+///
+/// This function returns an iterator to
+fn semi_possible_ur(game_board: &GameBoard) -> impl Iterator<Item = SemiPossibleUR> + '_ {
+    find_base_line(game_board).flat_map(move |(base_house, first, second, bi_value)| {
+        let same_house_flag = first / 3 == second / 3;
+        (0..9)
+            .filter(move |&x| {
+                x != base_house.get_index()
+                    && (x / 3 == base_house.get_index() / 3) != same_house_flag
+            })
+            .filter_map(move |x| {
+                let span_house = base_house.get_parallel(x);
+                let (fx, fy) = Coord::from_house_and_index(&span_house, first);
+                let (sx, sy) = Coord::from_house_and_index(&span_house, second);
+                game_board
+                    .get_candidates(fx, fy)
+                    .and_then(|first_span_candidates| {
+                        game_board
+                            .get_candidates(sx, sy)
+                            .and_then(|second_span_candidates| {
+                                bi_value
+                                    .iter_ones()
+                                    .all(|candidate| game_board.could_have_been(fx, fy, candidate))
+                                    .then(|| {
+                                        bi_value
+                                            .iter_ones()
+                                            .all(|candidate| {
+                                                game_board.could_have_been(sx, sy, candidate)
+                                            })
+                                            .then_some(SemiPossibleUR {
+                                                base_house,
+                                                base_bi_value: bi_value,
+                                                first_index: first,
+                                                second_index: second,
+                                                span_house,
+                                                first_span_candidates,
+                                                second_span_candidates,
+                                            })
+                                    })
+                            })
+                            .flatten()
+                    })
+            })
+    })
+}
+
+impl_with_id!(UniquenessTest1, UniquenessTest2, UniquenessTest3);
 struct UniquenessTest1 {
     id: usize,
 }
@@ -98,130 +158,182 @@ struct UniquenessTest2 {
 }
 impl Solver for UniquenessTest2 {
     fn solve(&self, game_board: &GameBoard) -> Option<Solution> {
-        find_base_line(game_board)
-            .flat_map(|(base_house, first, second, bi_value)| {
-                let same_house_flag = first / 3 == second / 3;
-                (0..9)
-                    .filter(move |&x| {
-                        x != base_house.get_index()
-                            && (x / 3 == base_house.get_index() / 3) != same_house_flag
-                    })
-                    .map(move |x| {
-                        (
-                            base_house,
-                            base_house.get_parallel(x),
-                            first,
-                            second,
-                            bi_value,
-                        )
-                    })
-            })
-            .find_map(|(base_house, span_house, first, second, bi_value)| {
-                let (px, py) = Coord::from_house_and_index(&span_house, first);
-                game_board
-                    .get_candidates(px, py)
-                    .and_then(|first_candidates| {
-                        let target_set = first_candidates.difference(&bi_value);
-                        (target_set.count() == 1)
-                            .then(|| {
-                                let target = target_set.trailing_zeros();
-                                bi_value
-                                    .iter_ones()
-                                    .all(|candidate| game_board.could_have_been(px, py, candidate))
-                                    .then(|| {
-                                        let (qx, qy) =
-                                            Coord::from_house_and_index(&span_house, second);
-                                        game_board.get_candidates(qx, qy).and_then(
-                                            |second_candidates| {
-                                                (bi_value.iter_ones().all(|candidate| {
-                                                    game_board.could_have_been(qx, qy, candidate)
-                                                }) && second_candidates.difference(&bi_value)
-                                                    == target_set)
-                                                    .then(|| {
-                                                        let eliminable: Vec<_> =
-                                                            Coord::pinched_by(px, py, qx, qy)
-                                                                .filter(|&(ex, ey)| {
-                                                                    game_board.contains_candidate(
-                                                                        ex, ey, target,
-                                                                    )
-                                                                })
-                                                                .collect();
-
-                                                        (!eliminable.is_empty()).then_some(
-                                                            Solution {
-                                                                actions: eliminable
-                                                                    .into_iter()
-                                                                    .map(|(x, y)| {
-                                                                        Action::Elimination(
-                                                                            EliminationDetails {
-                                                                                x,
-                                                                                y,
-                                                                                target:
-                                                                                    BitMap::from(
-                                                                                        target,
-                                                                                    ),
-                                                                            },
-                                                                        )
-                                                                    })
-                                                                    .collect(),
-                                                                house_clues: vec![
-                                                                    base_house,
-                                                                    span_house,
-                                                                    base_house
-                                                                        .get_perpendicular(first),
-                                                                    base_house
-                                                                        .get_perpendicular(second),
-                                                                ],
-                                                                candidate_clues: vec![
-                                                                    Candidate::from_coord(
-                                                                        Coord::from_house_and_index(
-                                                                            &base_house,
-                                                                            first,
-                                                                        ),
-                                                                        bi_value,
-                                                                    ),
-                                                                    Candidate::from_coord(
-                                                                        Coord::from_house_and_index(
-                                                                            &base_house,
-                                                                            second,
-                                                                        ),
-                                                                        bi_value,
-                                                                    ),
-                                                                    Candidate::from_coord(
-                                                                        Coord::from_house_and_index(
-                                                                            &span_house,
-                                                                            first,
-                                                                        ),
-                                                                        bi_value.intersect(
-                                                                            &first_candidates,
-                                                                        ),
-                                                                    ),
-                                                                    Candidate::from_coord(
-                                                                        Coord::from_house_and_index(
-                                                                            &span_house,
-                                                                            second,
-                                                                        ),
-                                                                        bi_value.intersect(
-                                                                            &second_candidates,
-                                                                        ),
-                                                                    ),
-                                                                ],
-                                                                solver_id: self.id,
-                                                            },
-                                                        )
-                                                    })
-                                                    .flatten()
-                                            },
-                                        )
-                                    })
-                                    .flatten()
+        semi_possible_ur(game_board).find_map(
+            |SemiPossibleUR {
+                 base_house,
+                 base_bi_value,
+                 first_index,
+                 second_index,
+                 span_house,
+                 first_span_candidates,
+                 second_span_candidates,
+             }| {
+                let first_diff = first_span_candidates.difference(&base_bi_value);
+                let second_diff = second_span_candidates.difference(&base_bi_value);
+                (first_diff.count() == 1 && first_diff == second_diff)
+                    .then(|| {
+                        let target = first_diff.trailing_zeros();
+                        let (fx, fy) = Coord::from_house_and_index(&span_house, first_index);
+                        let (sx, sy) = Coord::from_house_and_index(&span_house, second_index);
+                        let eliminables: Vec<_> = Coord::pinched_by(fx, fy, sx, sy)
+                            .filter_map(|(ex, ey)| {
+                                game_board.contains_candidate(ex, ey, target).then_some(
+                                    Action::Elimination(EliminationDetails {
+                                        x: ex,
+                                        y: ey,
+                                        target: BitMap::from(target),
+                                    }),
+                                )
                             })
-                            .flatten()
+                            .collect();
+                        (!eliminables.is_empty()).then_some(Solution {
+                            actions: eliminables,
+                            house_clues: vec![
+                                base_house,
+                                span_house,
+                                base_house.get_perpendicular(first_index),
+                                base_house.get_perpendicular(second_index),
+                            ],
+                            candidate_clues: vec![
+                                Candidate::from_coord(
+                                    Coord::from_house_and_index(&base_house, first_index),
+                                    base_bi_value,
+                                ),
+                                Candidate::from_coord(
+                                    Coord::from_house_and_index(&base_house, second_index),
+                                    base_bi_value,
+                                ),
+                                Candidate::from_coord(
+                                    Coord::from_house_and_index(&span_house, first_index),
+                                    base_bi_value.intersect(&first_span_candidates),
+                                ),
+                                Candidate::from_coord(
+                                    Coord::from_house_and_index(&span_house, second_index),
+                                    base_bi_value.intersect(&second_span_candidates),
+                                ),
+                            ],
+                            solver_id: self.id,
+                        })
                     })
-            })
+                    .flatten()
+            },
+        )
     }
 }
+struct UniquenessTest3 {
+    id: usize,
+}
 
+impl Solver for UniquenessTest3 {
+    fn solve(&self, game_board: &GameBoard) -> Option<Solution> {
+        semi_possible_ur(game_board).find_map(
+            |SemiPossibleUR {
+                 base_house,
+                 base_bi_value,
+                 first_index,
+                 second_index,
+                 span_house,
+                 first_span_candidates,
+                 second_span_candidates,
+             }| {
+                let first_diff = first_span_candidates.difference(&base_bi_value);
+                let second_diff = second_span_candidates.difference(&base_bi_value);
+                let virtual_cell = first_diff.union(&second_diff);
+                let mask: BitMap = (0..9)
+                    .filter(|&x| {
+                        let (cx, cy) = Coord::from_house_and_index(&span_house, x);
+                        !game_board.not_filled(cx, cy)
+                    })
+                    .collect();
+
+                (virtual_cell.count() - 1..7)
+                    .flat_map(|subset_size| BitMap::get_combo_with_mask(subset_size, mask))
+                    .find_map(|combo| {
+                        let subset_candidates = combo
+                            .iter_ones()
+                            .filter_map(|x| {
+                                let (cx, cy) = Coord::from_house_and_index(&span_house, x);
+                                game_board.get_candidates(cx, cy)
+                            })
+                            .fold(BitMap::new(), |acc, candidates| acc.union(&candidates));
+                        let subset_candidates = subset_candidates.union(&virtual_cell);
+                        (subset_candidates.count() == combo.count() + 1).then(|| {
+                            combo
+                                .iter_zeros()
+                                .filter(|&x| x != first_index && x != second_index)
+                                .map(|x| Coord::from_house_and_index(&span_house, x))
+                                .filter_map(|(cx, cy)| {
+                                    game_board.get_candidates(cx, cy).and_then(|candidates| {
+                                        let eliminable_candidates =
+                                            candidates.intersect(&subset_candidates);
+                                        (eliminable_candidates.count() > 0).then_some(
+                                            Action::Elimination(EliminationDetails {
+                                                x: cx,
+                                                y: cy,
+                                                target: eliminable_candidates,
+                                            }),
+                                        )
+                                    })
+                                })
+                                .collect::<Vec<_>>()
+                        })
+                        .and_then(|actions|Some((actions,combo,subset_candidates)))
+                        
+                    })
+                    .and_then(|(actions,combo,subset_candidates)| {
+                        let candidate_clues =  vec![
+                            Candidate::from_coord(
+                                Coord::from_house_and_index(&base_house, first_index),
+                                base_bi_value,
+                            ),
+                            Candidate::from_coord(
+                                Coord::from_house_and_index(&base_house, second_index),
+                                base_bi_value,
+                            ),
+                            Candidate::from_coord(
+                                Coord::from_house_and_index(&span_house, first_index),
+                                base_bi_value.intersect(&first_span_candidates),
+                            ),
+                            Candidate::from_coord(
+                                Coord::from_house_and_index(&span_house, second_index),
+                                second_span_candidates.intersect(&second_span_candidates),
+                            ),
+                            Candidate::from_coord(
+                                Coord::from_house_and_index(&span_house, second_index),
+                                subset_candidates.intersect(&first_span_candidates),
+                            ),
+                            Candidate::from_coord(
+                                Coord::from_house_and_index(&span_house, second_index),
+                                subset_candidates.intersect(&second_span_candidates),
+                            ),
+
+                        ].into_iter().chain(
+                            combo.iter_ones().map(|x|
+                                Coord::from_house_and_index(&span_house, x)
+                            ).filter_map(|(cx,cy)|{
+                                game_board.get_candidates(cx, cy).and_then(|candidates|{
+                                    Some(Candidate::new(cx,cy,candidates.intersect(&subset_candidates)))
+                                })
+                            })
+                
+                        )
+                       .collect();
+                        Some(Solution {
+                            actions,
+                            house_clues: vec![
+                                base_house,
+                                span_house,
+                                base_house.get_perpendicular(first_index),
+                                base_house.get_perpendicular(second_index),
+                            ],
+                            candidate_clues,
+                            solver_id: self.id,
+                        })
+                    })
+            },
+        )
+    }
+}
 #[cfg(test)]
 mod uniqueness_test {
     use super::*;
@@ -326,6 +438,19 @@ mod uniqueness_test {
             vec![Row(1), Row(0), Col(5), Col(7)],
             vec![(1, 5), (1, 7), (0, 5), (0, 7)],
             vec![65, 65, 65, 1],
+        );
+    }
+
+    #[test]
+    fn uniqueness_test_3() {
+        test_function(
+            UniquenessTest3::with_id(1),
+            [128,9,16,256,96,9,4,96,2,4,265,64,19,40,43,24,288,128,32,264,2,212,204,140,24,320,1,64,2,4,8,1,256,32,128,16,16,32,8,132,2,132,64,1,256,1,128,256,32,16,64,2,4,8,2,80,160,193,232,169,256,24,4,8,84,160,198,256,166,1,18,96,256,68,1,70,108,16,128,10,96],
+            vec![(2,4),],
+            vec![72],
+            vec![Row(4), Row(2), Col(3), Col(5)],
+            vec![(4,3), (4,5), (2,3), (2,5), (2,3), (2,5), (2,1), (2,6), (2,7),],
+            vec![132, 132, 132, 132, 80, 8, 264, 24, 320],
         );
     }
 }

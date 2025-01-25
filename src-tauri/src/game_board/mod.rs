@@ -55,6 +55,7 @@ impl GameBoard {
         }
     }
 
+    /// Returns true if target at cell(x,y) is not denied by a given
     pub fn could_have_been(&self, x: usize, y: usize, target: usize) -> bool {
         match &self.grid[x][y] {
             Cell::Blank(cell) if !cell.is_pen_mark() => !Coord::seeable_cells(x, y)
@@ -63,7 +64,14 @@ impl GameBoard {
         }
     }
 
-    /// Returns true if cell (x,y) is a clue
+    /// Returns true if cell (x,y) is not filled
+    pub fn not_filled(&self, x:usize, y: usize) -> bool{
+        match &self.grid[x][y] {
+            Cell::Blank(cell) => !cell.is_pen_mark() ,
+            _ => false,
+        }
+    }
+    /// Returns true if cell (x,y) is a clue equals to target
     pub fn is_clue(&self, x: usize, y: usize, target: usize) -> bool {
         match &self.grid[x][y] {
             Cell::Printed(num) => *num == target,
