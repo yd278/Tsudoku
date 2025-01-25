@@ -14,9 +14,11 @@ impl Candidate {
         }
     }
 
-    pub fn new(x:usize, y:usize, candidates: BitMap) -> Self{
-        Self{
-            x,y,candidates
-        }
+    pub fn new(x: usize, y: usize, candidates: BitMap) -> Self {
+        Self { x, y, candidates }
+    }
+
+    pub fn from_coord((x, y): (usize, usize), candidates: BitMap) -> Self {
+        Self { x, y, candidates }
     }
 }

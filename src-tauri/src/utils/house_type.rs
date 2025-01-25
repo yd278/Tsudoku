@@ -21,14 +21,14 @@ impl HouseType {
             HouseType::Box => House::Box(x),
         }
     }
-    pub fn as_index(&self) -> usize {
+    pub fn as_dim(&self) -> usize {
         match self {
             HouseType::Row => 0,
             HouseType::Col => 1,
             HouseType::Box => 2,
         }
     }
-    pub fn from_index(i: usize) -> Self {
+    pub fn from_dim(i: usize) -> Self {
         match i {
             0 => Self::Row,
             1 => Self::Col,

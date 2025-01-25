@@ -55,6 +55,14 @@ impl GameBoard {
         }
     }
 
+    pub fn could_have_been(&self, x: usize, y: usize, target: usize) -> bool {
+        match &self.grid[x][y] {
+            Cell::Blank(cell) if !cell.is_pen_mark() => !Coord::seeable_cells(x, y)
+                .any(|(cx, cy)| matches!(self.grid[cx][cy], Cell::Printed(num) if num==target)),
+            _ => false,
+        }
+    }
+
     /// Returns true if cell (x,y) is a clue
     pub fn is_clue(&self, x: usize, y: usize, target: usize) -> bool {
         match &self.grid[x][y] {
@@ -71,7 +79,7 @@ impl GameBoard {
 
     /// Returns a bitmap indicating which line are occupied by the target
     pub fn house_occupied_by(&self, dim: &HouseType, house_id: usize) -> &BitMap {
-        &self.occupied[dim.as_index()][house_id]
+        &self.occupied[dim.as_dim()][house_id]
     }
 
     pub fn occupied(&self) -> &[[BitMap; 9]; 3] {
@@ -85,7 +93,7 @@ impl GameBoard {
         target: usize,
         dim: HouseType,
     ) -> Option<(usize, usize)> {
-        self.hard_links[dim.as_index()][x][y][target]
+        self.hard_links[dim.as_dim()][x][y][target]
     }
 }
 
@@ -207,7 +215,7 @@ impl GameBoard {
                     cell.erase_pen_mark();
                     let components = Coord::components_array(x, y);
                     for (i, component) in components.iter().enumerate() {
-                        if HouseType::from_index(i)
+                        if HouseType::from_dim(i)
                             .house(*component)
                             .to_iter()
                             .filter(|&(x, y)| self.is_clue(x, y, target))
@@ -310,7 +318,7 @@ impl GameBoard {
         for dim in 0..3 {
             for house_index in 0..9 {
                 for target in 0..9 {
-                    let appearance: Vec<_> = HouseType::from_index(dim)
+                    let appearance: Vec<_> = HouseType::from_dim(dim)
                         .house(house_index)
                         .to_iter()
                         .filter(|&(x, y)| self.contains_candidate(x, y, target))
