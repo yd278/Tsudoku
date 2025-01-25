@@ -1,11 +1,14 @@
 use crate::{
-    game_board::GameBoard, impl_with_id, solvers::{
+    game_board::GameBoard,
+    impl_with_id,
+    solvers::{
         solution::{Action, Candidate, EliminationDetails, Solution},
         Solver,
-    }, utils::{AllEqualValue, BitMap, Coord, HouseType}
+    },
+    utils::{AllEqualValue, BitMap, Coord, HouseType},
 };
 
-impl_with_id!(FinnedXWing,FinnedSwordfish,FinnedJellyfish);
+impl_with_id!(FinnedXWing, FinnedSwordfish, FinnedJellyfish);
 fn get_coords_with_target_by_masks<'a>(
     game_board: &'a GameBoard,
     first: &'a BitMap,

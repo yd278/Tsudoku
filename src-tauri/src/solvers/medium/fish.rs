@@ -1,11 +1,14 @@
 use crate::{
-    game_board::GameBoard, impl_with_id, solvers::{
+    game_board::GameBoard,
+    impl_with_id,
+    solvers::{
         solution::{Action, Candidate, EliminationDetails, Solution},
         Solver,
-    }, utils::{BitMap, Coord, House, HouseType}
+    },
+    utils::{BitMap, Coord, House, HouseType},
 };
 
-impl_with_id!(XWing,Swordfish,Jellyfish);
+impl_with_id!(XWing, Swordfish, Jellyfish);
 
 fn find_eliminable(
     game_board: &GameBoard,
@@ -111,7 +114,7 @@ fn check_fish_with_dim(
     solver_id: usize,
 ) -> Option<Solution> {
     for target in 0..9 {
-        let mask = game_board.occupied()[base_dim.as_index()][target];
+        let mask = game_board.occupied()[base_dim.as_dim()][target];
         for combo in BitMap::get_combo_with_mask(n, &mask) {
             if let Some(solution) =
                 check_base_set_combo(game_board, n, base_dim, target, &combo, solver_id)

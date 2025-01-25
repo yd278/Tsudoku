@@ -1,10 +1,10 @@
 use crate::game_board::GameBoard;
+use crate::impl_with_id;
 use crate::solvers::solution::Action::Elimination;
 use crate::solvers::solution::Solution;
 use crate::solvers::solution::{Action, Candidate, EliminationDetails};
 use crate::solvers::Solver;
 use crate::utils::{AllEqualValue, BitMap, Coord, House};
-use crate::impl_with_id;
 pub struct Claiming {
     id: usize,
 }

@@ -5,8 +5,7 @@ use crate::solvers::Solver;
 use crate::utils::House::{Box, Col, Row};
 use crate::utils::{BitMap, Coord};
 
-
-impl_with_id!(NakedPair,NakedTriple,NakedQuadruple);
+impl_with_id!(NakedPair, NakedTriple, NakedQuadruple);
 
 fn solve_naked_subset(n: usize, game_board: &GameBoard, solver_id: usize) -> Option<Solution> {
     for i in 0..9 {

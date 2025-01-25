@@ -94,7 +94,6 @@ pub struct HiddenTriple {
     id: usize,
 }
 
-
 impl Solver for HiddenTriple {
     fn solve(&self, game_board: &GameBoard) -> Option<Solution> {
         solve_hidden_subset(3, game_board, self.id)
@@ -104,7 +103,7 @@ impl Solver for HiddenTriple {
 pub struct HiddenQuadruple {
     id: usize,
 }
-impl_with_id!(HiddenPair,HiddenQuadruple,HiddenTriple);
+impl_with_id!(HiddenPair, HiddenQuadruple, HiddenTriple);
 impl Solver for HiddenQuadruple {
     fn solve(&self, game_board: &GameBoard) -> Option<Solution> {
         solve_hidden_subset(4, game_board, self.id)

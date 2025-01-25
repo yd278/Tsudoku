@@ -1,12 +1,15 @@
 use std::vec;
 
 use crate::{
-    game_board::GameBoard, impl_with_id, solvers::{
-        solution::{ Action, Candidate, EliminationDetails, Solution},
+    game_board::GameBoard,
+    impl_with_id,
+    solvers::{
+        solution::{Action, Candidate, EliminationDetails, Solution},
         Solver,
-    }, utils::{BitMap, Coord, House, HouseType}
+    },
+    utils::{BitMap, Coord, House, HouseType},
 };
-impl_with_id!(Skyscraper,TwoStringKite,TurbotFish,EmptyRectangle);
+impl_with_id!(Skyscraper, TwoStringKite, TurbotFish, EmptyRectangle);
 static EMPTY_RECTANGLE_MASK: [u16; 9] = [79, 151, 295, 121, 186, 316, 457, 466, 484];
 
 fn check_empty_rectangle(ids: BitMap) -> Option<(usize, usize)> {
@@ -26,20 +29,20 @@ fn check_turbot(
     for target in 0..9 {
         for soft_house_index in 0..9 {
             let appearance: Vec<_> =
-                Coord::house(&HouseType::from_index(soft_dim).house(soft_house_index))
+                Coord::house(&HouseType::from_dim(soft_dim).house(soft_house_index))
                     .filter(|&(x, y)| game_board.contains_candidate(x, y, target))
                     .collect();
             for i in 0..appearance.len() {
                 let (x1, y1) = appearance[i];
                 if let Some((p1, q1)) =
-                    game_board.get_hard_link(x1, y1, target, HouseType::from_index(hard1))
+                    game_board.get_hard_link(x1, y1, target, HouseType::from_dim(hard1))
                 {
                     for (j, &(x2, y2)) in appearance.iter().enumerate() {
                         if j == i {
                             continue;
                         }
                         if let Some((p2, q2)) =
-                            game_board.get_hard_link(x2, y2, target, HouseType::from_index(hard2))
+                            game_board.get_hard_link(x2, y2, target, HouseType::from_dim(hard2))
                         {
                             let actions: Vec<_> = Coord::all_cells()
                                 .filter(|&(u, v)| Coord::sees(p1, q1, u, v))
@@ -59,10 +62,10 @@ fn check_turbot(
                                 return Some(Solution {
                                     actions,
                                     house_clues: vec![
-                                        HouseType::from_index(soft_dim).house(soft_house_index),
-                                        HouseType::from_index(hard1)
+                                        HouseType::from_dim(soft_dim).house(soft_house_index),
+                                        HouseType::from_dim(hard1)
                                             .house(Coord::components_proj(x1, y1, hard1)),
-                                        HouseType::from_index(hard2)
+                                        HouseType::from_dim(hard2)
                                             .house(Coord::components_proj(x2, y2, hard2)),
                                     ],
                                     candidate_clues: vec![
@@ -92,9 +95,7 @@ pub struct EmptyRectangle {
     id: usize,
 }
 
-
 impl Solver for EmptyRectangle {
-
     fn solve(&self, game_board: &GameBoard) -> Option<Solution> {
         (0..9).find_map(|box_id| {
             game_board
@@ -122,7 +123,7 @@ impl Solver for EmptyRectangle {
                         .flatten()
                         .and_then(|(row_val, col_val)| {
                             (0..2).find_map(|dim| {
-                                let p_house_type = HouseType::from_index(dim);
+                                let p_house_type = HouseType::from_dim(dim);
                                 let p_house = p_house_type
                                     .house(Coord::components_proj(row_val, col_val, dim));
 
@@ -135,7 +136,7 @@ impl Solver for EmptyRectangle {
                                         game_board
                                             .get_hard_link(px, py, target, p_house_type.other())
                                             .and_then(|(qx, qy)| {
-                                                let r_house_type = HouseType::from_index(1 - dim);
+                                                let r_house_type = HouseType::from_dim(1 - dim);
                                                 let r_house =
                                                     r_house_type.house(Coord::components_proj(
                                                         row_val,
@@ -177,7 +178,7 @@ impl Solver for EmptyRectangle {
                                                             )],
                                                             house_clues: vec![
                                                                 House::Box(box_id),
-                                                                p_house.clone(),
+                                                                p_house,
                                                                 r_house,
                                                             ],
                                                             candidate_clues,
@@ -196,7 +197,6 @@ impl Solver for EmptyRectangle {
 pub struct Skyscraper {
     id: usize,
 }
-
 
 impl Solver for Skyscraper {
     fn solve(&self, game_board: &GameBoard) -> Option<Solution> {
