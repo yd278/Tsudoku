@@ -1,10 +1,8 @@
-use std::{iter::Cycle, ops::Not};
-
 use crate::{
     game_board::GameBoard,
     impl_with_id,
     solvers::{
-        solution::{candidate, Action, Candidate, EliminationDetails, Solution},
+        solution::{Action, Candidate, EliminationDetails, Solution},
         Solver,
     },
     utils::{BitMap, Coord, House, HouseType},
@@ -118,10 +116,18 @@ impl Solver for UniquenessTest1 {
                             .filter(|&rx| rx != px)
                             .filter(move |&rx| (rx / 3 == px / 3) != same_box_flag)
                             .filter_map(move |rx| {
-                                bi_value
-                                    .iter_ones()
-                                    .all(|candidate| game_board.could_have_been(rx, qy, candidate))
-                                    .then_some((rx, qy))
+                                game_board.get_candidates(rx, py).and_then(|candidates| {
+                                    (candidates == bi_value)
+                                        .then(|| {
+                                            bi_value
+                                                .iter_ones()
+                                                .all(|candidate| {
+                                                    game_board.could_have_been(rx, qy, candidate)
+                                                })
+                                                .then_some((rx, qy))
+                                        })
+                                        .flatten()
+                                })
                             })
                     })
                     .map(|(rx, qy)| {
@@ -130,7 +136,7 @@ impl Solver for UniquenessTest1 {
                                 actions: vec![Action::Elimination(EliminationDetails {
                                     x: rx,
                                     y: qy,
-                                    target: bi_value,
+                                    target: bi_value.intersect(&candidates),
                                 })],
                                 house_clues: vec![
                                     House::Row(px),
@@ -142,7 +148,6 @@ impl Solver for UniquenessTest1 {
                                     Candidate::new(px, py, bi_value),
                                     Candidate::new(px, qy, bi_value),
                                     Candidate::new(rx, py, bi_value),
-                                    Candidate::new(rx, qy, bi_value.intersect(&candidates)),
                                 ],
                                 solver_id: self.id,
                             })
@@ -239,11 +244,12 @@ impl Solver for UniquenessTest3 {
                 let first_diff = first_span_candidates.difference(&base_bi_value);
                 let second_diff = second_span_candidates.difference(&base_bi_value);
                 let virtual_cell = first_diff.union(&second_diff);
-                let mask: BitMap = (0..9)
-                    .filter(|&x| {
+                let mask: BitMap = [first_index, second_index]
+                    .into_iter()
+                    .chain((0..9).filter(|&x| {
                         let (cx, cy) = Coord::from_house_and_index(&span_house, x);
                         !game_board.not_filled(cx, cy)
-                    })
+                    }))
                     .collect();
 
                 (virtual_cell.count() - 1..7)
@@ -257,31 +263,31 @@ impl Solver for UniquenessTest3 {
                             })
                             .fold(BitMap::new(), |acc, candidates| acc.union(&candidates));
                         let subset_candidates = subset_candidates.union(&virtual_cell);
-                        (subset_candidates.count() == combo.count() + 1).then(|| {
-                            combo
-                                .iter_zeros()
-                                .filter(|&x| x != first_index && x != second_index)
-                                .map(|x| Coord::from_house_and_index(&span_house, x))
-                                .filter_map(|(cx, cy)| {
-                                    game_board.get_candidates(cx, cy).and_then(|candidates| {
-                                        let eliminable_candidates =
-                                            candidates.intersect(&subset_candidates);
-                                        (eliminable_candidates.count() > 0).then_some(
-                                            Action::Elimination(EliminationDetails {
-                                                x: cx,
-                                                y: cy,
-                                                target: eliminable_candidates,
-                                            }),
-                                        )
+                        (subset_candidates.count() == combo.count() + 1)
+                            .then(|| {
+                                combo
+                                    .iter_zeros()
+                                    .filter(|&x| x != first_index && x != second_index)
+                                    .map(|x| Coord::from_house_and_index(&span_house, x))
+                                    .filter_map(|(cx, cy)| {
+                                        game_board.get_candidates(cx, cy).and_then(|candidates| {
+                                            let eliminable_candidates =
+                                                candidates.intersect(&subset_candidates);
+                                            (eliminable_candidates.count() > 0).then_some(
+                                                Action::Elimination(EliminationDetails {
+                                                    x: cx,
+                                                    y: cy,
+                                                    target: eliminable_candidates,
+                                                }),
+                                            )
+                                        })
                                     })
-                                })
-                                .collect::<Vec<_>>()
-                        })
-                        .and_then(|actions|Some((actions,combo,subset_candidates)))
-                        
+                                    .collect::<Vec<_>>()
+                            })
+                            .map(|actions| (actions, combo, subset_candidates))
                     })
-                    .and_then(|(actions,combo,subset_candidates)| {
-                        let candidate_clues =  vec![
+                    .map(|(actions, combo, subset_candidates)| {
+                        let candidate_clues = vec![
                             Candidate::from_coord(
                                 Coord::from_house_and_index(&base_house, first_index),
                                 base_bi_value,
@@ -296,29 +302,34 @@ impl Solver for UniquenessTest3 {
                             ),
                             Candidate::from_coord(
                                 Coord::from_house_and_index(&span_house, second_index),
-                                second_span_candidates.intersect(&second_span_candidates),
+                                base_bi_value.intersect(&second_span_candidates),
                             ),
                             Candidate::from_coord(
-                                Coord::from_house_and_index(&span_house, second_index),
+                                Coord::from_house_and_index(&span_house, first_index),
                                 subset_candidates.intersect(&first_span_candidates),
                             ),
                             Candidate::from_coord(
                                 Coord::from_house_and_index(&span_house, second_index),
                                 subset_candidates.intersect(&second_span_candidates),
                             ),
-
-                        ].into_iter().chain(
-                            combo.iter_ones().map(|x|
-                                Coord::from_house_and_index(&span_house, x)
-                            ).filter_map(|(cx,cy)|{
-                                game_board.get_candidates(cx, cy).and_then(|candidates|{
-                                    Some(Candidate::new(cx,cy,candidates.intersect(&subset_candidates)))
-                                })
-                            })
-                
+                        ]
+                        .into_iter()
+                        .chain(
+                            combo
+                                .iter_ones()
+                                .map(|x| Coord::from_house_and_index(&span_house, x))
+                                .filter_map(|(cx, cy)| {
+                                    game_board.get_candidates(cx, cy).map(|candidates| {
+                                        Candidate::new(
+                                            cx,
+                                            cy,
+                                            candidates.intersect(&subset_candidates),
+                                        )
+                                    })
+                                }),
                         )
-                       .collect();
-                        Some(Solution {
+                        .collect();
+                        Solution {
                             actions,
                             house_clues: vec![
                                 base_house,
@@ -328,7 +339,7 @@ impl Solver for UniquenessTest3 {
                             ],
                             candidate_clues,
                             solver_id: self.id,
-                        })
+                        }
                     })
             },
         )
@@ -409,17 +420,16 @@ mod uniqueness_test {
         test_function(
             UniquenessTest1::with_id(1),
             [
-                64, 16, 256, 136, 4, 1, 2, 32, 136, 129, 8, 32, 16, 192, 2, 256, 65, 4, 4, 130,
-                131, 392, 32, 328, 16, 65, 136, 16, 480, 129, 169, 448, 4, 41, 384, 2, 393, 482,
-                135, 169, 448, 104, 41, 388, 16, 393, 416, 133, 2, 16, 40, 41, 388, 64, 2, 4, 64,
-                288, 8, 288, 128, 16, 1, 32, 1, 16, 4, 2, 128, 64, 8, 256, 384, 384, 8, 64, 1, 16,
-                4, 2, 32,
+                64, 256, 136, 24, 2, 1, 32, 144, 4, 4, 10, 32, 24, 256, 128, 83, 83, 17, 16, 130,
+                1, 32, 64, 4, 256, 138, 10, 32, 144, 130, 4, 1, 64, 154, 10, 256, 1, 4, 256, 128,
+                8, 18, 18, 32, 64, 8, 208, 194, 256, 32, 18, 147, 4, 17, 128, 1, 72, 66, 16, 32, 4,
+                256, 10, 2, 72, 4, 1, 128, 256, 88, 88, 32, 256, 32, 16, 66, 4, 8, 67, 65, 128,
             ],
-            vec![(2, 3)],
-            vec![136],
-            vec![Row(0), Row(2), Col(8), Col(3)],
-            vec![(0, 8), (0, 3), (2, 8), (2, 3)],
-            vec![136, 136, 136, 136],
+            vec![(5, 6)],
+            vec![18],
+            vec![Row(4), Row(5), Col(5), Col(6)],
+            vec![(4, 5), (4, 6), (5, 5)],
+            vec![18, 18, 18],
         );
     }
 
@@ -445,11 +455,26 @@ mod uniqueness_test {
     fn uniqueness_test_3() {
         test_function(
             UniquenessTest3::with_id(1),
-            [128,9,16,256,96,9,4,96,2,4,265,64,19,40,43,24,288,128,32,264,2,212,204,140,24,320,1,64,2,4,8,1,256,32,128,16,16,32,8,132,2,132,64,1,256,1,128,256,32,16,64,2,4,8,2,80,160,193,232,169,256,24,4,8,84,160,198,256,166,1,18,96,256,68,1,70,108,16,128,10,96],
-            vec![(2,4),],
+            [
+                128, 9, 16, 256, 96, 9, 4, 96, 2, 4, 265, 64, 19, 40, 43, 24, 288, 128, 32, 264, 2,
+                212, 204, 140, 24, 320, 1, 64, 2, 4, 8, 1, 256, 32, 128, 16, 16, 32, 8, 132, 2,
+                132, 64, 1, 256, 1, 128, 256, 32, 16, 64, 2, 4, 8, 2, 80, 160, 193, 232, 169, 256,
+                24, 4, 8, 84, 160, 198, 256, 166, 1, 18, 96, 256, 68, 1, 70, 108, 16, 128, 10, 96,
+            ],
+            vec![(2, 4)],
             vec![72],
             vec![Row(4), Row(2), Col(3), Col(5)],
-            vec![(4,3), (4,5), (2,3), (2,5), (2,3), (2,5), (2,1), (2,6), (2,7),],
+            vec![
+                (4, 3),
+                (4, 5),
+                (2, 3),
+                (2, 5),
+                (2, 3),
+                (2, 5),
+                (2, 1),
+                (2, 6),
+                (2, 7),
+            ],
             vec![132, 132, 132, 132, 80, 8, 264, 24, 320],
         );
     }

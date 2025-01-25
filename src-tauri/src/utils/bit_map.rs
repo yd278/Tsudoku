@@ -1,5 +1,3 @@
-use std::thread::AccessError;
-
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct BitMap(u16);
 
@@ -107,9 +105,9 @@ impl BitMap {
     }
 }
 
-impl FromIterator<usize> for BitMap{
+impl FromIterator<usize> for BitMap {
     fn from_iter<T: IntoIterator<Item = usize>>(iter: T) -> Self {
-        iter.into_iter().fold(Self::new(), |mut acc, x|{
+        iter.into_iter().fold(Self::new(), |mut acc, x| {
             acc.insert(x);
             acc
         })
