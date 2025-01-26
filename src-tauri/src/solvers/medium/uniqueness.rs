@@ -247,7 +247,7 @@ impl Solver for UniquenessTest3 {
                     .collect();
 
                 (virtual_cell.count() - 1..7)
-                    .flat_map(|subset_size| BitMap::get_combo_with_mask(subset_size, mask))
+                    .flat_map(|subset_size| BitMap::get_masked_combo(subset_size, mask))
                     .find_map(|combo| {
                         let subset_candidates = combo
                             .iter_ones()

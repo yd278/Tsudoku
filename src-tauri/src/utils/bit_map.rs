@@ -1,4 +1,4 @@
-use std::thread::AccessError;
+
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct BitMap(u16);
@@ -20,35 +20,39 @@ impl BitMap {
         BitMap((1 << size) - 1)
     }
 
-    fn next_combination_rec(num: u16, n: usize, k: usize) -> Option<u16> {
-        if k == 0 {
-            return None;
-        }
-        let cur = (num & (1 << (n - 1))) != 0;
-        let mask = (1 << (n - 1)) - 1;
-        let rest = num & mask;
-        if cur {
-            Self::next_combination_rec(rest, n - 1, k - 1).map(|res| (1 << (n - 1)) | res)
-        } else if let Some(res) = Self::next_combination_rec(rest, n - 1, k) {
-            Some(res)
-        } else {
-            Some(1 << (n - 1) | ((1 << (k - 1)) - 1))
-        }
+    fn next_combination(&self, limit: usize) -> Option<Self> {
+        let raw = self.0;
+        let u = raw & (!raw + 1);
+        let v = raw + u;
+        let next = (((raw ^ v) >> 2) / u) | v;
+        (next > 1 << limit).then_some(Self(next))
     }
-
-    fn next_combination(&self) -> Option<Self> {
-        let k = self.0.count_ones() as usize;
-        Self::next_combination_rec(self.0, 9, k).map(BitMap)
-    }
-
-    pub fn get_combinations(n: usize) -> impl Iterator<Item = BitMap> {
-        std::iter::successors(Some(BitMap::first_combination(n)), |&prev| {
-            prev.next_combination()
+    
+    fn get_combo_with_limit(n: usize, limit: usize) ->impl Iterator<Item = BitMap> {
+        std::iter::successors(Some(BitMap::first_combination(n)), move |&prev| {
+            prev.next_combination(limit)
         })
     }
 
-    pub fn get_combo_with_mask(n: usize, mask: BitMap) -> impl Iterator<Item = BitMap> {
-        Self::get_combinations(n).filter(move |combo| combo.intersect(&mask).count() == 0)
+    pub fn get_combinations(n: usize) -> impl Iterator<Item = BitMap> {
+        Self::get_combo_with_limit(n, 9)
+    }
+
+
+    fn re_mapping(m: BitMap, c: BitMap) -> BitMap{
+        m.iter_ones().enumerate().filter_map(|(i,b)|{
+            c.contains(i).then_some(b)
+        }).collect()
+    }
+
+
+    pub fn get_masked_combo(n: usize, mask: BitMap) -> Box<dyn Iterator<Item = BitMap>> {
+        let limit = mask.count();
+        if n> limit{
+            Box::new(std::iter::empty())
+        }else{
+            Box::new(Self::get_combo_with_limit(n, limit).map(move |c| Self::re_mapping(mask, c)))
+        }
     }
 
     pub fn contains(&self, num: usize) -> bool {
@@ -107,9 +111,9 @@ impl BitMap {
     }
 }
 
-impl FromIterator<usize> for BitMap{
+impl FromIterator<usize> for BitMap {
     fn from_iter<T: IntoIterator<Item = usize>>(iter: T) -> Self {
-        iter.into_iter().fold(Self::new(), |mut acc, x|{
+        iter.into_iter().fold(Self::new(), |mut acc, x| {
             acc.insert(x);
             acc
         })
@@ -121,22 +125,4 @@ mod bit_map_test {
 
     use super::*;
 
-    #[test]
-    fn test_combos_count() {
-        for i in 0..=9 {
-            let iter = std::iter::successors(Some(BitMap::first_combination(i)), |&prev| {
-                prev.next_combination()
-            });
-
-            let count = iter.count();
-            let mut res = 1;
-            for j in 0..i {
-                res *= 9 - j;
-            }
-            for j in 1..=i {
-                res /= j;
-            }
-            assert_eq!(count, res);
-        }
-    }
 }

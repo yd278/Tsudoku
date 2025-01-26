@@ -115,7 +115,7 @@ fn check_fish_with_dim(
 ) -> Option<Solution> {
     for target in 0..9 {
         let mask = game_board.occupied()[base_dim.as_dim()][target];
-        for combo in BitMap::get_combo_with_mask(n, mask) {
+        for combo in BitMap::get_masked_combo(n, mask) {
             if let Some(solution) =
                 check_base_set_combo(game_board, n, base_dim, target, &combo, solver_id)
             {
