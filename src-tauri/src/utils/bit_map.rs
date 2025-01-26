@@ -1,5 +1,3 @@
-
-
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct BitMap(u16);
 

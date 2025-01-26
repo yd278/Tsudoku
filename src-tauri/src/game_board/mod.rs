@@ -65,9 +65,9 @@ impl GameBoard {
     }
 
     /// Returns true if cell (x,y) is not filled
-    pub fn not_filled(&self, x:usize, y: usize) -> bool{
+    pub fn not_filled(&self, x: usize, y: usize) -> bool {
         match &self.grid[x][y] {
-            Cell::Blank(cell) => !cell.is_pen_mark() ,
+            Cell::Blank(cell) => !cell.is_pen_mark(),
             _ => false,
         }
     }
