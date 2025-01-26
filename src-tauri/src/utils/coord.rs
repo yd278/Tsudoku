@@ -60,6 +60,10 @@ impl Coord {
         (x / 3) * 3 + (y / 3)
     }
 
+    pub fn get_box_id_by_tuple((x,y):(usize,usize)) -> usize{
+        Self::get_box_id(x, y)
+    }
+
     pub fn iter_box(x: usize, y: usize) -> impl Iterator<Item = (usize, usize)> {
         let box_id = (x / 3) * 3 + (y / 3);
         Self::box_coords(box_id).filter(move |(xi, yi)| *xi != x || *yi != y)
