@@ -1,4 +1,4 @@
-use super::Coord;
+use super::{Coord, HouseType};
 
 #[derive(Debug, PartialEq, Copy, Clone)]
 pub enum House {
@@ -17,6 +17,14 @@ impl House {
             House::Row(_) => 0,
             House::Col(_) => 1,
             House::Box(_) => 2,
+        }
+    }
+
+    pub fn get_type(&self) -> HouseType{
+        match self{
+            House::Row(_) => HouseType::Row,
+            House::Col(_) => HouseType::Col,
+            House::Box(_) => HouseType::Box
         }
     }
 

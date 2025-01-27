@@ -89,7 +89,7 @@ fn semi_possible_ur(game_board: &GameBoard) -> impl Iterator<Item = SemiPossible
     })
 }
 
-impl_with_id!(UniquenessTest1, UniquenessTest2, UniquenessTest3);
+impl_with_id!(UniquenessTest1, UniquenessTest2, UniquenessTest3,UniquenessTest4);
 
 ///[HoDoKu explanations on Uniqueness Rectangle Type 1](https://hodoku.sourceforge.net/en/tech_ur.php#u1)
 /// ## Terminology
@@ -426,6 +426,88 @@ impl Solver for UniquenessTest3 {
         )
     }
 }
+
+/// [HoDoKu explanations on Uniqueness Rectangle Type 4](https://hodoku.sourceforge.net/en/tech_ur.php#u4)
+///
+/// ## Terminology
+/// - The side containing two bi-value cells is called the **base house**.
+///     - These two cells are called the **first base cell** and **second base cell**, in ascending order of their relative positions in the base house.
+/// - The side opposite to the **base house** is called the **span house**.
+///     - These two cells are called the **first span cell** and **second span cell**, in ascending order of their relative positions in the span house.
+/// 
+///
+/// ## Return Format
+/// - **Actions**: Contains up to 2 elements, representing the candidates eliminated in two span cells
+/// - **House Clues**: Contains 5 elements, representing the base house, the span house, and the other two sides, in ascending order, followed by the house of hard link
+/// - **Candidate Clues**: Contains 4 elements, representing the bi-value candidates in the first and second base cells, and the bi-value candidate which forms a hard link
+struct UniquenessTest4{
+    id:usize,
+}
+impl Solver for UniquenessTest4{
+    fn solve(&self, game_board: &GameBoard) -> Option<Solution> {
+        semi_possible_ur(game_board).find_map(|
+            SemiPossibleUR {
+                base_house,
+                base_bi_value,
+                first_index,
+                second_index,
+                span_house,
+                first_span_candidates,
+                second_span_candidates,
+            }
+            |{
+                let (px,py) = Coord::from_house_and_index(&span_house, first_index);
+                let (qx,qy) = Coord::from_house_and_index(&span_house, second_index);
+                
+                base_bi_value.iter_ones()
+                .find_map(|competitor|{
+                    game_board.get_hard_link(px, py, competitor, span_house.get_type())
+                    .and_then(|(ox,oy)|{
+                        (ox == qx && oy== qy).then(||{
+                            let target = base_bi_value.difference(&BitMap::from(competitor)).trailing_zeros();
+                            let actions : Vec<_> = [(px,py),(qx,qy)].into_iter().filter_map(|(x,y)|{
+                                game_board.contains_candidate(x, y, target).then_some(
+                                    Action::Elimination(EliminationDetails{
+                                        x,y,target:BitMap::from(target)
+                                    })
+                                )
+                            }).collect();
+                            (!actions.is_empty()).then_some(Solution{
+                                actions,
+                                house_clues: vec![
+                                    base_house,
+                                    span_house,
+                                    base_house.get_perpendicular(first_index),
+                                    base_house.get_perpendicular(second_index),
+                                ],
+                                candidate_clues: vec![
+                                    Candidate::from_coord(
+                                        Coord::from_house_and_index(&base_house, first_index),
+                                        base_bi_value,
+                                    ),
+                                    Candidate::from_coord(
+                                        Coord::from_house_and_index(&base_house, second_index),
+                                        base_bi_value,
+                                    ),
+                                    Candidate::from_coord(
+                                        Coord::from_house_and_index(&span_house, first_index),
+                                        BitMap::from(competitor),
+                                    ),
+                                    Candidate::from_coord(
+                                        Coord::from_house_and_index(&span_house, second_index),
+                                        BitMap::from(competitor),
+                                    ),],
+                                solver_id: self.id,
+                            })
+                        })
+                    })
+                })
+                .flatten()
+
+            })
+    }
+}
+
 #[cfg(test)]
 mod uniqueness_test {
     use super::*;
@@ -575,6 +657,21 @@ mod uniqueness_test {
             vec![Col(7), Col(1), Row(7), Row(8), Box(6)],
             vec![(7, 7), (8, 7), (7, 1), (8, 1), (7, 1), (8, 1), (6, 2)],
             vec![40, 40, 40, 40, 256, 260, 260],
+        );
+    }
+
+    #[test]
+    fn uniqueness_test_4() {
+        test_function(
+            UniquenessTest4::with_id(1),
+            [4,2,128,1,104,120,80,288,312,73,305,312,88,106,128,4,3,56,73,49,56,92,256,126,113,131,184,32,20,2,84,69,256,128,8,65,384,8,260,196,229,100,2,16,65,144,64,1,2,136,24,288,288,4,11,389,268,460,16,78,289,133,416,11,389,64,32,142,14,273,133,400,272,436,308,388,132,1,8,64,2],
+            vec![(3,4), (4,4),],
+            vec![64,64],
+            vec![Col(8),Col(4),Row(3),Row(4)],
+            vec![
+                (3,8), (4,8), (3,4), (4,4),
+            ],
+            vec![65,65,1,1],
         );
     }
 }

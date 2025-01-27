@@ -93,7 +93,13 @@ impl GameBoard {
     pub fn occupied(&self) -> &[[BitMap; 9]; 3] {
         &self.occupied
     }
-
+    /// For a given cell and candidate, returns the coordinate of the hard-linked cell in the given dimension
+    /// 
+    /// **Only** returns Some(u,v) if (x,y) and (u,v) are only two cells contains target as candidate in the dimension
+    /// returns None in all other situations, e.g.
+    /// - cell (x,y) is given or a pen-marked cell
+    /// - cell (x,y) doesn't contains candidate `target`
+    /// - more than 2 cells in the house contains candidate `target`
     pub fn get_hard_link(
         &self,
         x: usize,
