@@ -1,8 +1,13 @@
-use crate::{game_board::GameBoard, solvers::{solution::{Action, Candidate, EliminationDetails, Solution}, Solver}, utils::{BitMap, Coord, House}};
+use crate::{
+    game_board::GameBoard,
+    solvers::{
+        solution::{Action, Candidate, EliminationDetails, Solution},
+        Solver,
+    },
+    utils::{BitMap, Coord, House},
+};
 
 use super::{semi_possible_ur, SemiPossibleUR, UniquenessTest3};
-
-
 
 impl Solver for UniquenessTest3 {
     fn solve(&self, game_board: &GameBoard) -> Option<Solution> {

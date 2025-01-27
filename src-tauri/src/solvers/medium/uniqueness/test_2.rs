@@ -9,8 +9,6 @@ use crate::{
 
 use super::{semi_possible_ur, SemiPossibleUR, UniquenessTest2};
 
-
-
 impl Solver for UniquenessTest2 {
     fn solve(&self, game_board: &GameBoard) -> Option<Solution> {
         semi_possible_ur(game_board).find_map(
@@ -65,6 +63,14 @@ impl Solver for UniquenessTest2 {
                                 Candidate::from_coord(
                                     Coord::from_house_and_index(&span_house, second_index),
                                     base_bi_value.intersect(&second_span_candidates),
+                                ),
+                                Candidate::from_coord(
+                                    Coord::from_house_and_index(&span_house, first_index),
+                                    BitMap::from(target),
+                                ),
+                                Candidate::from_coord(
+                                    Coord::from_house_and_index(&span_house, second_index),
+                                    BitMap::from(target),
                                 ),
                             ],
                             solver_id: self.id,

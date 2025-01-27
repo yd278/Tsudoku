@@ -1,13 +1,9 @@
 use crate::{
     game_board::GameBoard,
     impl_with_id,
-    solvers::{
-        solution::{Action, Candidate, EliminationDetails, Solution},
-        Solver,
-    },
     utils::{BitMap, Coord, House, HouseType},
 };
-#[derive(Copy,Clone)]
+#[derive(Copy, Clone)]
 struct BiValueCell {
     x: usize,
     y: usize,
@@ -46,6 +42,9 @@ fn valid_unique_rectangle_cell(
         }))
         .flatten()
 }
+/// Used in test type 2 and 3
+/// find a line with two bi-value cells
+/// returns the line as a House, indices of these two cells in the house, and the bi_value
 fn find_base_line(
     game_board: &GameBoard,
 ) -> impl Iterator<Item = (House, usize, usize, BitMap)> + '_ {
@@ -150,69 +149,7 @@ struct UniquenessTest1 {
     id: usize,
 }
 
-impl Solver for UniquenessTest1 {
-    fn solve(&self, game_board: &GameBoard) -> Option<Solution> {
-        Coord::all_cells()
-            .filter_map(|(x, y)| {
-                game_board
-                    .get_candidates(x, y)
-                    .and_then(|candidates| (candidates.count() == 2).then_some((x, y, candidates)))
-            })
-            .find_map(|(px, py, bi_value)| {
-                //closure: returns Option<Solution>
-                (0..9)
-                    .filter(|&qy| qy != py)
-                    .filter_map(|qy| {
-                        game_board.get_candidates(px, qy).and_then(|candidates| {
-                            (candidates == bi_value).then_some((qy, py / 3 == qy / 3))
-                        })
-                    })
-                    .flat_map(|(qy, same_box_flag)| {
-                        (0..9)
-                            .filter(|&rx| rx != px)
-                            .filter(move |&rx| (rx / 3 == px / 3) != same_box_flag)
-                            .filter_map(move |rx| {
-                                game_board.get_candidates(rx, py).and_then(|candidates| {
-                                    (candidates == bi_value)
-                                        .then(|| {
-                                            bi_value
-                                                .iter_ones()
-                                                .all(|candidate| {
-                                                    game_board.could_have_been(rx, qy, candidate)
-                                                })
-                                                .then_some((rx, qy))
-                                        })
-                                        .flatten()
-                                })
-                            })
-                    })
-                    .map(|(rx, qy)| {
-                        game_board.get_candidates(rx, qy).and_then(|candidates| {
-                            (candidates.intersect(&bi_value) == bi_value).then_some(Solution {
-                                actions: vec![Action::Elimination(EliminationDetails {
-                                    x: rx,
-                                    y: qy,
-                                    target: bi_value.intersect(&candidates),
-                                })],
-                                house_clues: vec![
-                                    House::Row(px),
-                                    House::Row(rx),
-                                    House::Col(py),
-                                    House::Col(qy),
-                                ],
-                                candidate_clues: vec![
-                                    Candidate::new(px, py, bi_value),
-                                    Candidate::new(px, qy, bi_value),
-                                    Candidate::new(rx, py, bi_value),
-                                ],
-                                solver_id: self.id,
-                            })
-                        })
-                    })
-                    .find_map(|solution| solution)
-            })
-    }
-}
+mod test_1;
 
 /// [HoDoKu explanations on Uniqueness Rectangle Type 2](https://hodoku.sourceforge.net/en/tech_ur.php#u2)
 ///
@@ -228,7 +165,7 @@ impl Solver for UniquenessTest1 {
 ///     - The candidates in the span house appear first in ascending order of their relative position in the span house.
 ///     - They are followed by candidates in the same box as the two span cells, also listed in ascending order of their relative positions within the box.
 /// - **House Clues**: Contains 4 elements, representing the base house, the span house, and the other two sides, in ascending order.
-/// - **Candidate Clues**: Contains 4 elements, representing the bi-value candidates in the first and second base cells, and the respective bi-value candidates found in the first and second span cells.
+/// - **Candidate Clues**: Contains 6 elements, representing the bi-value candidates in the first and second base cells, and the respective bi-value candidates found in the first and second span cells, followed by the targets in both span cells.
 pub struct UniquenessTest2 {
     id: usize,
 }
@@ -270,92 +207,20 @@ mod test_3;
 struct UniquenessTest4 {
     id: usize,
 }
-impl Solver for UniquenessTest4 {
-    fn solve(&self, game_board: &GameBoard) -> Option<Solution> {
-        semi_possible_ur(game_board).find_map(
-            |SemiPossibleUR {
-                 base_house,
-                 base_bi_value,
-                 first_index,
-                 second_index,
-                 span_house,
-                 first_span_candidates,
-                 second_span_candidates,
-             }| {
-                let (px, py) = Coord::from_house_and_index(&span_house, first_index);
-                let (qx, qy) = Coord::from_house_and_index(&span_house, second_index);
+mod test_4;
 
-                base_bi_value
-                    .iter_ones()
-                    .find_map(|competitor| {
-                        game_board
-                            .get_hard_link(px, py, competitor, span_house.get_type())
-                            .and_then(|(ox, oy)| {
-                                (ox == qx && oy == qy).then(|| {
-                                    let target = base_bi_value
-                                        .difference(&BitMap::from(competitor))
-                                        .trailing_zeros();
-                                    let actions: Vec<_> = [(px, py), (qx, qy)]
-                                        .into_iter()
-                                        .filter_map(|(x, y)| {
-                                            game_board.contains_candidate(x, y, target).then_some(
-                                                Action::Elimination(EliminationDetails {
-                                                    x,
-                                                    y,
-                                                    target: BitMap::from(target),
-                                                }),
-                                            )
-                                        })
-                                        .collect();
-                                    (!actions.is_empty()).then_some(Solution {
-                                        actions,
-                                        house_clues: vec![
-                                            base_house,
-                                            span_house,
-                                            base_house.get_perpendicular(first_index),
-                                            base_house.get_perpendicular(second_index),
-                                        ],
-                                        candidate_clues: vec![
-                                            Candidate::from_coord(
-                                                Coord::from_house_and_index(
-                                                    &base_house,
-                                                    first_index,
-                                                ),
-                                                base_bi_value,
-                                            ),
-                                            Candidate::from_coord(
-                                                Coord::from_house_and_index(
-                                                    &base_house,
-                                                    second_index,
-                                                ),
-                                                base_bi_value,
-                                            ),
-                                            Candidate::from_coord(
-                                                Coord::from_house_and_index(
-                                                    &span_house,
-                                                    first_index,
-                                                ),
-                                                BitMap::from(competitor),
-                                            ),
-                                            Candidate::from_coord(
-                                                Coord::from_house_and_index(
-                                                    &span_house,
-                                                    second_index,
-                                                ),
-                                                BitMap::from(competitor),
-                                            ),
-                                        ],
-                                        solver_id: self.id,
-                                    })
-                                })
-                            })
-                    })
-                    .flatten()
-            },
-        )
-    }
-}
-
+/// [HoDoKu explanations on Uniqueness Rectangle Type 5](https://hodoku.sourceforge.net/en/tech_ur.php#u5)
+///
+/// ## Terminology
+/// - The bi-value cell is called **pivot**.
+/// - The UR cell in the same row as the pivot is called **row pincer**
+/// - The UR cell in the same column as the pivot is called **column pincer**
+/// - The UR cell diagonally opposite to the pivot is called **target cell** or **third pincer** if it contains extra candidate
+///
+/// ## Return Format
+/// - **Actions**: Contains a variable number of elements representing all candidates visible to the pincers.
+/// - **House Clues**: Contains 4 elements, representing the base house, the span house, and the other two sides, in ascending order
+/// - **Candidate Clues**: Contains a variable number of elements, the first 4 representing the bi-value candidates in the pivot, row pincer column pincer and target cell,  followed by target candidates in the pincers.
 struct UniquenessTest5 {
     id: usize,
 }
@@ -365,6 +230,8 @@ mod test_5;
 mod uniqueness_test {
     use super::*;
     use crate::solvers::solution::Action::Elimination;
+    use crate::solvers::solution::{Candidate, EliminationDetails, Solution};
+    use crate::solvers::Solver;
     use crate::utils::House::{Box, Col, Row};
     use crate::{game_board::GameBoard, utils::House};
     fn test_function(
@@ -462,8 +329,8 @@ mod uniqueness_test {
             vec![(0, 4), (0, 6)],
             vec![2, 2],
             vec![Row(1), Row(0), Col(5), Col(7)],
-            vec![(1, 5), (1, 7), (0, 5), (0, 7)],
-            vec![65, 65, 65, 1],
+            vec![(1, 5), (1, 7), (0, 5), (0, 7), (0, 5), (0, 7)],
+            vec![65, 65, 65, 1, 2, 2],
         );
     }
 
@@ -529,6 +396,41 @@ mod uniqueness_test {
             vec![Col(8), Col(4), Row(3), Row(4)],
             vec![(3, 8), (4, 8), (3, 4), (4, 4)],
             vec![65, 65, 1, 1],
+        );
+    }
+    #[test]
+    fn uniqueness_test_5() {
+        test_function(
+            UniquenessTest5::with_id(1),
+            [
+                135, 135, 6, 64, 32, 256, 8, 16, 130, 194, 192, 256, 1, 16, 8, 32, 130, 4, 32, 8,
+                16, 128, 2, 4, 64, 257, 257, 16, 5, 36, 2, 64, 128, 256, 41, 9, 131, 256, 34, 8, 4,
+                16, 130, 33, 64, 192, 194, 8, 256, 1, 32, 134, 134, 16, 8, 16, 128, 4, 256, 2, 1,
+                64, 32, 256, 6, 1, 32, 128, 64, 16, 12, 10, 6, 32, 64, 16, 8, 1, 134, 390, 386,
+            ],
+            vec![(0, 1), (4, 0)],
+            vec![2, 2],
+            vec![Row(1), Row(5), Col(1), Col(0)],
+            vec![(1, 1), (1, 0), (5, 1), (5, 0), (1, 0), (5, 1)],
+            vec![192, 192, 192, 192, 2, 2],
+        );
+    }
+    #[test]
+    fn uniqueness_test_5_b() {
+        test_function(
+            UniquenessTest5::with_id(1),
+            [
+                408, 32, 392, 64, 272, 257, 393, 4, 2, 412, 1, 268, 2, 276, 32, 392, 64, 392, 260,
+                64, 2, 8, 128, 261, 32, 16, 257, 1, 130, 16, 256, 76, 68, 192, 138, 32, 12, 384,
+                76, 32, 2, 16, 449, 264, 385, 32, 258, 72, 1, 72, 128, 4, 258, 16, 384, 4, 1, 16,
+                32, 8, 2, 384, 64, 2, 8, 32, 128, 320, 320, 16, 1, 4, 64, 16, 384, 4, 1, 2, 392,
+                32, 264,
+            ],
+            vec![(0, 6)],
+            vec![128],
+            vec![Row(8), Row(1), Col(8), Col(6)],
+            vec![(8, 8), (8, 6), (1, 8), (1, 6), (8, 6), (1, 8), (1, 6)],
+            vec![264, 264, 264, 264, 128, 128, 128],
         );
     }
 }

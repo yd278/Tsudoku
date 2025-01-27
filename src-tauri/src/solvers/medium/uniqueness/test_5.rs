@@ -1,4 +1,3 @@
-
 use crate::{
     game_board::GameBoard,
     solvers::{
@@ -48,6 +47,7 @@ struct UR5 {
     clue_candidates_r: BitMap,
     clue_candidates_s: BitMap,
     extra_candidate: BitMap,
+    third_pincer: bool,
 }
 impl UR5 {
     pub fn from_row_r_s(
@@ -55,6 +55,7 @@ impl UR5 {
         sx: usize,
         clue_candidates_r: BitMap,
         clue_candidates_s: BitMap,
+        third_pincer: bool,
     ) -> Self {
         Self {
             px: row.x,
@@ -66,24 +67,43 @@ impl UR5 {
             clue_candidates_r,
             clue_candidates_s,
             extra_candidate: row.extra_candidate,
+            third_pincer,
         }
     }
-    pub fn get_house_clues(&self)-> Vec<House>{
-        vec![House::Row(self.px),House::Row(self.sx),House::Col(self.py),House::Col(self.sy)]
-    }
-    pub fn get_candi_clues(&self)->Vec<Candidate>{
+    pub fn get_house_clues(&self) -> Vec<House> {
         vec![
-            Candidate::new(self.px,self.py,self.bi_value),
-            Candidate::new(self.px, self.sy, self.clue_candidates_q),
-            Candidate::new(self.sx, self.py, self.clue_candidates_r),
-            Candidate::new(self.sx, self.sy, self.clue_candidates_s),
+            House::Row(self.px),
+            House::Row(self.sx),
+            House::Col(self.py),
+            House::Col(self.sy),
         ]
     }
-
+    pub fn get_candi_clues(&self) -> Vec<Candidate> {
+        if self.third_pincer {
+            vec![
+                Candidate::new(self.px, self.py, self.bi_value),
+                Candidate::new(self.px, self.sy, self.clue_candidates_q),
+                Candidate::new(self.sx, self.py, self.clue_candidates_r),
+                Candidate::new(self.sx, self.sy, self.clue_candidates_s),
+                Candidate::new(self.px, self.sy, self.extra_candidate),
+                Candidate::new(self.sx, self.py, self.extra_candidate),
+                Candidate::new(self.sx, self.sy, self.extra_candidate),
+            ]
+        } else {
+            vec![
+                Candidate::new(self.px, self.py, self.bi_value),
+                Candidate::new(self.px, self.sy, self.clue_candidates_q),
+                Candidate::new(self.sx, self.py, self.clue_candidates_r),
+                Candidate::new(self.sx, self.sy, self.clue_candidates_s),
+                Candidate::new(self.px, self.sy, self.extra_candidate),
+                Candidate::new(self.sx, self.py, self.extra_candidate),
+            ]
+        }
+    }
 }
 
 impl UniquenessTest5 {
-    ///returns qy, the clue candidates and the extra candidate in cell (px,qy)
+    ///returns Iterator BaseRow
     fn iter_valid_base_row(
         game_board: &GameBoard,
         bi_value_cell: BiValueCell,
@@ -92,7 +112,7 @@ impl UniquenessTest5 {
             .filter(move |&qy| qy != bi_value_cell.y)
             .filter_map(move |qy| {
                 valid_unique_rectangle_cell(game_board, bi_value_cell.x, qy, bi_value_cell.bi_value)
-                    .map(|(clue_candidates, extra_candidates)| {
+                    .and_then(|(clue_candidates, extra_candidates)| {
                         (extra_candidates.count() == 1).then_some(BaseRow::from_p_and_q(
                             bi_value_cell,
                             qy,
@@ -100,7 +120,6 @@ impl UniquenessTest5 {
                             extra_candidates,
                         ))
                     })
-                    .flatten()
             })
     }
 
@@ -122,14 +141,15 @@ impl UniquenessTest5 {
                             )
                             .map(
                                 |(clue_candidates_s, extra_candidates_s)| {
-                                    (extra_candidates_r == extra_candidates_s).then_some(
-                                        UR5::from_row_r_s(
+                                    (extra_candidates_r.union(&extra_candidates_s)
+                                        == extra_candidates_r)
+                                        .then_some(UR5::from_row_r_s(
                                             base_row,
                                             rx,
                                             clue_candidates_r,
                                             clue_candidates_s,
-                                        ),
-                                    )
+                                            extra_candidates_s.count() == 1,
+                                        ))
                                 },
                             )
                         })
@@ -147,7 +167,7 @@ impl UniquenessTest5 {
         let qy = ur.sy;
         let target = ur.extra_candidate.trailing_zeros();
         Coord::pinched_by(rx, ry, qx, qy)
-            .filter(|&(cx, cy)| Coord::sees(cx, cy, ur.sx, ur.sy))
+            .filter(|&(cx, cy)| !ur.third_pincer || Coord::sees(cx, cy, ur.sx, ur.sy))
             .filter_map(|(cx, cy)| {
                 game_board
                     .contains_candidate(cx, cy, target)
