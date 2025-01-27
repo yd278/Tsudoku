@@ -47,7 +47,7 @@ impl BitMap {
         Self::get_combos_in_subset(n, mask.complement())
     }
 
-    pub fn get_combos_in_subset(n:usize, subset: BitMap)-> Box<dyn Iterator<Item = BitMap>>{
+    pub fn get_combos_in_subset(n: usize, subset: BitMap) -> Box<dyn Iterator<Item = BitMap>> {
         let limit = subset.count();
         if n > limit {
             Box::new(std::iter::empty())

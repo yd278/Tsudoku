@@ -20,11 +20,11 @@ impl House {
         }
     }
 
-    pub fn get_type(&self) -> HouseType{
-        match self{
+    pub fn get_type(&self) -> HouseType {
+        match self {
             House::Row(_) => HouseType::Row,
             House::Col(_) => HouseType::Col,
-            House::Box(_) => HouseType::Box
+            House::Box(_) => HouseType::Box,
         }
     }
 
