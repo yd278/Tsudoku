@@ -2,12 +2,50 @@ use crate::{
     game_board::GameBoard,
     impl_with_id,
     solvers::{
-        solution::{ Action, Candidate, EliminationDetails, Solution},
+        solution::{Action, Candidate, EliminationDetails, Solution},
         Solver,
     },
     utils::{BitMap, Coord, House, HouseType},
 };
-
+#[derive(Copy,Clone)]
+struct BiValueCell {
+    x: usize,
+    y: usize,
+    bi_value: BitMap,
+}
+impl BiValueCell {
+    pub fn new(x: usize, y: usize, bi_value: BitMap) -> Self {
+        Self { x, y, bi_value }
+    }
+}
+/// Iter through the whole
+fn iter_valid_bi_value(game_board: &GameBoard) -> impl Iterator<Item = BiValueCell> + '_ {
+    Coord::all_cells().filter_map(|(px, py)| {
+        game_board.get_candidates(px, py).and_then(|candidates| {
+            (candidates.count() == 2).then_some(BiValueCell::new(px, py, candidates))
+        })
+    })
+}
+/// Verify if a given cell could contain both candidates in bi_value
+/// returns None if it's not
+/// returns two bitmaps : bi_value candidates which appears in the cell, and extra candidates in the cell
+fn valid_unique_rectangle_cell(
+    game_board: &GameBoard,
+    x: usize,
+    y: usize,
+    bi_value: BitMap,
+) -> Option<(BitMap, BitMap)> {
+    bi_value
+        .iter_ones()
+        .all(|candidate| game_board.could_have_been(x, y, candidate))
+        .then_some(game_board.get_candidates(x, y).map(|candidate| {
+            (
+                candidate.intersect(&bi_value),
+                candidate.difference(&bi_value),
+            )
+        }))
+        .flatten()
+}
 fn find_base_line(
     game_board: &GameBoard,
 ) -> impl Iterator<Item = (House, usize, usize, BitMap)> + '_ {
@@ -322,7 +360,6 @@ struct UniquenessTest5 {
     id: usize,
 }
 mod test_5;
-
 
 #[cfg(test)]
 mod uniqueness_test {
