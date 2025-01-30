@@ -21,8 +21,8 @@ impl Solver for UniquenessTest2 {
                  first_span_candidates,
                  second_span_candidates,
              }| {
-                let first_diff = first_span_candidates.difference(&base_bi_value);
-                let second_diff = second_span_candidates.difference(&base_bi_value);
+                let first_diff = first_span_candidates.difference(base_bi_value);
+                let second_diff = second_span_candidates.difference(base_bi_value);
                 (first_diff.count() == 1 && first_diff == second_diff)
                     .then(|| {
                         let target = first_diff.trailing_zeros();
@@ -58,11 +58,11 @@ impl Solver for UniquenessTest2 {
                                 ),
                                 Candidate::from_coord(
                                     Coord::from_house_and_index(&span_house, first_index),
-                                    base_bi_value.intersect(&first_span_candidates),
+                                    base_bi_value.intersect(first_span_candidates),
                                 ),
                                 Candidate::from_coord(
                                     Coord::from_house_and_index(&span_house, second_index),
-                                    base_bi_value.intersect(&second_span_candidates),
+                                    base_bi_value.intersect(second_span_candidates),
                                 ),
                                 Candidate::from_coord(
                                     Coord::from_house_and_index(&span_house, first_index),

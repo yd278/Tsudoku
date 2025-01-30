@@ -30,7 +30,7 @@ fn solve_hidden_subset(n: usize, game_board: &GameBoard, solver_id: usize) -> Op
                                 }
                             } else {
                                 let candidates = blank_cell.get_candidates();
-                                if candidates.intersect(&combo).count() != 0 {
+                                if candidates.intersect(combo).count() != 0 {
                                     action_cells.insert(index);
                                 }
                             }

@@ -32,7 +32,7 @@ impl Solver for UniquenessTest4 {
                             .and_then(|(ox, oy)| {
                                 (ox == qx && oy == qy).then(|| {
                                     let target = base_bi_value
-                                        .difference(&BitMap::from(competitor))
+                                        .difference(BitMap::from(competitor))
                                         .trailing_zeros();
                                     let actions: Vec<_> = [(px, py), (qx, qy)]
                                         .into_iter()

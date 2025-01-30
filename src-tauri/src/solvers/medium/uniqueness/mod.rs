@@ -36,8 +36,8 @@ fn valid_unique_rectangle_cell(
         .all(|candidate| game_board.could_have_been(x, y, candidate))
         .then_some(game_board.get_candidates(x, y).map(|candidate| {
             (
-                candidate.intersect(&bi_value),
-                candidate.difference(&bi_value),
+                candidate.intersect(bi_value),
+                candidate.difference(bi_value),
             )
         }))
         .flatten()
@@ -131,7 +131,8 @@ impl_with_id!(
     UniquenessTest2,
     UniquenessTest3,
     UniquenessTest4,
-    UniquenessTest5
+    UniquenessTest5,
+    UniquenessTest6
 );
 
 ///[HoDoKu explanations on Uniqueness Rectangle Type 1](https://hodoku.sourceforge.net/en/tech_ur.php#u1)
@@ -226,6 +227,24 @@ struct UniquenessTest5 {
 }
 mod test_5;
 
+/// [HoDoKu explanations on Uniqueness Rectangle Type 5](https://hodoku.sourceforge.net/en/tech_ur.php#u5)
+///
+/// ## Terminology
+/// - The two bi-value cells are called **Principles**, denoted as P and S.
+/// - the tow cells contains extra candidate are called **Counter**, denoted as Q and R, where Q is in the same row as P
+/// - the bi-value candidate forms X-wing shape is called target
+/// - the other bi-value candidate is called clue
+///
+/// ## Return Format
+/// - **Actions**: Contains 2 elements, representing two confirmations of target.
+/// - **House Clues**: Contains 4 elements, representing two rows in ascending order, and two columns in ascending order
+/// - **Candidate Clues**: Contains 4 elements, representing P and S with the clue candidate, followed by Q and R with their corresponding bi-value candidates. 
+
+struct UniquenessTest6{
+    id:usize,
+}
+
+mod test_6;
 #[cfg(test)]
 mod uniqueness_test {
     use super::*;

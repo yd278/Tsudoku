@@ -141,7 +141,7 @@ impl UniquenessTest5 {
                             )
                             .map(
                                 |(clue_candidates_s, extra_candidates_s)| {
-                                    (extra_candidates_r.union(&extra_candidates_s)
+                                    (extra_candidates_r.union(extra_candidates_s)
                                         == extra_candidates_r)
                                         .then_some(UR5::from_row_r_s(
                                             base_row,

@@ -21,7 +21,7 @@ fn solve_naked_subset(n: usize, game_board: &GameBoard, solver_id: usize) -> Opt
                 for index in include {
                     let (x, y) = Coord::from_house_and_index(&clue, index);
                     if let Some(candi) = game_board.get_candidates(x, y) {
-                        candidates = candidates.union(&candi);
+                        candidates = candidates.union(candi);
                         candidate_clues.push(Candidate {
                             x,
                             y,
@@ -35,7 +35,7 @@ fn solve_naked_subset(n: usize, game_board: &GameBoard, solver_id: usize) -> Opt
                     for index in exclude {
                         let (x, y) = Coord::from_house_and_index(&clue, index);
                         if let Some(candi) = game_board.get_candidates(x, y) {
-                            let target = candidates.intersect(&candi);
+                            let target = candidates.intersect(candi);
                             if target.count() > 0 {
                                 eliminations.push(Action::Elimination(EliminationDetails {
                                     x,

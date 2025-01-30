@@ -21,9 +21,9 @@ impl Solver for UniquenessTest3 {
                  first_span_candidates,
                  second_span_candidates,
              }| {
-                let first_diff = first_span_candidates.difference(&base_bi_value);
-                let second_diff = second_span_candidates.difference(&base_bi_value);
-                let virtual_cell = first_diff.union(&second_diff);
+                let first_diff = first_span_candidates.difference(base_bi_value);
+                let second_diff = second_span_candidates.difference(base_bi_value);
+                let virtual_cell = first_diff.union(second_diff);
                 [
                     Some(span_house),
                     (first_index / 3 == second_index / 3).then_some(House::Box(
@@ -57,20 +57,20 @@ impl Solver for UniquenessTest3 {
                                         Coord::from_house_and_index(&investigate_house, x);
                                     game_board.get_candidates(cx, cy)
                                 })
-                                .fold(BitMap::new(), |acc, candidates| acc.union(&candidates));
-                            let subset_candidates = subset_candidates.union(&virtual_cell);
+                                .fold(BitMap::new(), |acc, candidates| acc.union(candidates));
+                            let subset_candidates = subset_candidates.union(virtual_cell);
 
                             (subset_candidates.count() == combo.count() + 1)
                                 .then(|| {
                                     mask.complement()
-                                        .difference(&combo)
+                                        .difference(combo)
                                         .iter_ones()
                                         .map(|x| Coord::from_house_and_index(&investigate_house, x))
                                         .filter_map(|(cx, cy)| {
                                             game_board.get_candidates(cx, cy).and_then(
                                                 |candidates| {
                                                     let eliminable_candidates =
-                                                        candidates.intersect(&subset_candidates);
+                                                        candidates.intersect(subset_candidates);
                                                     (eliminable_candidates.count() > 0).then_some(
                                                         Action::Elimination(EliminationDetails {
                                                             x: cx,
@@ -101,28 +101,28 @@ impl Solver for UniquenessTest3 {
                                             &investigate_house,
                                             first_index,
                                         ),
-                                        base_bi_value.intersect(&first_span_candidates),
+                                        base_bi_value.intersect(first_span_candidates),
                                     ),
                                     Candidate::from_coord(
                                         Coord::from_house_and_index(
                                             &investigate_house,
                                             second_index,
                                         ),
-                                        base_bi_value.intersect(&second_span_candidates),
+                                        base_bi_value.intersect(second_span_candidates),
                                     ),
                                     Candidate::from_coord(
                                         Coord::from_house_and_index(
                                             &investigate_house,
                                             first_index,
                                         ),
-                                        subset_candidates.intersect(&first_span_candidates),
+                                        subset_candidates.intersect(first_span_candidates),
                                     ),
                                     Candidate::from_coord(
                                         Coord::from_house_and_index(
                                             &investigate_house,
                                             second_index,
                                         ),
-                                        subset_candidates.intersect(&second_span_candidates),
+                                        subset_candidates.intersect(second_span_candidates),
                                     ),
                                 ]
                                 .into_iter()
@@ -135,7 +135,7 @@ impl Solver for UniquenessTest3 {
                                                 Candidate::new(
                                                     cx,
                                                     cy,
-                                                    candidates.intersect(&subset_candidates),
+                                                    candidates.intersect(subset_candidates),
                                                 )
                                             })
                                         }),

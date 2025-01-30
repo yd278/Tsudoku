@@ -79,14 +79,14 @@ impl BitMap {
     pub fn complement(&self) -> Self {
         BitMap(!self.0 & 0b111111111)
     }
-    pub fn intersect(&self, other: &Self) -> Self {
+    pub fn intersect(&self, other: Self) -> Self {
         BitMap(self.0 & other.0)
     }
-    pub fn union(&self, other: &Self) -> Self {
+    pub fn union(&self, other: Self) -> Self {
         BitMap(self.0 | other.0)
     }
 
-    pub fn symmetric_difference(&self, other: &Self) -> Self {
+    pub fn symmetric_difference(&self, other: Self) -> Self {
         BitMap(self.0 ^ other.0)
     }
     pub fn iter_ones(&self) -> impl Iterator<Item = usize> + '_ {
@@ -98,8 +98,8 @@ impl BitMap {
     pub fn subset_of_raw(&self, other: u16) -> bool {
         (self.0 & other) == self.0
     }
-    pub fn difference(&self, other: &Self) -> Self {
-        self.intersect(&other.complement())
+    pub fn difference(&self, other: Self) -> Self {
+        self.intersect(other.complement())
     }
     #[cfg(test)]
     pub fn get_raw(&self) -> u16 {
