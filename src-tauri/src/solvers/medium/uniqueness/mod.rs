@@ -132,7 +132,8 @@ impl_with_id!(
     UniquenessTest3,
     UniquenessTest4,
     UniquenessTest5,
-    UniquenessTest6
+    UniquenessTest6,
+    HiddenRectangle
 );
 
 ///[HoDoKu explanations on Uniqueness Rectangle Type 1](https://hodoku.sourceforge.net/en/tech_ur.php#u1)
@@ -227,11 +228,11 @@ struct UniquenessTest5 {
 }
 mod test_5;
 
-/// [HoDoKu explanations on Uniqueness Rectangle Type 5](https://hodoku.sourceforge.net/en/tech_ur.php#u5)
+/// [HoDoKu explanations on Uniqueness Rectangle Type 6](https://hodoku.sourceforge.net/en/tech_ur.php#u6)
 ///
 /// ## Terminology
-/// - The two bi-value cells are called **Principles**, denoted as P and S.
-/// - the tow cells contains extra candidate are called **Counter**, denoted as Q and R, where Q is in the same row as P
+/// - The two bi-value cells are called **Principles**, denoted by P and S.
+/// - the tow cells contains extra candidate are called **Counter**, denoted by Q and R, where Q is in the same row as P
 /// - the bi-value candidate forms X-wing shape is called target
 /// - the other bi-value candidate is called clue
 ///
@@ -244,6 +245,23 @@ struct UniquenessTest6 {
 }
 
 mod test_6;
+/// [HoDoKu explanations on Hidden Rectangle](https://hodoku.sourceforge.net/en/tech_ur.php#hr)
+///
+/// ## Terminology
+/// - The cell with the candidate to be eliminated is called **target**, denoted by S
+/// - The cell diagonally opposite to the target is called **pivot**
+/// - the tow other cells  are called **pincers**, denoted by Q and R, where Q is in the same row as P
+///
+/// ## Return Format
+/// - **Actions**: Contains 1 element, representing the elimination of the target
+/// - **House Clues**: Contains 4 elements, representing two rows in ascending order, and two columns in ascending order
+/// - **Candidate Clues**: Contains 4 elements, representing corresponding bi-value candidates appears in P,Q,R. and the 
+struct HiddenRectangle{
+    id: usize, 
+}
+
+mod hidden_rectangle;
+
 #[cfg(test)]
 mod uniqueness_test {
     use super::*;
@@ -529,4 +547,18 @@ mod uniqueness_test {
             vec![64, 64, 80, 80],
         );
     }
+
+    #[test]
+    fn hidden_rectangle_test() {
+        test_function_e(
+            HiddenRectangle::with_id(1),
+            [16,64,131,32,8,130,129,4,256,35,35,4,195,256,195,16,8,163,259,8,419,4,129,16,160,64,162,74,256,66,144,32,136,4,1,80,128,33,16,257,64,4,2,288,8,105,4,97,273,2,265,288,128,80,99,50,99,8,145,193,417,288,4,289,128,8,259,4,259,64,16,33,4,17,320,320,145,32,8,2,129],
+            vec![(6,4),],
+            vec![1],
+            vec![Row(8),Row(6),Col(1),Col(4)],
+            vec![(8,1), (8,4), (6,1), (6,4),],
+            vec![17,17,16,16]
+        );
+    }
+
 }
