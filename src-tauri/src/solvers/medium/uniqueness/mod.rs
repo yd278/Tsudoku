@@ -238,22 +238,22 @@ mod test_5;
 /// ## Return Format
 /// - **Actions**: Contains 2 elements, representing two confirmations of target.
 /// - **House Clues**: Contains 4 elements, representing two rows in ascending order, and two columns in ascending order
-/// - **Candidate Clues**: Contains 4 elements, representing P and S with the clue candidate, followed by Q and R with their corresponding bi-value candidates. 
-
-struct UniquenessTest6{
-    id:usize,
+/// - **Candidate Clues**: Contains 4 elements, representing P and S with the clue candidate, followed by Q and R with their corresponding bi-value candidates.
+struct UniquenessTest6 {
+    id: usize,
 }
 
 mod test_6;
 #[cfg(test)]
 mod uniqueness_test {
     use super::*;
+    use crate::solvers::solution::Action::Confirmation;
     use crate::solvers::solution::Action::Elimination;
-    use crate::solvers::solution::{Candidate, EliminationDetails, Solution};
+    use crate::solvers::solution::{Candidate, ConfirmationDetails, EliminationDetails, Solution};
     use crate::solvers::Solver;
     use crate::utils::House::{Box, Col, Row};
     use crate::{game_board::GameBoard, utils::House};
-    fn test_function(
+    fn test_function_e(
         solver: impl Solver,
         raws: [u16; 81],
         exp_actions: Vec<(usize, usize)>,
@@ -317,9 +317,69 @@ mod uniqueness_test {
             assert_matches!(clue,Candidate{x,y,candidates} if candidates.get_raw()==raw);
         }
     }
+
+    fn test_function_c(
+        solver: impl Solver,
+        raws: [u16; 81],
+        exp_actions: Vec<(usize, usize)>,
+        exp_action_targets: Vec<u16>,
+        exp_house_clues: Vec<House>,
+        exp_candidate_clues: Vec<(usize, usize)>,
+        exp_candidate_masks: Vec<u16>,
+    ) {
+        // raws
+        let game_board = GameBoard::from_array(raws);
+        // solver type
+        let Solution {
+            actions,
+            house_clues,
+            candidate_clues,
+            solver_id: _,
+        } = solver.solve(&game_board).unwrap();
+
+        // action data
+        let action_len = exp_actions.len();
+        let action_std: Vec<_> = exp_actions
+            .iter()
+            .enumerate()
+            .map(|(i, (a, b))| (a, b, exp_action_targets[i]))
+            .collect();
+
+        assert_eq!(actions.len(), action_len);
+        for i in 0..action_len {
+            let (x, y, raw) = action_std[i];
+            let action = &actions[i];
+            assert_matches!(
+                action,
+                Confirmation(ConfirmationDetails { x, y, target: raw })
+            );
+        }
+
+        // house_clue data
+        let house_clues_len = exp_house_clues.len();
+
+        assert_eq!(house_clues.len(), house_clues_len);
+        for i in 0..house_clues_len {
+            assert_eq!(house_clues[i], exp_house_clues[i]);
+        }
+
+        // candidate_clue data
+        let clues_len = exp_candidate_clues.len();
+        let clues_std: Vec<_> = exp_candidate_clues
+            .iter()
+            .enumerate()
+            .map(|(i, (a, b))| (a, b, exp_candidate_masks[i]))
+            .collect();
+        assert_eq!(candidate_clues.len(), clues_len);
+        for i in 0..clues_len {
+            let (x, y, raw) = clues_std[i];
+            let clue = &candidate_clues[i];
+            assert_matches!(clue,Candidate{x,y,candidates} if candidates.get_raw()==raw);
+        }
+    }
     #[test]
     fn uniqueness_test_1() {
-        test_function(
+        test_function_e(
             UniquenessTest1::with_id(1),
             [
                 64, 256, 136, 24, 2, 1, 32, 144, 4, 4, 10, 32, 24, 256, 128, 83, 83, 17, 16, 130,
@@ -337,7 +397,7 @@ mod uniqueness_test {
 
     #[test]
     fn uniqueness_test_2() {
-        test_function(
+        test_function_e(
             UniquenessTest2::with_id(1),
             [
                 128, 4, 256, 8, 82, 67, 114, 3, 96, 16, 2, 8, 32, 256, 65, 128, 65, 4, 64, 1, 32,
@@ -355,7 +415,7 @@ mod uniqueness_test {
 
     #[test]
     fn uniqueness_test_3() {
-        test_function(
+        test_function_e(
             UniquenessTest3::with_id(1),
             [
                 128, 9, 16, 256, 96, 9, 4, 96, 2, 4, 265, 64, 19, 40, 43, 24, 288, 128, 32, 264, 2,
@@ -382,7 +442,7 @@ mod uniqueness_test {
     }
     #[test]
     fn uniqueness_test_3_b() {
-        test_function(
+        test_function_e(
             UniquenessTest3::with_id(1),
             [
                 272, 2, 336, 4, 32, 128, 8, 336, 1, 280, 364, 376, 1, 282, 26, 400, 336, 388, 128,
@@ -401,7 +461,7 @@ mod uniqueness_test {
 
     #[test]
     fn uniqueness_test_4() {
-        test_function(
+        test_function_e(
             UniquenessTest4::with_id(1),
             [
                 4, 2, 128, 1, 104, 120, 80, 288, 312, 73, 305, 312, 88, 106, 128, 4, 3, 56, 73, 49,
@@ -419,7 +479,7 @@ mod uniqueness_test {
     }
     #[test]
     fn uniqueness_test_5() {
-        test_function(
+        test_function_e(
             UniquenessTest5::with_id(1),
             [
                 135, 135, 6, 64, 32, 256, 8, 16, 130, 194, 192, 256, 1, 16, 8, 32, 130, 4, 32, 8,
@@ -436,7 +496,7 @@ mod uniqueness_test {
     }
     #[test]
     fn uniqueness_test_5_b() {
-        test_function(
+        test_function_e(
             UniquenessTest5::with_id(1),
             [
                 408, 32, 392, 64, 272, 257, 393, 4, 2, 412, 1, 268, 2, 276, 32, 392, 64, 392, 260,
@@ -450,6 +510,23 @@ mod uniqueness_test {
             vec![Row(8), Row(1), Col(8), Col(6)],
             vec![(8, 8), (8, 6), (1, 8), (1, 6), (8, 6), (1, 8), (1, 6)],
             vec![264, 264, 264, 264, 128, 128, 128],
+        );
+    }
+    #[test]
+    fn uniqueness_test_6() {
+        test_function_c(
+            UniquenessTest6::with_id(1),
+            [
+                32, 2, 16, 1, 4, 64, 256, 128, 8, 1, 4, 192, 258, 386, 8, 32, 16, 66, 136, 256,
+                200, 16, 130, 32, 4, 66, 1, 2, 16, 1, 4, 72, 256, 128, 72, 32, 64, 136, 136, 32, 1,
+                16, 2, 256, 4, 4, 32, 256, 128, 72, 2, 88, 1, 80, 152, 200, 32, 320, 272, 4, 1, 74,
+                130, 24, 1, 4, 66, 18, 128, 72, 32, 256, 256, 192, 2, 8, 32, 1, 80, 4, 208,
+            ],
+            vec![(5, 8), (8, 6)],
+            vec![4, 4],
+            vec![Row(5), Row(8), Col(8), Col(6)],
+            vec![(5, 8), (8, 6), (5, 6), (8, 8)],
+            vec![64, 64, 80, 80],
         );
     }
 }
