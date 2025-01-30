@@ -101,7 +101,10 @@ impl UniquenessTest1 {
         base_row: BaseRow,
     ) -> impl Iterator<Item = UR1> + '_ {
         (0..9)
-            .filter(move |&rx| rx != base_row.x)
+            .filter(move |&rx| {
+                rx != base_row.x
+                    && (rx / 3 == base_row.x / 3) != (base_row.py / 3 == base_row.qy / 3)
+            })
             .filter_map(move |rx| {
                 game_board
                     .get_candidates(rx, base_row.py)

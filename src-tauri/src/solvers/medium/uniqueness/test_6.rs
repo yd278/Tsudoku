@@ -100,20 +100,22 @@ impl UniquenessTest6 {
     }
 
     fn iter_r(row: BaseRow, game_board: &GameBoard) -> impl Iterator<Item = UR6> + '_ {
-        (0..9).filter(move |&rx| rx != row.x).filter_map(move |rx| {
-            valid_unique_rectangle_cell(game_board, rx, row.py, row.bi_value)
-                .and_then(|(r_clue, r_extra)| {
-                    (r_extra.count() > 0).then(|| {
-                        game_board
-                            .get_candidates(rx, row.qy)
-                            .and_then(|candidates| {
-                                (candidates == row.bi_value)
-                                    .then_some(UR6::from_row_r_s(row, rx, r_clue))
-                            })
+        (0..9)
+            .filter(move |&rx| rx != row.x && (rx / 3 == row.x / 3) != (row.py / 3 == row.qy / 3))
+            .filter_map(move |rx| {
+                valid_unique_rectangle_cell(game_board, rx, row.py, row.bi_value)
+                    .and_then(|(r_clue, r_extra)| {
+                        (r_extra.count() > 0).then(|| {
+                            game_board
+                                .get_candidates(rx, row.qy)
+                                .and_then(|candidates| {
+                                    (candidates == row.bi_value)
+                                        .then_some(UR6::from_row_r_s(row, rx, r_clue))
+                                })
+                        })
                     })
-                })
-                .flatten()
-        })
+                    .flatten()
+            })
     }
     fn get_solution(&self, ur: UR6, game_board: &GameBoard) -> Option<Solution> {
         ur.bi_value
