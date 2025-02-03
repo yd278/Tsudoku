@@ -21,4 +21,7 @@ impl Candidate {
     pub fn from_coord((x, y): (usize, usize), candidates: BitMap) -> Self {
         Self { x, y, candidates }
     }
+    pub fn from_coord_single((x, y): (usize, usize), target: usize) -> Self {
+        Self { x, y, candidates: BitMap::from(target) }
+    }
 }

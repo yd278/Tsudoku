@@ -3,6 +3,24 @@ use crate::{
     impl_with_id,
     utils::{BitMap, Coord, House, HouseType},
 };
+
+#[derive(Clone, Copy)]
+struct PenCell {
+    x: usize,
+    y: usize,
+    target: usize,
+}
+impl PenCell {
+    fn new(x: usize, y: usize, target: usize) -> Self {
+        Self { x, y, target }
+    }
+}
+fn iter_pen_cell(game_board: &GameBoard) -> impl Iterator<Item = PenCell> +'_{
+    Coord::all_cells().filter_map(|(x,y)|{
+        game_board.get_pen_mark(x, y).map(|target| PenCell::new(x, y, target))
+    })
+    
+}
 #[derive(Copy, Clone)]
 struct BiValueCell {
     x: usize,
@@ -133,7 +151,9 @@ impl_with_id!(
     UniquenessTest4,
     UniquenessTest5,
     UniquenessTest6,
-    HiddenRectangle
+    HiddenRectangle,
+    AvoidableRectangle1,
+    AvoidableRectangle2
 );
 
 ///[HoDoKu explanations on Uniqueness Rectangle Type 1](https://hodoku.sourceforge.net/en/tech_ur.php#u1)
@@ -262,6 +282,38 @@ struct HiddenRectangle{
 
 mod hidden_rectangle;
 
+/// [HoDoKu explanations on Avoidable Rectangle Type 1](https://hodoku.sourceforge.net/en/tech_ur.php#ar1)
+///
+/// ## Terminology
+/// - The candidate to be eliminated is called **target**, and the cell contains target is denotes by **S**
+/// - The cell diagonally opposite to **S** is denoted by **P**, with the pen mark number the same as target 
+/// - the same pen mark in the other two Rectangle Cells are called **pincer**, this two cells are denoted by Q and R, where Q is in the same row as P
+///
+/// ## Return Format
+/// - **Actions**: Contains 1 element, representing the elimination of the target
+/// - **House Clues**: Contains 4 elements, representing Base  of P, the row of S, and the Column of P, the Column of S
+/// - **Candidate Clues**: An empty vector, as no candidate clues is needed in this technique.
+struct AvoidableRectangle1{
+    id: usize,
+}
+mod avoidable_rectangle_1;
+
+
+/// [HoDoKu explanations on Avoidable Rectangle Type 2](https://hodoku.sourceforge.net/en/tech_ur.php#ar2)
+///
+/// ## Terminology
+/// - The line with two pen marks is called **Base Line**, the two AR Cells are denoted by P and Q in ascending order of indices.
+/// - The line with tow pencil marks is called **Span Line**, the two Cells are denoted by R and S in ascending order of indices.
+/// - the additional candidate in R and S is called **clue**
+///
+/// ## Return Format
+/// - **Actions**: Contains a variable number of elements representing all candidates visible to the R and S-clues.
+/// - **House Clues**:Contains 4 elements, representing the base house, the span house, and the other two sides, in ascending order.
+/// - **Candidate Clues**: Contains 4 elements, representing AR candidate in R and S, followed by the clues in R and S, correspondingly.
+struct AvoidableRectangle2{
+    id:usize,
+}
+mod avoidable_rectangles_2;
 #[cfg(test)]
 mod uniqueness_test {
     use super::*;
@@ -561,4 +613,30 @@ mod uniqueness_test {
         );
     }
 
+    #[test]
+    fn avoidable_rectangle_1_test(){
+        test_function_e(
+            AvoidableRectangle1::with_id(1),
+            [4,8,16,129,32,64,256,131,130,32,256,1,152,2,4,64,152,144,128,2,64,256,25,17,4,25,32,8,16,2,4,256,128,32,64,1,256,32,4,9,64,3,138,146,146,1,64,128,32,24,18,10,256,4,66,1,8,80,144,32,130,4,256,66,4,32,65,129,256,16,130,8,16,128,256,2,4,8,1,32,64],
+            vec![ (6, 6), ], //exp_actions
+            vec![ 128], //exp_action_targets
+            vec![Row(8),Row(6),Col(0),Col(6)], //exp_house_clues
+            vec![], //exp_candi_clues
+            vec![], //exp_candi_masks
+            
+        );
+
+    }
+    #[test]
+    fn avoidable_rectangle_2_test(){
+        test_function_e(
+            AvoidableRectangle2::with_id(1),
+            [4,16,256,34,10,40,65,192,129,8,2,32,1,128,64,16,4,256,128,64,1,4,16,256,2,32,8,272,1,128,264,64,24,32,2,4,258,4,64,290,3,33,128,8,16,32,8,18,130,4,144,256,1,64,65,256,8,16,32,2,4,192,129,3,128,6,64,256,5,8,16,32,81,32,20,136,9,141,65,256,2],
+            vec![ (8, 5), ], //exp_actions
+            vec![ 8 ], //exp_action_targets
+            vec![Row(1),Row(8),Col(3),Col(4)], //exp_house_clues
+            vec![(8, 3), (8, 4), (8, 3), (8, 4), ], //exp_candi_clues
+            vec![128,1,8,8], //exp_candi_masks
+        );
+    }
 }

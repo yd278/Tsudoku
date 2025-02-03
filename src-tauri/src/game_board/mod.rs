@@ -85,6 +85,15 @@ impl GameBoard {
         }
     }
 
+    /// Returns Some(num) if cell (x,y) is a pen mark with number num, otherwise, None.
+    pub fn get_pen_mark(&self, x: usize, y: usize) -> Option<usize> {
+        if let Cell::Blank(blank_cell) = &self.grid[x][y] {
+            blank_cell.get_pen_mark()
+        } else {
+            None
+        }
+    }
+    
     /// Returns a bitmap indicating which line are occupied by the target
     pub fn house_occupied_by(&self, dim: &HouseType, house_id: usize) -> &BitMap {
         &self.occupied[dim.as_dim()][house_id]

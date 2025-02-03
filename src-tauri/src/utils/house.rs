@@ -8,9 +8,31 @@ pub enum House {
 }
 
 impl House {
-    pub fn to_iter(self) -> Box<dyn Iterator<Item = (usize, usize)>> {
-        Coord::house(&self)
+    pub fn to_iter(&self) -> Box<dyn Iterator<Item = (usize, usize)>> {
+        Coord::house(self)
     }
+
+    pub fn from_dim_id(dim: usize, id: usize)-> Self{
+        match dim {
+            0=> Self::Row(id),
+            1=> Self::Col(id),
+            2=> Self::Box(id),
+            _ => panic!()
+        }
+    }   
+
+    pub fn ith_cell(&self, index: usize)-> (usize, usize){
+        match self{
+            House::Row(x) => (*x,index),
+            House::Col(y) => (index,*y),
+            House::Box(b) => {
+                let x_offset = b/3 * 3;
+                let y_offset = b%3 * 3;
+                (x_offset + index/3, y_offset+index%3)
+            },
+        }
+    }
+
 
     pub fn get_dim(&self) -> usize {
         match self {

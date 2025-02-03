@@ -1,5 +1,5 @@
 use super::House;
-#[derive(Clone)]
+#[derive(Clone,Copy)]
 pub enum HouseType {
     Row,
     Col,
