@@ -20,5 +20,10 @@ fn main() {
 }
 
 #[cfg(test)]
+pub mod tests {
+    pub mod common;  // 声明common模块
+}
+
+#[cfg(test)]
 #[macro_use]
 extern crate assert_matches;

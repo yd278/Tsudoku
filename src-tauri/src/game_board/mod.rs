@@ -444,11 +444,19 @@ pub mod game_board_test {
             let mut col_occupied = [BitMap::new(); 9];
             let mut box_occupied = [BitMap::new(); 9];
             for raw in arr {
+                let printed = (raw & (1<<9)) == 0;
+                let raw = raw & 0xFDFF;
                 let candidates = BitMap::from_raw(raw);
                 if candidates.count() == 1 {
                     let num = candidates.trailing_zeros();
 
-                    grid[i][j] = Cell::Printed(num);
+                    if printed{
+                        grid[i][j] = Cell::Printed(num);
+                    }else{
+                        if let Cell::Blank(ref mut cell) = grid[i][j] {
+                            cell.set_pen_mark(num);
+                        }
+                    }
                     row_occupied[num].insert(i);
                     col_occupied[num].insert(j);
                     box_occupied[num].insert(Coord::get_box_id(i, j));

@@ -15,11 +15,12 @@ impl PenCell {
         Self { x, y, target }
     }
 }
-fn iter_pen_cell(game_board: &GameBoard) -> impl Iterator<Item = PenCell> +'_{
-    Coord::all_cells().filter_map(|(x,y)|{
-        game_board.get_pen_mark(x, y).map(|target| PenCell::new(x, y, target))
+fn iter_pen_cell(game_board: &GameBoard) -> impl Iterator<Item = PenCell> + '_ {
+    Coord::all_cells().filter_map(|(x, y)| {
+        game_board
+            .get_pen_mark(x, y)
+            .map(|target| PenCell::new(x, y, target))
     })
-    
 }
 #[derive(Copy, Clone)]
 struct BiValueCell {
@@ -275,9 +276,9 @@ mod test_6;
 /// ## Return Format
 /// - **Actions**: Contains 1 element, representing the elimination of the target
 /// - **House Clues**: Contains 4 elements, representing two rows in ascending order, and two columns in ascending order
-/// - **Candidate Clues**: Contains 4 elements, representing corresponding bi-value candidates appears in P,Q,R. and the 
-struct HiddenRectangle{
-    id: usize, 
+/// - **Candidate Clues**: Contains 4 elements, representing corresponding bi-value candidates appears in P,Q,R. and the
+struct HiddenRectangle {
+    id: usize,
 }
 
 mod hidden_rectangle;
@@ -286,18 +287,17 @@ mod hidden_rectangle;
 ///
 /// ## Terminology
 /// - The candidate to be eliminated is called **target**, and the cell contains target is denotes by **S**
-/// - The cell diagonally opposite to **S** is denoted by **P**, with the pen mark number the same as target 
+/// - The cell diagonally opposite to **S** is denoted by **P**, with the pen mark number the same as target
 /// - the same pen mark in the other two Rectangle Cells are called **pincer**, this two cells are denoted by Q and R, where Q is in the same row as P
 ///
 /// ## Return Format
 /// - **Actions**: Contains 1 element, representing the elimination of the target
 /// - **House Clues**: Contains 4 elements, representing Base  of P, the row of S, and the Column of P, the Column of S
 /// - **Candidate Clues**: An empty vector, as no candidate clues is needed in this technique.
-struct AvoidableRectangle1{
+struct AvoidableRectangle1 {
     id: usize,
 }
 mod avoidable_rectangle_1;
-
 
 /// [HoDoKu explanations on Avoidable Rectangle Type 2](https://hodoku.sourceforge.net/en/tech_ur.php#ar2)
 ///
@@ -310,143 +310,16 @@ mod avoidable_rectangle_1;
 /// - **Actions**: Contains a variable number of elements representing all candidates visible to the R and S-clues.
 /// - **House Clues**:Contains 4 elements, representing the base house, the span house, and the other two sides, in ascending order.
 /// - **Candidate Clues**: Contains 4 elements, representing AR candidate in R and S, followed by the clues in R and S, correspondingly.
-struct AvoidableRectangle2{
-    id:usize,
+struct AvoidableRectangle2 {
+    id: usize,
 }
 mod avoidable_rectangles_2;
 #[cfg(test)]
 mod uniqueness_test {
+
     use super::*;
-    use crate::solvers::solution::Action::Confirmation;
-    use crate::solvers::solution::Action::Elimination;
-    use crate::solvers::solution::{Candidate, ConfirmationDetails, EliminationDetails, Solution};
-    use crate::solvers::Solver;
+    use crate::tests::common::{test_function_c, test_function_e};
     use crate::utils::House::{Box, Col, Row};
-    use crate::{game_board::GameBoard, utils::House};
-    fn test_function_e(
-        solver: impl Solver,
-        raws: [u16; 81],
-        exp_actions: Vec<(usize, usize)>,
-        exp_action_targets: Vec<u16>,
-        exp_house_clues: Vec<House>,
-        exp_candidate_clues: Vec<(usize, usize)>,
-        exp_candidate_masks: Vec<u16>,
-    ) {
-        // raws
-        let game_board = GameBoard::from_array(raws);
-        // solver type
-        let Solution {
-            actions,
-            house_clues,
-            candidate_clues,
-            solver_id: _,
-        } = solver.solve(&game_board).unwrap();
-
-        // action data
-        let action_len = exp_actions.len();
-        let action_std: Vec<_> = exp_actions
-            .iter()
-            .enumerate()
-            .map(|(i, (a, b))| (a, b, exp_action_targets[i]))
-            .collect();
-
-        assert_eq!(actions.len(), action_len);
-        for i in 0..action_len {
-            let (x, y, raw) = action_std[i];
-            let action = &actions[i];
-
-            assert_matches!(action, Elimination(EliminationDetails{x,y,target})if target.get_raw()==raw);
-        }
-        // // if confirmation
-        // assert_eq!(actions.len(), action_len);
-        // for i in 0..action_len {
-        //     let (x, y, raw) = action_std[i];
-        //     let action = &actions[i];
-        //     assert_matches!(action, confirmation(ConfirmationDetails{x,y,target:raw});
-        // }
-
-        // house_clue data
-        let house_clues_len = exp_house_clues.len();
-
-        assert_eq!(house_clues.len(), house_clues_len);
-        for i in 0..house_clues_len {
-            assert_eq!(house_clues[i], exp_house_clues[i]);
-        }
-
-        // candidate_clue data
-        let clues_len = exp_candidate_clues.len();
-        let clues_std: Vec<_> = exp_candidate_clues
-            .iter()
-            .enumerate()
-            .map(|(i, (a, b))| (a, b, exp_candidate_masks[i]))
-            .collect();
-        assert_eq!(candidate_clues.len(), clues_len);
-        for i in 0..clues_len {
-            let (x, y, raw) = clues_std[i];
-            let clue = &candidate_clues[i];
-            assert_matches!(clue,Candidate{x,y,candidates} if candidates.get_raw()==raw);
-        }
-    }
-
-    fn test_function_c(
-        solver: impl Solver,
-        raws: [u16; 81],
-        exp_actions: Vec<(usize, usize)>,
-        exp_action_targets: Vec<u16>,
-        exp_house_clues: Vec<House>,
-        exp_candidate_clues: Vec<(usize, usize)>,
-        exp_candidate_masks: Vec<u16>,
-    ) {
-        // raws
-        let game_board = GameBoard::from_array(raws);
-        // solver type
-        let Solution {
-            actions,
-            house_clues,
-            candidate_clues,
-            solver_id: _,
-        } = solver.solve(&game_board).unwrap();
-
-        // action data
-        let action_len = exp_actions.len();
-        let action_std: Vec<_> = exp_actions
-            .iter()
-            .enumerate()
-            .map(|(i, (a, b))| (a, b, exp_action_targets[i]))
-            .collect();
-
-        assert_eq!(actions.len(), action_len);
-        for i in 0..action_len {
-            let (x, y, raw) = action_std[i];
-            let action = &actions[i];
-            assert_matches!(
-                action,
-                Confirmation(ConfirmationDetails { x, y, target: raw })
-            );
-        }
-
-        // house_clue data
-        let house_clues_len = exp_house_clues.len();
-
-        assert_eq!(house_clues.len(), house_clues_len);
-        for i in 0..house_clues_len {
-            assert_eq!(house_clues[i], exp_house_clues[i]);
-        }
-
-        // candidate_clue data
-        let clues_len = exp_candidate_clues.len();
-        let clues_std: Vec<_> = exp_candidate_clues
-            .iter()
-            .enumerate()
-            .map(|(i, (a, b))| (a, b, exp_candidate_masks[i]))
-            .collect();
-        assert_eq!(candidate_clues.len(), clues_len);
-        for i in 0..clues_len {
-            let (x, y, raw) = clues_std[i];
-            let clue = &candidate_clues[i];
-            assert_matches!(clue,Candidate{x,y,candidates} if candidates.get_raw()==raw);
-        }
-    }
     #[test]
     fn uniqueness_test_1() {
         test_function_e(
@@ -604,39 +477,56 @@ mod uniqueness_test {
     fn hidden_rectangle_test() {
         test_function_e(
             HiddenRectangle::with_id(1),
-            [16,64,131,32,8,130,129,4,256,35,35,4,195,256,195,16,8,163,259,8,419,4,129,16,160,64,162,74,256,66,144,32,136,4,1,80,128,33,16,257,64,4,2,288,8,105,4,97,273,2,265,288,128,80,99,50,99,8,145,193,417,288,4,289,128,8,259,4,259,64,16,33,4,17,320,320,145,32,8,2,129],
-            vec![(6,4),],
+            [
+                16, 64, 131, 32, 8, 130, 129, 4, 256, 35, 35, 4, 195, 256, 195, 16, 8, 163, 259, 8,
+                419, 4, 129, 16, 160, 64, 162, 74, 256, 66, 144, 32, 136, 4, 1, 80, 128, 33, 16,
+                257, 64, 4, 2, 288, 8, 105, 4, 97, 273, 2, 265, 288, 128, 80, 99, 50, 99, 8, 145,
+                193, 417, 288, 4, 289, 128, 8, 259, 4, 259, 64, 16, 33, 4, 17, 320, 320, 145, 32,
+                8, 2, 129,
+            ],
+            vec![(6, 4)],
             vec![1],
-            vec![Row(8),Row(6),Col(1),Col(4)],
-            vec![(8,1), (8,4), (6,1), (6,4),],
-            vec![17,17,16,16]
+            vec![Row(8), Row(6), Col(1), Col(4)],
+            vec![(8, 1), (8, 4), (6, 1), (6, 4)],
+            vec![17, 17, 16, 16],
         );
     }
 
     #[test]
-    fn avoidable_rectangle_1_test(){
+    fn avoidable_rectangle_1_test() {
         test_function_e(
             AvoidableRectangle1::with_id(1),
-            [4,8,16,129,32,64,256,131,130,32,256,1,152,2,4,64,152,144,128,2,64,256,25,17,4,25,32,8,16,2,4,256,128,32,64,1,256,32,4,9,64,3,138,146,146,1,64,128,32,24,18,10,256,4,66,1,8,80,144,32,130,4,256,66,4,32,65,129,256,16,130,8,16,128,256,2,4,8,1,32,64],
-            vec![ (6, 6), ], //exp_actions
-            vec![ 128], //exp_action_targets
-            vec![Row(8),Row(6),Col(0),Col(6)], //exp_house_clues
-            vec![], //exp_candi_clues
-            vec![], //exp_candi_masks
-            
+            [
+                528, 525, 525, 523, 672, 672, 778, 776, 64, 640, 32, 585, 515, 256, 578, 522, 4,
+                16, 256, 2, 584, 528, 584, 4, 128, 32, 513, 580, 652, 16, 800, 672, 1, 840, 968,
+                514, 608, 641, 801, 4, 2, 8, 528, 961, 896, 514, 649, 776, 64, 528, 896, 32, 521,
+                516, 548, 256, 2, 128, 513, 608, 580, 16, 8, 8, 64, 672, 800, 4, 528, 513, 2, 928,
+                1, 528, 676, 522, 584, 866, 836, 960, 928,
+            ],
+            vec![(3, 1)],                         //exp_actions
+            vec![4],                              //exp_action_targets
+            vec![Row(5), Row(3), Col(8), Col(0)], //exp_house_clues
+            vec![],                               //exp_candi_clues
+            vec![],                               //exp_candi_masks
         );
-
     }
+
     #[test]
-    fn avoidable_rectangle_2_test(){
+    fn avoidable_rectangle_2_test() {
         test_function_e(
             AvoidableRectangle2::with_id(1),
-            [4,16,256,34,10,40,65,192,129,8,2,32,1,128,64,16,4,256,128,64,1,4,16,256,2,32,8,272,1,128,264,64,24,32,2,4,258,4,64,290,3,33,128,8,16,32,8,18,130,4,144,256,1,64,65,256,8,16,32,2,4,192,129,3,128,6,64,256,5,8,16,32,81,32,20,136,9,141,65,256,2],
-            vec![ (8, 5), ], //exp_actions
-            vec![ 8 ], //exp_action_targets
-            vec![Row(1),Row(8),Col(3),Col(4)], //exp_house_clues
-            vec![(8, 3), (8, 4), (8, 3), (8, 4), ], //exp_candi_clues
-            vec![128,1,8,8], //exp_candi_masks
+            [
+                516, 528, 768, 546, 522, 552, 577, 704, 641, 8, 2, 32, 513, 640, 64, 528, 516, 768,
+                640, 576, 513, 4, 528, 256, 2, 32, 520, 784, 1, 128, 776, 576, 536, 544, 514, 4,
+                770, 4, 64, 802, 515, 545, 128, 8, 528, 32, 520, 530, 642, 516, 656, 256, 1, 576,
+                577, 256, 8, 16, 544, 2, 516, 704, 641, 515, 640, 518, 64, 768, 517, 8, 16, 32,
+                593, 544, 532, 648, 521, 653, 577, 768, 514,
+            ],
+            vec![(8, 5)],                         //exp_actions
+            vec![8],                              //exp_action_targets
+            vec![Row(1), Row(8), Col(3), Col(4)], //exp_house_clues
+            vec![(8, 3), (8, 4), (8, 3), (8, 4)], //exp_candi_clues
+            vec![128, 1, 8, 8],                   //exp_candi_masks
         );
     }
 }
