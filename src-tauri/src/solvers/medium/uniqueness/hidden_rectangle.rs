@@ -124,20 +124,18 @@ impl HiddenRectangle {
             .find_map(|(target, clue)| {
                 game_board
                     .get_hard_link(hr.sx, hr.sy, target, HouseType::Row)
-                    .map(|(_, ly)| {
+                    .and_then(|(_, ly)| {
                         (ly == hr.py)
                             .then(|| {
                                 game_board
                                     .get_hard_link(hr.sx, hr.sy, target, HouseType::Col)
-                                    .map(|(lx, _)| {
+                                    .and_then(|(lx, _)| {
                                         (lx == hr.px)
                                             .then_some(hr.get_solution(target, clue, self.id))
                                     })
-                                    .flatten()
                             })
                             .flatten()
                     })
-                    .flatten()
             })
     }
 }

@@ -154,7 +154,8 @@ impl_with_id!(
     UniquenessTest6,
     HiddenRectangle,
     AvoidableRectangle1,
-    AvoidableRectangle2
+    AvoidableRectangle2,
+    BiValueUniversalGravePlusOne
 );
 
 ///[HoDoKu explanations on Uniqueness Rectangle Type 1](https://hodoku.sourceforge.net/en/tech_ur.php#u1)
@@ -314,6 +315,12 @@ struct AvoidableRectangle2 {
     id: usize,
 }
 mod avoidable_rectangles_2;
+
+struct BiValueUniversalGravePlusOne {
+    id: usize,
+}
+mod bivalue_universal_grave_plus_one;
+
 #[cfg(test)]
 mod uniqueness_test {
 

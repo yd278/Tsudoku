@@ -93,7 +93,7 @@ impl GameBoard {
             None
         }
     }
-    
+
     /// Returns a bitmap indicating which line are occupied by the target
     pub fn house_occupied_by(&self, dim: &HouseType, house_id: usize) -> &BitMap {
         &self.occupied[dim.as_dim()][house_id]
@@ -240,7 +240,7 @@ impl GameBoard {
                     for (i, component) in components.iter().enumerate() {
                         if HouseType::from_dim(i)
                             .house(*component)
-                            .to_iter()
+                            .as_iter()
                             .filter(|&(x, y)| self.is_clue(x, y, target))
                             .count()
                             == 0
@@ -343,7 +343,7 @@ impl GameBoard {
                 for target in 0..9 {
                     let appearance: Vec<_> = HouseType::from_dim(dim)
                         .house(house_index)
-                        .to_iter()
+                        .as_iter()
                         .filter(|&(x, y)| self.contains_candidate(x, y, target))
                         .collect();
 
@@ -444,15 +444,15 @@ pub mod game_board_test {
             let mut col_occupied = [BitMap::new(); 9];
             let mut box_occupied = [BitMap::new(); 9];
             for raw in arr {
-                let printed = (raw & (1<<9)) == 0;
+                let printed = (raw & (1 << 9)) == 0;
                 let raw = raw & 0xFDFF;
                 let candidates = BitMap::from_raw(raw);
                 if candidates.count() == 1 {
                     let num = candidates.trailing_zeros();
 
-                    if printed{
+                    if printed {
                         grid[i][j] = Cell::Printed(num);
-                    }else{
+                    } else {
                         if let Cell::Blank(ref mut cell) = grid[i][j] {
                             cell.set_pen_mark(num);
                         }

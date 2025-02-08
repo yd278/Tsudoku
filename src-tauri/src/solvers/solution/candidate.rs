@@ -22,6 +22,10 @@ impl Candidate {
         Self { x, y, candidates }
     }
     pub fn from_coord_single((x, y): (usize, usize), target: usize) -> Self {
-        Self { x, y, candidates: BitMap::from(target) }
+        Self {
+            x,
+            y,
+            candidates: BitMap::from(target),
+        }
     }
 }

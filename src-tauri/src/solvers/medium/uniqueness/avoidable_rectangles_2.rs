@@ -16,8 +16,8 @@ impl PenCell {
     pub fn get_cell_id(&self, dim: HouseType) -> usize {
         Coord::components_proj(self.x, self.y, dim.other().as_dim())
     }
-    
-    pub fn get_base_house(&self, base_dim: usize) -> House{
+
+    pub fn get_base_house(&self, base_dim: usize) -> House {
         House::from_dim_id(base_dim, self.get_house_id(HouseType::from_dim(base_dim)))
     }
 }
@@ -133,31 +133,36 @@ impl AvoidableRectangle2 {
         })
     }
 
-    fn try_extra_candidate(game_board: &GameBoard, x: usize, y: usize, target:usize) -> Option<usize>{
-        game_board.get_candidates(x, y).map(|candidates|
+    fn try_extra_candidate(
+        game_board: &GameBoard,
+        x: usize,
+        y: usize,
+        target: usize,
+    ) -> Option<usize> {
+        game_board.get_candidates(x, y).and_then(|candidates| {
             (candidates.count() == 2 && candidates.contains(target))
                 .then_some(candidates.difference(BitMap::from(target)).trailing_zeros())
-        )
-        .flatten()
+        })
     }
 
-    fn iter_ar(game_board: &GameBoard, house : BaseHouse) -> impl Iterator<Item = AR2> + '_{
-        (0..9).filter(move |&span|{
-            let base = house.house.get_index();
-            span!= base && (span /3 == base/3) != (house.pi/3 == house.qi /3)
-        })
-        .filter_map(move |span|{
-            let span_house = house.house.get_parallel(span);
-            let (rx,ry) = span_house.ith_cell(house.pi);
-            let (sx,sy) = span_house.ith_cell(house.qi);
-            Self::try_extra_candidate(game_board, rx, ry, house.qv)
-            .and_then(|r_clue|
-                Self::try_extra_candidate(game_board, sx, sy, house.pv).map(|s_clue|
-                    (s_clue==r_clue).then_some(AR2::new(house,span_house , r_clue))
-                )
-            )
-            .flatten()
-        })
+    fn iter_ar(game_board: &GameBoard, house: BaseHouse) -> impl Iterator<Item = AR2> + '_ {
+        (0..9)
+            .filter(move |&span| {
+                let base = house.house.get_index();
+                span != base && (span / 3 == base / 3) != (house.pi / 3 == house.qi / 3)
+            })
+            .filter_map(move |span| {
+                let span_house = house.house.get_parallel(span);
+                let (rx, ry) = span_house.ith_cell(house.pi);
+                let (sx, sy) = span_house.ith_cell(house.qi);
+                Self::try_extra_candidate(game_board, rx, ry, house.qv)
+                    .and_then(|r_clue| {
+                        Self::try_extra_candidate(game_board, sx, sy, house.pv).map(|s_clue| {
+                            (s_clue == r_clue).then_some(AR2::new(house, span_house, r_clue))
+                        })
+                    })
+                    .flatten()
+            })
     }
 }
 impl Solver for AvoidableRectangle2 {
@@ -166,8 +171,8 @@ impl Solver for AvoidableRectangle2 {
         game_board: &crate::game_board::GameBoard,
     ) -> Option<crate::solvers::solution::Solution> {
         iter_pen_cell(game_board)
-        .flat_map(|p| Self::iter_q(game_board, p))
-        .flat_map(|house| Self::iter_ar(game_board, house))
-        .find_map(|ar| ar.try_get_solution(game_board, self.id))
+            .flat_map(|p| Self::iter_q(game_board, p))
+            .flat_map(|house| Self::iter_ar(game_board, house))
+            .find_map(|ar| ar.try_get_solution(game_board, self.id))
     }
 }

@@ -21,7 +21,7 @@ fn main() {
 
 #[cfg(test)]
 pub mod tests {
-    pub mod common;  // 声明common模块
+    pub mod common; // 声明common模块
 }
 
 #[cfg(test)]

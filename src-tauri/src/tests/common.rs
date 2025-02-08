@@ -1,4 +1,3 @@
-
 use crate::solvers::solution::Action::Confirmation;
 use crate::solvers::solution::Action::Elimination;
 use crate::solvers::solution::{Candidate, ConfirmationDetails, EliminationDetails, Solution};
