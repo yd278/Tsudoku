@@ -107,7 +107,7 @@ impl Coord {
         Self::row(x)
             .filter(move |&(_, j)| j != y)
             .chain(Self::col(y).filter(move |&(i, _)| i != x))
-            .chain(Self::iter_box(x, y))
+            .chain(Self::iter_box(x, y).filter(move |&(i, j)| i != x && j != y))
     }
     pub fn components_array(x: usize, y: usize) -> [usize; 3] {
         [x, y, Self::get_box_id(x, y)]

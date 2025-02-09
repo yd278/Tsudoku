@@ -1,4 +1,8 @@
-use crate::{game_board::GameBoard, solvers::easy::{hidden_subset::HiddenQuadruple, naked_subset::NakedQuadruple}, utils::{BitMap, Coord}};
+use crate::{
+    game_board::GameBoard,
+    solvers::easy::{hidden_subset::HiddenQuadruple, naked_subset::NakedQuadruple},
+    utils::{BitMap, Coord},
+};
 
 use super::Solver;
 
@@ -15,16 +19,10 @@ mod single_digit_patterns;
 mod uniqueness;
 use single_digit_patterns::{EmptyRectangle, Skyscraper, TurbotFish, TwoStringKite};
 use uniqueness::{
-    UniquenessTest1,
-    UniquenessTest2,
-    UniquenessTest3,
-    UniquenessTest4,
-    UniquenessTest5,
-    UniquenessTest6,
-    AvoidableRectangle1,
-    AvoidableRectangle2,
-    BiValueUniversalGravePlusOne,
+    AvoidableRectangle1, AvoidableRectangle2, BiValueUniversalGravePlusOne, UniquenessTest1,
+    UniquenessTest2, UniquenessTest3, UniquenessTest4, UniquenessTest5, UniquenessTest6,
 };
+mod wings;
 use finned::FinnedXWing;
 use fish::{Jellyfish, Swordfish, XWing};
 #[rustfmt::skip]
@@ -60,6 +58,9 @@ struct BiValueCell {
 impl BiValueCell {
     pub fn new(x: usize, y: usize, bi_value: BitMap) -> Self {
         Self { x, y, bi_value }
+    }
+    pub fn try_new(x: usize, y: usize, bi_value: BitMap) -> Option<Self> {
+        (bi_value.count() == 2).then_some(Self::new(x, y, bi_value))
     }
 }
 /// Iter through the whole

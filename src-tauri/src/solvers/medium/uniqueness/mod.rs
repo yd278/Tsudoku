@@ -1,9 +1,9 @@
+use super::{iter_valid_bi_value, BiValueCell};
 use crate::{
     game_board::GameBoard,
     impl_with_id,
     utils::{BitMap, Coord, House, HouseType},
 };
-use super::{BiValueCell,iter_valid_bi_value};
 
 #[derive(Clone, Copy)]
 struct PenCell {

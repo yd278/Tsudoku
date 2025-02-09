@@ -42,21 +42,18 @@ struct GridCandidateCounts {
     col_counts: [HouseCandidateCounts; 9],
     box_counts: [HouseCandidateCounts; 9],
     tri_value_cell: Option<(usize, usize)>,
-    special : Option<usize>
+    special: Option<usize>,
 }
 
 impl GridCandidateCounts {
-
-    pub fn check_special(&mut self, special: usize)->Option<()>{
-        if self.special.is_none(){
+    pub fn check_special(&mut self, special: usize) -> Option<()> {
+        if self.special.is_none() {
             self.special = Some(special);
             Some(())
-        }else{
-            if matches!(self.special, Some(special)){
-                Some(())
-            }else{
-                None
-            }
+        } else if matches!(self.special, Some(special)) {
+            Some(())
+        } else {
+            None
         }
     }
     /// update accumulator by given cell
@@ -64,58 +61,60 @@ impl GridCandidateCounts {
     /// returns false if the grid does not match BUG+1 pattern
     pub fn update(&mut self, x: usize, y: usize, candidates: BitMap) -> Option<()> {
         let count = candidates.count();
-        if count> 3{
+        if count > 3 {
             return None;
         }
-        if count == 3{
-            if self.tri_value_cell.is_none(){
-                self.tri_value_cell = Some((x,y));
-            }else{
+        if count == 3 {
+            if self.tri_value_cell.is_none() {
+                self.tri_value_cell = Some((x, y));
+            } else {
                 return None;
             }
         }
         let box_id = Coord::get_box_id(x, y);
-        let row_expecting = self.tri_value_cell.map(|(sx,_)|sx==x).unwrap_or(false);
-        let col_expecting = self.tri_value_cell.map(|(_,sy)|sy==y).unwrap_or(false);
-        let box_expecting = self.tri_value_cell.map(|(sx,sy)|box_id == Coord::get_box_id(sx, sy)).unwrap_or(false);
-        for target in candidates.iter_ones(){
+        let row_expecting = self.tri_value_cell.map(|(sx, _)| sx == x).unwrap_or(false);
+        let col_expecting = self.tri_value_cell.map(|(_, sy)| sy == y).unwrap_or(false);
+        let box_expecting = self
+            .tri_value_cell
+            .map(|(sx, sy)| box_id == Coord::get_box_id(sx, sy))
+            .unwrap_or(false);
+        for target in candidates.iter_ones() {
             if self.row_counts[x].add(target, row_expecting)? {
                 self.check_special(target)?;
             }
-            if  self.col_counts[y].add(target, col_expecting)?{
+            if self.col_counts[y].add(target, col_expecting)? {
                 self.check_special(target)?;
             }
-            if  self.box_counts[y].add(target, box_expecting)?{
+            if self.box_counts[y].add(target, box_expecting)? {
                 self.check_special(target)?;
             }
         }
         Some(())
     }
     pub fn get_outlier(&self) -> Option<(usize, usize, usize)> {
-        self.tri_value_cell.and_then(|(x,y)|
-            self.special.map(|special| (x,y,special))
-        )
+        self.tri_value_cell
+            .and_then(|(x, y)| self.special.map(|special| (x, y, special)))
     }
 }
 
 impl Solver for BiValueUniversalGravePlusOne {
     fn solve(&self, game_board: &GameBoard) -> Option<Solution> {
-        Coord::all_cells().filter_map(|(x, y)| {
-            game_board
-                .get_candidates(x, y)
-                .map(|candidate| (x, y, candidate))
-        })
-        .try_fold(GridCandidateCounts::default(), | mut acc, (x,y,candidates)|
-            acc.update(x, y, candidates).map(|()| acc)
-        )
-        .and_then(|counter|
-            counter.get_outlier()
-        )
-        .map(|(x, y, target)| Solution {
-            actions: vec![Action::Confirmation(ConfirmationDetails { x, y, target })],
-            house_clues: vec![],
-            candidate_clues: vec![],
-            solver_id: self.id,
-        })
+        Coord::all_cells()
+            .filter_map(|(x, y)| {
+                game_board
+                    .get_candidates(x, y)
+                    .map(|candidate| (x, y, candidate))
+            })
+            .try_fold(
+                GridCandidateCounts::default(),
+                |mut acc, (x, y, candidates)| acc.update(x, y, candidates).map(|()| acc),
+            )
+            .and_then(|counter| counter.get_outlier())
+            .map(|(x, y, target)| Solution {
+                actions: vec![Action::Confirmation(ConfirmationDetails { x, y, target })],
+                house_clues: vec![],
+                candidate_clues: vec![],
+                solver_id: self.id,
+            })
     }
 }
