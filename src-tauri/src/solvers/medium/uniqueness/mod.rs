@@ -169,7 +169,7 @@ impl_with_id!(
 /// - **Actions**: Contains 1 element, indicating the candidates to be eliminated in the **target cell**.
 /// - **House Clues**: Contains 4 elements, representing the pivot row, target cell row, pivot column, and target cell column, respectively.
 /// - **Candidate Clues**: Contains 3 elements, representing the pivot, row pincer, and column pincer, respectively.
-struct UniquenessTest1 {
+pub struct UniquenessTest1 {
     id: usize,
 }
 
@@ -211,7 +211,7 @@ mod test_2;
 ///     - They are followed by candidates in the same box as the two span cells, also listed in ascending order of their relative positions within the box.
 /// - **House Clues**: Contains 5 elements, representing the base house, the span house, and the other two sides, in ascending order, followed by the house of naked subsets.
 /// - **Candidate Clues**: Contains 4 elements, representing the bi-value candidates in the first and second base cells, and the respective bi-value candidates found in the first and second span cells.
-struct UniquenessTest3 {
+pub struct UniquenessTest3 {
     id: usize,
 }
 mod test_3;
@@ -228,7 +228,7 @@ mod test_3;
 /// - **Actions**: Contains up to 2 elements, representing the candidates eliminated in two span cells
 /// - **House Clues**: Contains 5 elements, representing the base house, the span house, and the other two sides, in ascending order, followed by the house of hard link
 /// - **Candidate Clues**: Contains 4 elements, representing the bi-value candidates in the first and second base cells, and the bi-value candidate which forms a hard link
-struct UniquenessTest4 {
+pub struct UniquenessTest4 {
     id: usize,
 }
 mod test_4;
@@ -245,7 +245,7 @@ mod test_4;
 /// - **Actions**: Contains a variable number of elements representing all candidates visible to the pincers.
 /// - **House Clues**: Contains 4 elements, representing the base house, the span house, and the other two sides, in ascending order
 /// - **Candidate Clues**: Contains a variable number of elements, the first 4 representing the bi-value candidates in the pivot, row pincer column pincer and target cell,  followed by target candidates in the pincers.
-struct UniquenessTest5 {
+pub struct UniquenessTest5 {
     id: usize,
 }
 mod test_5;
@@ -262,7 +262,7 @@ mod test_5;
 /// - **Actions**: Contains 2 elements, representing two confirmations of target.
 /// - **House Clues**: Contains 4 elements, representing two rows in ascending order, and two columns in ascending order
 /// - **Candidate Clues**: Contains 4 elements, representing P and S with the clue candidate, followed by Q and R with their corresponding bi-value candidates.
-struct UniquenessTest6 {
+pub struct UniquenessTest6 {
     id: usize,
 }
 
@@ -278,7 +278,7 @@ mod test_6;
 /// - **Actions**: Contains 1 element, representing the elimination of the target
 /// - **House Clues**: Contains 4 elements, representing two rows in ascending order, and two columns in ascending order
 /// - **Candidate Clues**: Contains 4 elements, representing corresponding bi-value candidates appears in P,Q,R. and the
-struct HiddenRectangle {
+pub struct HiddenRectangle {
     id: usize,
 }
 
@@ -295,7 +295,7 @@ mod hidden_rectangle;
 /// - **Actions**: Contains 1 element, representing the elimination of the target
 /// - **House Clues**: Contains 4 elements, representing Base  of P, the row of S, and the Column of P, the Column of S
 /// - **Candidate Clues**: An empty vector, as no candidate clues is needed in this technique.
-struct AvoidableRectangle1 {
+pub struct AvoidableRectangle1 {
     id: usize,
 }
 mod avoidable_rectangle_1;
@@ -311,12 +311,12 @@ mod avoidable_rectangle_1;
 /// - **Actions**: Contains a variable number of elements representing all candidates visible to the R and S-clues.
 /// - **House Clues**:Contains 4 elements, representing the base house, the span house, and the other two sides, in ascending order.
 /// - **Candidate Clues**: Contains 4 elements, representing AR candidate in R and S, followed by the clues in R and S, correspondingly.
-struct AvoidableRectangle2 {
+pub struct AvoidableRectangle2 {
     id: usize,
 }
 mod avoidable_rectangles_2;
 
-struct BiValueUniversalGravePlusOne {
+pub struct BiValueUniversalGravePlusOne {
     id: usize,
 }
 mod bivalue_universal_grave_plus_one;
