@@ -3,6 +3,7 @@ use crate::{
     impl_with_id,
     utils::{BitMap, Coord, House, HouseType},
 };
+use super::{BiValueCell,iter_valid_bi_value};
 
 #[derive(Clone, Copy)]
 struct PenCell {
@@ -22,25 +23,7 @@ fn iter_pen_cell(game_board: &GameBoard) -> impl Iterator<Item = PenCell> + '_ {
             .map(|target| PenCell::new(x, y, target))
     })
 }
-#[derive(Copy, Clone)]
-struct BiValueCell {
-    x: usize,
-    y: usize,
-    bi_value: BitMap,
-}
-impl BiValueCell {
-    pub fn new(x: usize, y: usize, bi_value: BitMap) -> Self {
-        Self { x, y, bi_value }
-    }
-}
-/// Iter through the whole
-fn iter_valid_bi_value(game_board: &GameBoard) -> impl Iterator<Item = BiValueCell> + '_ {
-    Coord::all_cells().filter_map(|(px, py)| {
-        game_board.get_candidates(px, py).and_then(|candidates| {
-            (candidates.count() == 2).then_some(BiValueCell::new(px, py, candidates))
-        })
-    })
-}
+
 /// Verify if a given cell could contain both candidates in bi_value
 /// returns None if it's not
 /// returns two bitmaps : bi_value candidates which appears in the cell, and extra candidates in the cell

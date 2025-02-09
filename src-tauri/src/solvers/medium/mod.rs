@@ -1,4 +1,4 @@
-use crate::solvers::easy::{hidden_subset::HiddenQuadruple, naked_subset::NakedQuadruple};
+use crate::{game_board::GameBoard, solvers::easy::{hidden_subset::HiddenQuadruple, naked_subset::NakedQuadruple}, utils::{BitMap, Coord}};
 
 use super::Solver;
 
@@ -50,4 +50,23 @@ pub fn get_medium_solvers() -> Vec<Box<dyn Solver>> {
         Box::new(HiddenQuadruple             ::with_id(25)), 
         Box::new(Jellyfish                   ::with_id(26)),
     ]
+}
+#[derive(Copy, Clone)]
+struct BiValueCell {
+    x: usize,
+    y: usize,
+    bi_value: BitMap,
+}
+impl BiValueCell {
+    pub fn new(x: usize, y: usize, bi_value: BitMap) -> Self {
+        Self { x, y, bi_value }
+    }
+}
+/// Iter through the whole
+fn iter_valid_bi_value(game_board: &GameBoard) -> impl Iterator<Item = BiValueCell> + '_ {
+    Coord::all_cells().filter_map(|(px, py)| {
+        game_board.get_candidates(px, py).and_then(|candidates| {
+            (candidates.count() == 2).then_some(BiValueCell::new(px, py, candidates))
+        })
+    })
 }
