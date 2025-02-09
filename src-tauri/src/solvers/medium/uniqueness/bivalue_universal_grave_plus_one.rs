@@ -9,33 +9,29 @@ use crate::{
 
 use super::BiValueUniversalGravePlusOne;
 
-enum InvalidBUG {
-    AppearanceLimitExceeded,
-    MultipleOutlierCandidates,
-    CandidatesLimitExceeded,
-    MultipleTriValueCells,
-    MismatchedOutliers,
-}
-
 #[derive(Default)]
 struct HouseCandidateCounts {
     count: [usize; 9],
-    outlier_flag: Option<usize>,
+    special: Option<usize>,
 }
 impl HouseCandidateCounts {
-    pub fn add(&mut self, candidate: usize) -> Result<Option<usize>, InvalidBUG> {
-        self.count[candidate] += 1;
-        match self.count[candidate].cmp(&3) {
-            std::cmp::Ordering::Greater => Err(InvalidBUG::AppearanceLimitExceeded),
+    /// add an candidate to the house
+    /// returns None if this is invalid BUG+1 pattern
+    /// returns Some(true) if this target is special
+    /// return  Some(false) if this target is regular(yet)
+    pub fn add(&mut self, target: usize, expecting_special: bool) -> Option<bool> {
+        self.count[target] += 1;
+        match self.count[target].cmp(&3) {
+            std::cmp::Ordering::Less => Some(false),
             std::cmp::Ordering::Equal => {
-                if self.outlier_flag.is_some() {
-                    Err(InvalidBUG::MultipleOutlierCandidates)
+                if expecting_special && self.special.is_none() {
+                    self.special = Some(target);
+                    Some(true)
                 } else {
-                    self.outlier_flag = Some(candidate);
-                    Ok(self.outlier_flag)
+                    None
                 }
             }
-            std::cmp::Ordering::Less => Ok(None),
+            std::cmp::Ordering::Greater => None,
         }
     }
 }
@@ -45,83 +41,81 @@ struct GridCandidateCounts {
     row_counts: [HouseCandidateCounts; 9],
     col_counts: [HouseCandidateCounts; 9],
     box_counts: [HouseCandidateCounts; 9],
-    outlier: Option<(usize, usize, usize)>,
-    tri_value_flag: bool,
+    tri_value_cell: Option<(usize, usize)>,
+    special : Option<usize>
 }
 
 impl GridCandidateCounts {
-    pub fn add_candidate(
-        &mut self,
-        x: usize,
-        y: usize,
-        candidate: usize,
-    ) -> Result<Option<(usize, usize, usize)>, InvalidBUG> {
-        match (
-            self.row_counts[x].add(candidate)?,
-            self.col_counts[y].add(candidate)?,
-            self.box_counts[Coord::get_box_id(x, y)].add(candidate)?,
-        ) {
-            (Some(_), Some(_), Some(_)) => {
-                if self.outlier.is_none() {
-                    self.outlier = Some((x, y, candidate));
-                    Ok(self.outlier)
-                } else {
-                    Err(InvalidBUG::MultipleOutlierCandidates)
-                }
+
+    pub fn check_special(&mut self, special: usize)->Option<()>{
+        if self.special.is_none(){
+            self.special = Some(special);
+            Some(())
+        }else{
+            if matches!(self.special, Some(special)){
+                Some(())
+            }else{
+                None
             }
-            (None, None, None) => Ok(None),
-            _ => Err(InvalidBUG::MismatchedOutliers),
         }
     }
-    pub fn update(
-        &mut self,
-        x: usize,
-        y: usize,
-        candidates: BitMap,
-    ) -> Result<Option<(usize, usize, usize)>, InvalidBUG> {
+    /// update accumulator by given cell
+    /// returns true if successfully updated
+    /// returns false if the grid does not match BUG+1 pattern
+    pub fn update(&mut self, x: usize, y: usize, candidates: BitMap) -> Option<()> {
         let count = candidates.count();
-        if count > 3 {
-            return Err(InvalidBUG::CandidatesLimitExceeded);
+        if count> 3{
+            return None;
         }
-        if count == 3 {
-            if self.tri_value_flag {
-                return Err(InvalidBUG::MultipleTriValueCells);
-            } else {
-                self.tri_value_flag = true;
+        if count == 3{
+            if self.tri_value_cell.is_none(){
+                self.tri_value_cell = Some((x,y));
+            }else{
+                return None;
             }
         }
-        for candidate in candidates.iter_ones() {
-            self.add_candidate(x, y, candidate)?;
+        let box_id = Coord::get_box_id(x, y);
+        let row_expecting = self.tri_value_cell.map(|(sx,_)|sx==x).unwrap_or(false);
+        let col_expecting = self.tri_value_cell.map(|(_,sy)|sy==y).unwrap_or(false);
+        let box_expecting = self.tri_value_cell.map(|(sx,sy)|box_id == Coord::get_box_id(sx, sy)).unwrap_or(false);
+        for target in candidates.iter_ones(){
+            if self.row_counts[x].add(target, row_expecting)? {
+                self.check_special(target)?;
+            }
+            if  self.col_counts[y].add(target, col_expecting)?{
+                self.check_special(target)?;
+            }
+            if  self.box_counts[y].add(target, box_expecting)?{
+                self.check_special(target)?;
+            }
         }
-        Ok(self.outlier)
+        Some(())
     }
     pub fn get_outlier(&self) -> Option<(usize, usize, usize)> {
-        self.outlier
+        self.tri_value_cell.and_then(|(x,y)|
+            self.special.map(|special| (x,y,special))
+        )
     }
 }
 
 impl Solver for BiValueUniversalGravePlusOne {
     fn solve(&self, game_board: &GameBoard) -> Option<Solution> {
-        Coord::all_cells()
-            .filter_map(|(x, y)| {
-                game_board
-                    .get_candidates(x, y)
-                    .map(|candidate| (x, y, candidate))
-            })
-            .try_fold(
-                GridCandidateCounts::default(),
-                |mut acc, (x, y, candidates)| {
-                    acc.update(x, y, candidates)?;
-                    Ok::<GridCandidateCounts, InvalidBUG>(acc)
-                },
-            )
-            .ok()?
-            .get_outlier()
-            .map(|(x, y, target)| Solution {
-                actions: vec![Action::Confirmation(ConfirmationDetails { x, y, target })],
-                house_clues: vec![],
-                candidate_clues: vec![],
-                solver_id: self.id,
-            })
+        Coord::all_cells().filter_map(|(x, y)| {
+            game_board
+                .get_candidates(x, y)
+                .map(|candidate| (x, y, candidate))
+        })
+        .try_fold(GridCandidateCounts::default(), | mut acc, (x,y,candidates)|
+            acc.update(x, y, candidates).map(|()| acc)
+        )
+        .and_then(|counter|
+            counter.get_outlier()
+        )
+        .map(|(x, y, target)| Solution {
+            actions: vec![Action::Confirmation(ConfirmationDetails { x, y, target })],
+            house_clues: vec![],
+            candidate_clues: vec![],
+            solver_id: self.id,
+        })
     }
 }
