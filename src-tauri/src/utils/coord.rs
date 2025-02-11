@@ -134,17 +134,18 @@ impl Coord {
         qx: usize,
         qy: usize,
     ) -> Box<dyn Iterator<Item = (usize, usize)>> {
+        // same cell, nothing should be returned
         if px == qx && py == qy {
             return Box::new(std::iter::empty());
         }
-        // same row:
         let same_row = px == qx;
         let same_col = py == qy;
         let mut res = vec![];
+        // same row, put all cells in the row in
         if same_row {
             res.extend((0..9).filter(|&y| y != py && y != qy).map(|y| (px, y)));
         }
-        // same col:
+        // same col, put all cells in the col in
         if same_col {
             res.extend((0..9).filter(|&x| x != px && x != qx).map(|x| (x, py)));
         }
@@ -152,6 +153,7 @@ impl Coord {
         let box_id_p = Coord::get_box_id(px, py);
         let box_id_q = Coord::get_box_id(qx, qy);
         if box_id_p == box_id_q {
+            // same box with same row, put other two rows in
             if same_row {
                 for shift in 0..3 {
                     if box_id_p / 3 * 3 + shift != px {
@@ -161,7 +163,7 @@ impl Coord {
                         ));
                     }
                 }
-            } else if same_col {
+            } else if same_col {  // same box with wame col, put other two cols in
                 for shift in 0..3 {
                     if box_id_p % 3 * 3 + shift != py {
                         res.extend(Self::intersect(
@@ -170,20 +172,23 @@ impl Coord {
                         ));
                     }
                 }
-            } else {
+            } else { // same box but not same row and same col, put all other cells in the box in
                 res.extend(
                     Self::box_coords(box_id_p)
                         .filter(|&(x, y)| !((x == px && y == py) || (x == qx && y == qy))),
                 )
             }
-        } else if !same_row && !same_col {
-            if box_id_p / 3 == box_id_q / 3 {
+        } else if !same_row && !same_col { // not same box, not same row, not same col
+            if box_id_p / 3 == box_id_q / 3 { // if same floor
                 res.extend(Coord::intersect(House::Row(px), House::Box(box_id_q)));
                 res.extend(Coord::intersect(House::Row(qx), House::Box(box_id_p)));
             }
-            if box_id_p % 3 == box_id_q % 3 {
+            else if box_id_p % 3 == box_id_q % 3 { // if same tower
                 res.extend(Coord::intersect(House::Col(py), House::Box(box_id_q)));
                 res.extend(Coord::intersect(House::Col(qy), House::Box(box_id_p)));
+            } else{
+                res.push((px,qy));
+                res.push((qx,py));
             }
         }
         Box::new(res.into_iter())

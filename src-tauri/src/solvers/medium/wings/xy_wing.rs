@@ -50,8 +50,10 @@ impl XYPincers {
     fn try_from_p_q_r(pq: XPincer, r: BiValueCell) -> Option<Self> {
         (r.bi_value.contains(pq.y)
             && r.bi_value.contains(pq.z)
-            && !Coord::sees(pq.qx, pq.qy, r.x, r.y))
-        .then_some(Self {
+            && !Coord::sees(pq.qx, pq.qy, r.x, r.y)
+            && (r.x!=pq.qx || r.y != pq.qy)
+        )
+        .then(|| Self {
             px: pq.px,
             py: pq.py,
             qx: pq.qx,
@@ -66,6 +68,7 @@ impl XYPincers {
 
     fn get_actions(&self, game_board: &GameBoard) -> Vec<Action> {
         Coord::pinched_by(self.qx, self.qy, self.rx, self.ry)
+            .filter(|&(cx,cy)| (cx!=self.px || cy!= self.py))
             .filter_map(|(cx, cy)| {
                 game_board.get_candidates(cx, cy).and_then(|candidates| {
                     candidates
