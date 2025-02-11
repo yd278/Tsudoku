@@ -1,4 +1,7 @@
-use crate::{game_board::GameBoard, solvers::{solution::Solution, Solver}};
+use crate::{
+    game_board::GameBoard,
+    solvers::{solution::Solution, Solver},
+};
 
 use super::XYZWing;
 
