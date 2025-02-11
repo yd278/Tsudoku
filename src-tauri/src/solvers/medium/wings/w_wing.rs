@@ -33,7 +33,7 @@ impl WWing {
                             ux: x,
                             uy: y,
                             vx: ox,
-                            vy: y,
+                            vy: oy,
                             target,
                         })
                     })
@@ -42,6 +42,7 @@ impl WWing {
 
     fn iter_p(game_board: &GameBoard, bridge: Bridge) -> impl Iterator<Item = PincerP> + '_ {
         Coord::seeable_cells(bridge.ux, bridge.uy)
+            .filter(move |&(px,py)|!Coord::same(px, py, bridge.vx, bridge.vy))
             .filter_map(|(px, py)| {
                 game_board
                     .get_candidates(px, py)
@@ -56,7 +57,9 @@ impl WWing {
         game_board: &GameBoard,
         pincer_p: PincerP,
     ) -> impl Iterator<Item = WWingPattern> + '_ {
-        Coord::seeable_cells(pincer_p.bridge.vx, pincer_p.bridge.vx)
+        Coord::seeable_cells(pincer_p.bridge.vx, pincer_p.bridge.vy)
+        
+        .filter(move |&(qx,qy)|!Coord::same(qx, qy, pincer_p.bridge.ux, pincer_p.bridge.uy))
             .filter_map(|(qx, qy)| {
                 game_board
                     .get_candidates(qx, qy)
