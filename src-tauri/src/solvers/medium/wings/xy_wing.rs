@@ -68,7 +68,7 @@ impl XYPincers {
 
     fn get_actions(&self, game_board: &GameBoard) -> Vec<Action> {
         Coord::pinched_by(self.qx, self.qy, self.rx, self.ry)
-            .filter(|&(cx,cy)| (cx!=self.px || cy!= self.py))
+            .filter(|&(cx,cy)|!Coord::same(cx, cy, self.px, self.py))
             .filter_map(|(cx, cy)| {
                 game_board.get_candidates(cx, cy).and_then(|candidates| {
                     candidates

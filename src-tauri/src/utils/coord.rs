@@ -2,6 +2,10 @@ use crate::utils::House;
 pub struct Coord;
 
 impl Coord {
+
+    pub fn same(px: usize, py: usize, qx: usize, qy : usize) -> bool{
+        (px==qx) && (py==qy)
+    }
     pub fn house(h: &House) -> Box<dyn Iterator<Item = (usize, usize)>> {
         match *h {
             House::Box(b) => Box::new(Self::box_coords(b)),
