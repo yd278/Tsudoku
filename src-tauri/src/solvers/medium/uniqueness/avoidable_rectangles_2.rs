@@ -111,7 +111,7 @@ impl AR2 {
 
     pub fn try_get_solution(&self, game_board: &GameBoard, solver_id: usize) -> Option<Solution> {
         let actions = self.get_actions(game_board);
-        (!actions.is_empty()).then_some(Solution {
+        (!actions.is_empty()).then(|| Solution {
             actions,
             house_clues: self.get_house_clues(),
             candidate_clues: self.get_candidate_clues(),
@@ -141,7 +141,7 @@ impl AvoidableRectangle2 {
     ) -> Option<usize> {
         game_board.get_candidates(x, y).and_then(|candidates| {
             (candidates.count() == 2 && candidates.contains(target))
-                .then_some(candidates.difference(BitMap::from(target)).trailing_zeros())
+                .then(|| candidates.difference(BitMap::from(target)).trailing_zeros())
         })
     }
 

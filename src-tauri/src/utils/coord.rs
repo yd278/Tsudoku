@@ -2,9 +2,8 @@ use crate::utils::House;
 pub struct Coord;
 
 impl Coord {
-
-    pub fn same(px: usize, py: usize, qx: usize, qy : usize) -> bool{
-        (px==qx) && (py==qy)
+    pub fn same(px: usize, py: usize, qx: usize, qy: usize) -> bool {
+        (px == qx) && (py == qy)
     }
     pub fn house(h: &House) -> Box<dyn Iterator<Item = (usize, usize)>> {
         match *h {
@@ -167,7 +166,8 @@ impl Coord {
                         ));
                     }
                 }
-            } else if same_col {  // same box with wame col, put other two cols in
+            } else if same_col {
+                // same box with wame col, put other two cols in
                 for shift in 0..3 {
                     if box_id_p % 3 * 3 + shift != py {
                         res.extend(Self::intersect(
@@ -176,23 +176,26 @@ impl Coord {
                         ));
                     }
                 }
-            } else { // same box but not same row and same col, put all other cells in the box in
+            } else {
+                // same box but not same row and same col, put all other cells in the box in
                 res.extend(
                     Self::box_coords(box_id_p)
                         .filter(|&(x, y)| !((x == px && y == py) || (x == qx && y == qy))),
                 )
             }
-        } else if !same_row && !same_col { // not same box, not same row, not same col
-            if box_id_p / 3 == box_id_q / 3 { // if same floor
+        } else if !same_row && !same_col {
+            // not same box, not same row, not same col
+            if box_id_p / 3 == box_id_q / 3 {
+                // if same floor
                 res.extend(Coord::intersect(House::Row(px), House::Box(box_id_q)));
                 res.extend(Coord::intersect(House::Row(qx), House::Box(box_id_p)));
-            }
-            else if box_id_p % 3 == box_id_q % 3 { // if same tower
+            } else if box_id_p % 3 == box_id_q % 3 {
+                // if same tower
                 res.extend(Coord::intersect(House::Col(py), House::Box(box_id_q)));
                 res.extend(Coord::intersect(House::Col(qy), House::Box(box_id_p)));
-            } else{
-                res.push((px,qy));
-                res.push((qx,py));
+            } else {
+                res.push((px, qy));
+                res.push((qx, py));
             }
         }
         Box::new(res.into_iter())

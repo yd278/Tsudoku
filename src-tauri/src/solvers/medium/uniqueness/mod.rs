@@ -36,12 +36,14 @@ fn valid_unique_rectangle_cell(
     bi_value
         .iter_ones()
         .all(|candidate| game_board.could_have_been(x, y, candidate))
-        .then_some(game_board.get_candidates(x, y).map(|candidate| {
-            (
-                candidate.intersect(bi_value),
-                candidate.difference(bi_value),
-            )
-        }))
+        .then(|| {
+            game_board.get_candidates(x, y).map(|candidate| {
+                (
+                    candidate.intersect(bi_value),
+                    candidate.difference(bi_value),
+                )
+            })
+        })
         .flatten()
 }
 /// Used in test type 2 and 3

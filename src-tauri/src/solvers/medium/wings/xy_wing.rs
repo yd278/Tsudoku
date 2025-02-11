@@ -23,7 +23,7 @@ struct XPincer {
 impl XPincer {
     fn try_from_p_q(p: BiValueCell, q: BiValueCell) -> Option<Self> {
         let x_map = p.bi_value.intersect(q.bi_value);
-        (x_map.count() == 1).then_some(Self {
+        (x_map.count() == 1).then(|| Self {
             px: p.x,
             py: p.y,
             qx: q.x,
@@ -51,24 +51,23 @@ impl XYPincers {
         (r.bi_value.contains(pq.y)
             && r.bi_value.contains(pq.z)
             && !Coord::sees(pq.qx, pq.qy, r.x, r.y)
-            && (r.x!=pq.qx || r.y != pq.qy)
-        )
-        .then(|| Self {
-            px: pq.px,
-            py: pq.py,
-            qx: pq.qx,
-            qy: pq.qy,
-            rx: r.x,
-            ry: r.y,
-            x: pq.x,
-            y: pq.y,
-            z: pq.z,
-        })
+            && (r.x != pq.qx || r.y != pq.qy))
+            .then_some(Self {
+                px: pq.px,
+                py: pq.py,
+                qx: pq.qx,
+                qy: pq.qy,
+                rx: r.x,
+                ry: r.y,
+                x: pq.x,
+                y: pq.y,
+                z: pq.z,
+            })
     }
 
     fn get_actions(&self, game_board: &GameBoard) -> Vec<Action> {
         Coord::pinched_by(self.qx, self.qy, self.rx, self.ry)
-            .filter(|&(cx,cy)|!Coord::same(cx, cy, self.px, self.py))
+            .filter(|&(cx, cy)| !Coord::same(cx, cy, self.px, self.py))
             .filter_map(|(cx, cy)| {
                 game_board.get_candidates(cx, cy).and_then(|candidates| {
                     candidates
@@ -84,7 +83,7 @@ impl XYPincers {
     }
     fn try_get_solution(&self, game_board: &GameBoard, solver_id: usize) -> Option<Solution> {
         let actions = self.get_actions(game_board);
-        (!actions.is_empty()).then_some(Solution {
+        (!actions.is_empty()).then(|| Solution {
             actions,
             house_clues: vec![],
             candidate_clues: vec![

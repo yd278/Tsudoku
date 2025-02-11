@@ -106,7 +106,7 @@ impl Solver for AvoidableRectangle1 {
             .find_map(|ar| {
                 game_board
                     .contains_candidate(ar.sx, ar.sy, ar.target)
-                    .then_some(ar.get_solution(self.id))
+                    .then(|| ar.get_solution(self.id))
             })
     }
 }

@@ -26,12 +26,12 @@ impl Solver for UniquenessTest3 {
                 let virtual_cell = first_diff.union(second_diff);
                 [
                     Some(span_house),
-                    (first_index / 3 == second_index / 3).then_some(House::Box(
-                        Coord::get_box_id_by_tuple(Coord::from_house_and_index(
+                    (first_index / 3 == second_index / 3).then(|| {
+                        House::Box(Coord::get_box_id_by_tuple(Coord::from_house_and_index(
                             &span_house,
                             first_index,
-                        )),
-                    )),
+                        )))
+                    }),
                 ]
                 .into_iter()
                 .flatten()

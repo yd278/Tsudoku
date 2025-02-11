@@ -131,7 +131,7 @@ impl HiddenRectangle {
                                     .get_hard_link(hr.sx, hr.sy, target, HouseType::Col)
                                     .and_then(|(lx, _)| {
                                         (lx == hr.px)
-                                            .then_some(hr.get_solution(target, clue, self.id))
+                                            .then(|| hr.get_solution(target, clue, self.id))
                                     })
                             })
                             .flatten()

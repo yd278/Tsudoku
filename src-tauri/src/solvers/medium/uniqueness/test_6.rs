@@ -156,11 +156,11 @@ impl UniquenessTest6 {
                                                                     HouseType::Col,
                                                                 )
                                                                 .and_then(|(lx, _)| {
-                                                                    (lx == ur.px).then_some(
+                                                                    (lx == ur.px).then(|| {
                                                                         ur.get_solution(
                                                                             target, clue, self.id,
-                                                                        ),
-                                                                    )
+                                                                        )
+                                                                    })
                                                                 })
                                                         })
                                                     })

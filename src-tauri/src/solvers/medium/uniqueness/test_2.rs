@@ -39,7 +39,7 @@ impl Solver for UniquenessTest2 {
                                 )
                             })
                             .collect();
-                        (!eliminables.is_empty()).then_some(Solution {
+                        (!eliminables.is_empty()).then(|| Solution {
                             actions: eliminables,
                             house_clues: vec![
                                 base_house,

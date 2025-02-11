@@ -187,7 +187,7 @@ impl Solver for UniquenessTest5 {
             .flat_map(|base_row| Self::iter_valid_rectangle(game_board, base_row))
             .find_map(|ur| {
                 let actions = Self::get_eliminables(game_board, ur);
-                (!actions.is_empty()).then_some(Solution {
+                (!actions.is_empty()).then(|| Solution {
                     actions,
                     house_clues: ur.get_house_clues(),
                     candidate_clues: ur.get_candi_clues(),

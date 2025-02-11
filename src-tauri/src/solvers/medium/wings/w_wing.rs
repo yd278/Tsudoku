@@ -42,7 +42,7 @@ impl WWing {
 
     fn iter_p(game_board: &GameBoard, bridge: Bridge) -> impl Iterator<Item = PincerP> + '_ {
         Coord::seeable_cells(bridge.ux, bridge.uy)
-            .filter(move |&(px,py)|!Coord::same(px, py, bridge.vx, bridge.vy))
+            .filter(move |&(px, py)| !Coord::same(px, py, bridge.vx, bridge.vy))
             .filter_map(|(px, py)| {
                 game_board
                     .get_candidates(px, py)
@@ -58,8 +58,7 @@ impl WWing {
         pincer_p: PincerP,
     ) -> impl Iterator<Item = WWingPattern> + '_ {
         Coord::seeable_cells(pincer_p.bridge.vx, pincer_p.bridge.vy)
-        
-        .filter(move |&(qx,qy)|!Coord::same(qx, qy, pincer_p.bridge.ux, pincer_p.bridge.uy))
+            .filter(move |&(qx, qy)| !Coord::same(qx, qy, pincer_p.bridge.ux, pincer_p.bridge.uy))
             .filter_map(|(qx, qy)| {
                 game_board
                     .get_candidates(qx, qy)
@@ -80,7 +79,7 @@ struct PincerP {
 
 impl PincerP {
     fn try_from_bridge_p(bridge: Bridge, px: usize, py: usize, candidates: BitMap) -> Option<Self> {
-        (candidates.count() == 2 && candidates.contains(bridge.target)).then_some(Self {
+        (candidates.count() == 2 && candidates.contains(bridge.target)).then(|| Self {
             bridge,
             px,
             py,
@@ -122,7 +121,7 @@ impl WWingPattern {
     }
     fn try_get_solution(&self, game_board: &GameBoard, solver_id: usize) -> Option<Solution> {
         let actions = self.get_actions(game_board);
-        (!actions.is_empty()).then_some(Solution {
+        (!actions.is_empty()).then(|| Solution {
             actions,
             house_clues: vec![],
             candidate_clues: vec![

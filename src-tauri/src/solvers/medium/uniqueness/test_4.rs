@@ -46,7 +46,7 @@ impl Solver for UniquenessTest4 {
                                             )
                                         })
                                         .collect();
-                                    (!actions.is_empty()).then_some(Solution {
+                                    (!actions.is_empty()).then(|| Solution {
                                         actions,
                                         house_clues: vec![
                                             base_house,
