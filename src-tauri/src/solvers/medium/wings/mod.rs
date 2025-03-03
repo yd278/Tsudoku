@@ -25,7 +25,7 @@ mod xy_wing;
 /// ## Return Format
 /// - **Actions**: Contains variable number of elements, representing candidates pinched by two pincers and seeable by P.
 /// - **House Clues**: An empty vector.
-/// - **Candidate Clues**: Contains 6 elements, representing corresponding x in P, x in Q, y in P, y in R,z in P, z in Q and z in R.
+/// - **Candidate Clues**: Contains 7 elements, representing corresponding x in P, x in Q, y in P, y in R,z in P, z in Q and z in R.
 pub struct XYZWing {
     id: usize,
 }
@@ -85,8 +85,8 @@ mod wings_test {
             vec![(8, 3)],                                                 //exp_actions
             vec![256],                                                    //exp_action_targets
             vec![],                                                       //exp_house_clues
-            vec![(8, 5), (8, 6), (8, 5), (6, 3), (8, 5), (8, 6), (6, 3)], //exp_candi_clues
-            vec![16, 16, 2, 2, 256, 256, 256],                            //exp_candi_masks
+            vec![(8, 5), (6, 3), (8, 5), (8, 6), (8, 5), (8, 6), (6, 3)], //exp_candi_clues
+            vec![2, 2, 16, 16, 256, 256, 256],                            //exp_candi_masks
         );
     }
 
