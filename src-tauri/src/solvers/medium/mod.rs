@@ -8,9 +8,6 @@ use super::Solver;
 
 // remote pair
 
-// w-wing
-// xy-wing
-// xyz-wing
 // simple colors
 //multi colors
 mod finned;
@@ -25,6 +22,7 @@ use uniqueness::{
 mod wings;
 use finned::FinnedXWing;
 use fish::{Jellyfish, Swordfish, XWing};
+use wings::{WWing, XYWing,XYZWing};
 #[rustfmt::skip]
 pub fn get_medium_solvers() -> Vec<Box<dyn Solver>> {
     vec![
@@ -47,6 +45,9 @@ pub fn get_medium_solvers() -> Vec<Box<dyn Solver>> {
         Box::new(NakedQuadruple              ::with_id(24)), 
         Box::new(HiddenQuadruple             ::with_id(25)), 
         Box::new(Jellyfish                   ::with_id(26)),
+        Box::new(XYWing                      ::with_id(27)),
+        Box::new(XYZWing                     ::with_id(28)),
+        Box::new(WWing                       ::with_id(29)),
     ]
 }
 #[derive(Copy, Clone)]
