@@ -1,13 +1,14 @@
 use crate::game_board::GameBoard;
-use crate::impl_with_id;
 use crate::solvers::solution::{Action, Candidate, EliminationDetails, Solution};
-use crate::solvers::Solver;
+use crate::solvers::{Solver, SolverIdentifier};
 use crate::utils::House::{Box, Col, Row};
 use crate::utils::{BitMap, Coord};
 
-impl_with_id!(NakedPair, NakedTriple, NakedQuadruple);
-
-fn solve_naked_subset(n: usize, game_board: &GameBoard, solver_id: usize) -> Option<Solution> {
+fn solve_naked_subset(
+    n: usize,
+    game_board: &GameBoard,
+    solver_id: SolverIdentifier,
+) -> Option<Solution> {
     for i in 0..9 {
         for clue in [Box(i), Row(i), Col(i)] {
             let combos = BitMap::get_combinations(n);
@@ -60,33 +61,36 @@ fn solve_naked_subset(n: usize, game_board: &GameBoard, solver_id: usize) -> Opt
     None
 }
 
-pub struct NakedPair {
-    id: usize,
-}
-
+pub struct NakedPair;
 impl Solver for NakedPair {
     fn solve(&self, game_board: &GameBoard) -> Option<Solution> {
-        solve_naked_subset(2, game_board, self.id)
+        solve_naked_subset(2, game_board, self.solver_id())
+    }
+
+    fn solver_id(&self) -> SolverIdentifier {
+        SolverIdentifier::NakedPair
     }
 }
 
-pub struct NakedTriple {
-    id: usize,
-}
-
+pub struct NakedTriple;
 impl Solver for NakedTriple {
     fn solve(&self, game_board: &GameBoard) -> Option<Solution> {
-        solve_naked_subset(3, game_board, self.id)
+        solve_naked_subset(3, game_board, self.solver_id())
+    }
+
+    fn solver_id(&self) -> SolverIdentifier {
+        SolverIdentifier::NakedTriple
     }
 }
 
-pub struct NakedQuadruple {
-    id: usize,
-}
-
+pub struct NakedQuadruple;
 impl Solver for NakedQuadruple {
     fn solve(&self, game_board: &GameBoard) -> Option<Solution> {
-        solve_naked_subset(4, game_board, self.id)
+        solve_naked_subset(4, game_board, self.solver_id())
+    }
+
+    fn solver_id(&self) -> SolverIdentifier {
+        SolverIdentifier::NakedQuadruple
     }
 }
 
@@ -103,7 +107,7 @@ mod naked_subset_test {
             18, 256, 4, 32, 257, 8, 259, 17, 128, 64, 18, 274, 130, 320, 338, 32, 208, 1, 4, 8,
         ];
         let game_board = GameBoard::from_array(raws);
-        let solver = NakedPair::with_id(1);
+        let solver = NakedPair;
         let Solution {
             actions,
             house_clues,
@@ -132,7 +136,7 @@ mod naked_subset_test {
             18, 256, 4, 32, 257, 8, 259, 17, 128, 64, 18, 274, 130, 320, 338, 32, 208, 1, 4, 8,
         ];
         let game_board = GameBoard::from_array(raws);
-        let solver = NakedPair::with_id(1);
+        let solver = NakedPair;
         let solution = solver.solve(&game_board);
         assert!(solution.is_none());
     }
@@ -145,7 +149,7 @@ mod naked_subset_test {
             256, 16, 1, 128, 4, 8, 2, 32, 64, 130, 74, 136, 99, 355, 96, 16, 385, 4,
         ];
         let game_board = GameBoard::from_array(raws);
-        let solver = NakedTriple::with_id(1);
+        let solver = NakedTriple;
         let Solution {
             actions,
             house_clues,
@@ -185,7 +189,7 @@ mod naked_subset_test {
             256, 16, 1, 128, 4, 8, 2, 32, 64, 130, 74, 136, 99, 258, 96, 16, 385, 4,
         ];
         let game_board = GameBoard::from_array(raws);
-        let solver = NakedTriple::with_id(1);
+        let solver = NakedTriple;
         let solution = solver.solve(&game_board);
         assert!(solution.is_none());
     }
@@ -199,7 +203,7 @@ mod naked_subset_test {
             1, 201, 208, 4, 200, 192, 3, 256, 50, 34, 33, 288, 290, 16, 4, 3, 64, 128, 8,
         ];
         let game_board = GameBoard::from_array(raws);
-        let solver = NakedQuadruple::with_id(1);
+        let solver = NakedQuadruple;
         let Solution {
             actions,
             house_clues,
@@ -239,7 +243,7 @@ mod naked_subset_test {
             201, 208, 4, 200, 192, 3, 256, 50, 34, 33, 288, 290, 16, 4, 3, 64, 128, 8,
         ];
         let game_board = GameBoard::from_array(raws);
-        let solver = NakedQuadruple::with_id(1);
+        let solver = NakedQuadruple;
         let solution = solver.solve(&game_board);
         assert!(solution.is_none());
     }

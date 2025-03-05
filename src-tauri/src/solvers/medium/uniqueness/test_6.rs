@@ -2,7 +2,7 @@ use crate::{
     game_board::GameBoard,
     solvers::{
         solution::{Action, Candidate, ConfirmationDetails, Solution},
-        Solver,
+        Solver, SolverIdentifier,
     },
     utils::{BitMap, House, HouseType},
 };
@@ -81,7 +81,12 @@ impl UR6 {
             Candidate::new(self.sx, self.py, self.r_clue),
         ]
     }
-    pub fn get_solution(&self, target: usize, clue: usize, solver_id: usize) -> Solution {
+    pub fn get_solution(
+        &self,
+        target: usize,
+        clue: usize,
+        solver_id: SolverIdentifier,
+    ) -> Solution {
         Solution {
             actions: self.get_actions(target),
             house_clues: self.get_house_clues(),
@@ -158,7 +163,9 @@ impl UniquenessTest6 {
                                                                 .and_then(|(lx, _)| {
                                                                     (lx == ur.px).then(|| {
                                                                         ur.get_solution(
-                                                                            target, clue, self.id,
+                                                                            target,
+                                                                            clue,
+                                                                            self.solver_id(),
                                                                         )
                                                                     })
                                                                 })
@@ -180,5 +187,9 @@ impl Solver for UniquenessTest6 {
             .flat_map(|bi_value_cell| Self::iter_q(bi_value_cell, game_board))
             .flat_map(|row| Self::iter_r(row, game_board))
             .find_map(|ur| self.get_solution(ur, game_board))
+    }
+
+    fn solver_id(&self) -> SolverIdentifier {
+        SolverIdentifier::UniquenessTest6
     }
 }

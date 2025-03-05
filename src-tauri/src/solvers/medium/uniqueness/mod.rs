@@ -1,7 +1,6 @@
 use super::{iter_valid_bi_value, BiValueCell};
 use crate::{
     game_board::GameBoard,
-    impl_with_id,
     utils::{BitMap, Coord, House, HouseType},
 };
 
@@ -130,19 +129,6 @@ fn semi_possible_ur(game_board: &GameBoard) -> impl Iterator<Item = SemiPossible
     })
 }
 
-impl_with_id!(
-    UniquenessTest1,
-    UniquenessTest2,
-    UniquenessTest3,
-    UniquenessTest4,
-    UniquenessTest5,
-    UniquenessTest6,
-    HiddenRectangle,
-    AvoidableRectangle1,
-    AvoidableRectangle2,
-    BiValueUniversalGravePlusOne
-);
-
 ///[HoDoKu explanations on Uniqueness Rectangle Type 1](https://hodoku.sourceforge.net/en/tech_ur.php#u1)
 /// ## Terminology
 /// - The cell with extra candidates is called the **target cell**.
@@ -154,9 +140,7 @@ impl_with_id!(
 /// - **Actions**: Contains 1 element, indicating the candidates to be eliminated in the **target cell**.
 /// - **House Clues**: Contains 4 elements, representing the pivot row, target cell row, pivot column, and target cell column, respectively.
 /// - **Candidate Clues**: Contains 3 elements, representing the pivot, row pincer, and column pincer, respectively.
-pub struct UniquenessTest1 {
-    id: usize,
-}
+pub struct UniquenessTest1;
 
 mod test_1;
 
@@ -175,9 +159,7 @@ mod test_1;
 ///     - They are followed by candidates in the same box as the two span cells, also listed in ascending order of their relative positions within the box.
 /// - **House Clues**: Contains 4 elements, representing the base house, the span house, and the other two sides, in ascending order.
 /// - **Candidate Clues**: Contains 6 elements, representing the bi-value candidates in the first and second base cells, and the respective bi-value candidates found in the first and second span cells, followed by the targets in both span cells.
-pub struct UniquenessTest2 {
-    id: usize,
-}
+pub struct UniquenessTest2;
 mod test_2;
 
 /// [HoDoKu explanations on Uniqueness Rectangle Type 3](https://hodoku.sourceforge.net/en/tech_ur.php#u3)
@@ -196,9 +178,7 @@ mod test_2;
 ///     - They are followed by candidates in the same box as the two span cells, also listed in ascending order of their relative positions within the box.
 /// - **House Clues**: Contains 5 elements, representing the base house, the span house, and the other two sides, in ascending order, followed by the house of naked subsets.
 /// - **Candidate Clues**: Contains 4 elements, representing the bi-value candidates in the first and second base cells, and the respective bi-value candidates found in the first and second span cells.
-pub struct UniquenessTest3 {
-    id: usize,
-}
+pub struct UniquenessTest3;
 mod test_3;
 /// [HoDoKu explanations on Uniqueness Rectangle Type 4](https://hodoku.sourceforge.net/en/tech_ur.php#u4)
 ///
@@ -213,9 +193,7 @@ mod test_3;
 /// - **Actions**: Contains up to 2 elements, representing the candidates eliminated in two span cells
 /// - **House Clues**: Contains 5 elements, representing the base house, the span house, and the other two sides, in ascending order, followed by the house of hard link
 /// - **Candidate Clues**: Contains 4 elements, representing the bi-value candidates in the first and second base cells, and the bi-value candidate which forms a hard link
-pub struct UniquenessTest4 {
-    id: usize,
-}
+pub struct UniquenessTest4;
 mod test_4;
 
 /// [HoDoKu explanations on Uniqueness Rectangle Type 5](https://hodoku.sourceforge.net/en/tech_ur.php#u5)
@@ -230,9 +208,7 @@ mod test_4;
 /// - **Actions**: Contains a variable number of elements representing all candidates visible to the pincers.
 /// - **House Clues**: Contains 4 elements, representing the base house, the span house, and the other two sides, in ascending order
 /// - **Candidate Clues**: Contains a variable number of elements, the first 4 representing the bi-value candidates in the pivot, row pincer column pincer and target cell,  followed by target candidates in the pincers.
-pub struct UniquenessTest5 {
-    id: usize,
-}
+pub struct UniquenessTest5;
 mod test_5;
 
 /// [HoDoKu explanations on Uniqueness Rectangle Type 6](https://hodoku.sourceforge.net/en/tech_ur.php#u6)
@@ -247,9 +223,7 @@ mod test_5;
 /// - **Actions**: Contains 2 elements, representing two confirmations of target.
 /// - **House Clues**: Contains 4 elements, representing two rows in ascending order, and two columns in ascending order
 /// - **Candidate Clues**: Contains 4 elements, representing P and S with the clue candidate, followed by Q and R with their corresponding bi-value candidates.
-pub struct UniquenessTest6 {
-    id: usize,
-}
+pub struct UniquenessTest6;
 
 mod test_6;
 /// [HoDoKu explanations on Hidden Rectangle](https://hodoku.sourceforge.net/en/tech_ur.php#hr)
@@ -263,9 +237,7 @@ mod test_6;
 /// - **Actions**: Contains 1 element, representing the elimination of the target
 /// - **House Clues**: Contains 4 elements, representing two rows in ascending order, and two columns in ascending order
 /// - **Candidate Clues**: Contains 4 elements, representing corresponding bi-value candidates appears in P,Q,R. and the
-pub struct HiddenRectangle {
-    id: usize,
-}
+pub struct HiddenRectangle;
 
 mod hidden_rectangle;
 
@@ -280,9 +252,7 @@ mod hidden_rectangle;
 /// - **Actions**: Contains 1 element, representing the elimination of the target
 /// - **House Clues**: Contains 4 elements, representing Base  of P, the row of S, and the Column of P, the Column of S
 /// - **Candidate Clues**: An empty vector, as no candidate clues is needed in this technique.
-pub struct AvoidableRectangle1 {
-    id: usize,
-}
+pub struct AvoidableRectangle1;
 mod avoidable_rectangle_1;
 
 /// [HoDoKu explanations on Avoidable Rectangle Type 2](https://hodoku.sourceforge.net/en/tech_ur.php#ar2)
@@ -296,14 +266,10 @@ mod avoidable_rectangle_1;
 /// - **Actions**: Contains a variable number of elements representing all candidates visible to the R and S-clues.
 /// - **House Clues**:Contains 4 elements, representing the base house, the span house, and the other two sides, in ascending order.
 /// - **Candidate Clues**: Contains 4 elements, representing AR candidate in R and S, followed by the clues in R and S, correspondingly.
-pub struct AvoidableRectangle2 {
-    id: usize,
-}
+pub struct AvoidableRectangle2;
 mod avoidable_rectangles_2;
 
-pub struct BiValueUniversalGravePlusOne {
-    id: usize,
-}
+pub struct BiValueUniversalGravePlusOne;
 mod bivalue_universal_grave_plus_one;
 
 #[cfg(test)]
@@ -315,7 +281,7 @@ mod uniqueness_test {
     #[test]
     fn uniqueness_test_1() {
         test_function_e(
-            UniquenessTest1::with_id(1),
+            UniquenessTest1,
             [
                 64, 256, 136, 24, 2, 1, 32, 144, 4, 4, 10, 32, 24, 256, 128, 83, 83, 17, 16, 130,
                 1, 32, 64, 4, 256, 138, 10, 32, 144, 130, 4, 1, 64, 154, 10, 256, 1, 4, 256, 128,
@@ -333,7 +299,7 @@ mod uniqueness_test {
     #[test]
     fn uniqueness_test_2() {
         test_function_e(
-            UniquenessTest2::with_id(1),
+            UniquenessTest2,
             [
                 128, 4, 256, 8, 82, 67, 114, 3, 96, 16, 2, 8, 32, 256, 65, 128, 65, 4, 64, 1, 32,
                 18, 128, 4, 24, 256, 10, 1, 16, 66, 128, 74, 98, 40, 4, 256, 42, 256, 4, 80, 88,
@@ -351,7 +317,7 @@ mod uniqueness_test {
     #[test]
     fn uniqueness_test_3() {
         test_function_e(
-            UniquenessTest3::with_id(1),
+            UniquenessTest3,
             [
                 128, 9, 16, 256, 96, 9, 4, 96, 2, 4, 265, 64, 19, 40, 43, 24, 288, 128, 32, 264, 2,
                 212, 204, 140, 24, 320, 1, 64, 2, 4, 8, 1, 256, 32, 128, 16, 16, 32, 8, 132, 2,
@@ -378,7 +344,7 @@ mod uniqueness_test {
     #[test]
     fn uniqueness_test_3_b() {
         test_function_e(
-            UniquenessTest3::with_id(1),
+            UniquenessTest3,
             [
                 272, 2, 336, 4, 32, 128, 8, 336, 1, 280, 364, 376, 1, 282, 26, 400, 336, 388, 128,
                 1, 28, 272, 280, 64, 276, 2, 32, 4, 328, 1, 32, 88, 24, 274, 128, 258, 32, 264,
@@ -397,7 +363,7 @@ mod uniqueness_test {
     #[test]
     fn uniqueness_test_4() {
         test_function_e(
-            UniquenessTest4::with_id(1),
+            UniquenessTest4,
             [
                 4, 2, 128, 1, 104, 120, 80, 288, 312, 73, 305, 312, 88, 106, 128, 4, 3, 56, 73, 49,
                 56, 92, 256, 126, 113, 131, 184, 32, 20, 2, 84, 69, 256, 128, 8, 65, 384, 8, 260,
@@ -415,7 +381,7 @@ mod uniqueness_test {
     #[test]
     fn uniqueness_test_5() {
         test_function_e(
-            UniquenessTest5::with_id(1),
+            UniquenessTest5,
             [
                 135, 135, 6, 64, 32, 256, 8, 16, 130, 194, 192, 256, 1, 16, 8, 32, 130, 4, 32, 8,
                 16, 128, 2, 4, 64, 257, 257, 16, 5, 36, 2, 64, 128, 256, 41, 9, 131, 256, 34, 8, 4,
@@ -432,7 +398,7 @@ mod uniqueness_test {
     #[test]
     fn uniqueness_test_5_b() {
         test_function_e(
-            UniquenessTest5::with_id(1),
+            UniquenessTest5,
             [
                 408, 32, 392, 64, 272, 257, 393, 4, 2, 412, 1, 268, 2, 276, 32, 392, 64, 392, 260,
                 64, 2, 8, 128, 261, 32, 16, 257, 1, 130, 16, 256, 76, 68, 192, 138, 32, 12, 384,
@@ -450,7 +416,7 @@ mod uniqueness_test {
     #[test]
     fn uniqueness_test_6() {
         test_function_c(
-            UniquenessTest6::with_id(1),
+            UniquenessTest6,
             [
                 32, 2, 16, 1, 4, 64, 256, 128, 8, 1, 4, 192, 258, 386, 8, 32, 16, 66, 136, 256,
                 200, 16, 130, 32, 4, 66, 1, 2, 16, 1, 4, 72, 256, 128, 72, 32, 64, 136, 136, 32, 1,
@@ -468,7 +434,7 @@ mod uniqueness_test {
     #[test]
     fn hidden_rectangle_test() {
         test_function_e(
-            HiddenRectangle::with_id(1),
+            HiddenRectangle,
             [
                 16, 64, 131, 32, 8, 130, 129, 4, 256, 35, 35, 4, 195, 256, 195, 16, 8, 163, 259, 8,
                 419, 4, 129, 16, 160, 64, 162, 74, 256, 66, 144, 32, 136, 4, 1, 80, 128, 33, 16,
@@ -487,7 +453,7 @@ mod uniqueness_test {
     #[test]
     fn avoidable_rectangle_1_test() {
         test_function_e(
-            AvoidableRectangle1::with_id(1),
+            AvoidableRectangle1,
             [
                 528, 525, 525, 523, 672, 672, 778, 776, 64, 640, 32, 585, 515, 256, 578, 522, 4,
                 16, 256, 2, 584, 528, 584, 4, 128, 32, 513, 580, 652, 16, 800, 672, 1, 840, 968,
@@ -506,7 +472,7 @@ mod uniqueness_test {
     #[test]
     fn avoidable_rectangle_2_test() {
         test_function_e(
-            AvoidableRectangle2::with_id(1),
+            AvoidableRectangle2,
             [
                 516, 528, 768, 546, 522, 552, 577, 704, 641, 8, 2, 32, 513, 640, 64, 528, 516, 768,
                 640, 576, 513, 4, 528, 256, 2, 32, 520, 784, 1, 128, 776, 576, 536, 544, 514, 4,
@@ -525,7 +491,7 @@ mod uniqueness_test {
     #[test]
     fn bug_test() {
         test_function_c(
-            BiValueUniversalGravePlusOne::with_id(1),
+            BiValueUniversalGravePlusOne,
             [
                 1, 16, 520, 514, 256, 544, 128, 4, 576, 544, 640, 580, 580, 528, 1, 2, 520, 256,
                 514, 580, 256, 128, 524, 584, 544, 513, 528, 584, 513, 128, 528, 552, 256, 516,

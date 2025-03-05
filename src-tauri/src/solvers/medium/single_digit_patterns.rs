@@ -2,14 +2,12 @@ use std::vec;
 
 use crate::{
     game_board::GameBoard,
-    impl_with_id,
     solvers::{
         solution::{Action, Candidate, EliminationDetails, Solution},
-        Solver,
+        Solver, SolverIdentifier,
     },
     utils::{BitMap, Coord, House, HouseType},
 };
-impl_with_id!(Skyscraper, TwoStringKite, TurbotFish, EmptyRectangle);
 static EMPTY_RECTANGLE_MASK: [u16; 9] = [79, 151, 295, 121, 186, 316, 457, 466, 484];
 
 fn check_empty_rectangle(ids: BitMap) -> Option<(usize, usize)> {
@@ -24,7 +22,7 @@ fn check_turbot(
     soft_dim: usize,
     hard1: usize,
     hard2: usize,
-    solver_id: usize,
+    solver_id: SolverIdentifier,
 ) -> Option<Solution> {
     for target in 0..9 {
         for soft_house_index in 0..9 {
@@ -91,9 +89,7 @@ fn check_turbot(
     None
 }
 
-pub struct EmptyRectangle {
-    id: usize,
-}
+pub struct EmptyRectangle;
 
 impl Solver for EmptyRectangle {
     fn solve(&self, game_board: &GameBoard) -> Option<Solution> {
@@ -182,7 +178,7 @@ impl Solver for EmptyRectangle {
                                                                 r_house,
                                                             ],
                                                             candidate_clues,
-                                                            solver_id: self.id,
+                                                            solver_id: self.solver_id(),
                                                         }
                                                     },
                                                 )
@@ -193,34 +189,44 @@ impl Solver for EmptyRectangle {
                 })
         })
     }
+
+    fn solver_id(&self) -> SolverIdentifier {
+        SolverIdentifier::EmptyRectangle
+    }
 }
-pub struct Skyscraper {
-    id: usize,
-}
+pub struct Skyscraper;
 
 impl Solver for Skyscraper {
     fn solve(&self, game_board: &GameBoard) -> Option<Solution> {
-        (0..2).find_map(|x| check_turbot(game_board, x, 1 - x, 1 - x, self.id))
+        (0..2).find_map(|x| check_turbot(game_board, x, 1 - x, 1 - x, self.solver_id()))
+    }
+
+    fn solver_id(&self) -> SolverIdentifier {
+        SolverIdentifier::Skyscraper
     }
 }
 
-pub struct TwoStringKite {
-    id: usize,
-}
+pub struct TwoStringKite;
 
 impl Solver for TwoStringKite {
     fn solve(&self, game_board: &GameBoard) -> Option<Solution> {
-        check_turbot(game_board, 2, 0, 1, self.id)
+        check_turbot(game_board, 2, 0, 1, self.solver_id())
+    }
+
+    fn solver_id(&self) -> SolverIdentifier {
+        SolverIdentifier::TwoStringKite
     }
 }
 
-pub struct TurbotFish {
-    id: usize,
-}
+pub struct TurbotFish;
 
 impl Solver for TurbotFish {
     fn solve(&self, game_board: &GameBoard) -> Option<Solution> {
-        (0..2).find_map(|x| check_turbot(game_board, x, 2, 1 - x, self.id))
+        (0..2).find_map(|x| check_turbot(game_board, x, 2, 1 - x, self.solver_id()))
+    }
+
+    fn solver_id(&self) -> SolverIdentifier {
+        SolverIdentifier::TurbotFish
     }
 }
 #[cfg(test)]
@@ -293,7 +299,7 @@ mod single_digit_patterns_test {
     #[test]
     fn test_empty_rectangle() {
         test_function(
-            EmptyRectangle::with_id(1),
+            EmptyRectangle,
             [
                 1, 66, 128, 256, 96, 16, 8, 6, 36, 258, 98, 288, 8, 4, 66, 128, 16, 1, 8, 16, 4,
                 162, 33, 129, 64, 258, 288, 130, 131, 67, 4, 16, 66, 256, 32, 8, 32, 4, 66, 66, 8,
@@ -309,7 +315,7 @@ mod single_digit_patterns_test {
     #[test]
     fn test_skyscraper() {
         test_function(
-            Skyscraper::with_id(3),
+            Skyscraper,
             [
                 1, 8, 292, 96, 100, 2, 292, 128, 16, 262, 128, 308, 24, 36, 1, 64, 42, 302, 6, 102,
                 116, 24, 256, 128, 39, 43, 46, 18, 50, 1, 4, 8, 256, 50, 64, 128, 128, 272, 8, 98,
@@ -327,7 +333,7 @@ mod single_digit_patterns_test {
     #[test]
     fn test_two_string_kite() {
         test_function(
-            TwoStringKite::with_id(3),
+            TwoStringKite,
             [
                 8, 34, 64, 161, 4, 131, 16, 33, 256, 304, 128, 1, 304, 304, 64, 2, 4, 8, 272, 292,
                 262, 8, 307, 257, 128, 33, 64, 129, 260, 276, 401, 409, 397, 64, 2, 32, 129, 64,
@@ -344,7 +350,7 @@ mod single_digit_patterns_test {
     #[test]
     fn test_turbot_fish() {
         test_function(
-            TurbotFish::with_id(3),
+            TurbotFish,
             [
                 273, 8, 273, 128, 290, 274, 354, 96, 4, 128, 2, 32, 4, 64, 264, 16, 1, 264, 272, 4,
                 64, 1, 290, 282, 290, 128, 298, 80, 208, 4, 66, 8, 32, 1, 256, 210, 8, 112, 145,

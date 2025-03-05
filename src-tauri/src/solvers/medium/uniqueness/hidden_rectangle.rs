@@ -2,7 +2,7 @@ use crate::{
     game_board::GameBoard,
     solvers::{
         solution::{Action, Candidate, EliminationDetails, Solution},
-        Solver,
+        Solver, SolverIdentifier,
     },
     utils::{BitMap, House, HouseType},
 };
@@ -76,7 +76,12 @@ impl HR {
             Candidate::new_single(self.sx, self.sy, target),
         ]
     }
-    pub fn get_solution(&self, target: usize, clue: usize, solver_id: usize) -> Solution {
+    pub fn get_solution(
+        &self,
+        target: usize,
+        clue: usize,
+        solver_id: SolverIdentifier,
+    ) -> Solution {
         Solution {
             actions: self.get_actions(clue),
             house_clues: self.get_house_clues(),
@@ -130,8 +135,9 @@ impl HiddenRectangle {
                                 game_board
                                     .get_hard_link(hr.sx, hr.sy, target, HouseType::Col)
                                     .and_then(|(lx, _)| {
-                                        (lx == hr.px)
-                                            .then(|| hr.get_solution(target, clue, self.id))
+                                        (lx == hr.px).then(|| {
+                                            hr.get_solution(target, clue, self.solver_id())
+                                        })
                                     })
                             })
                             .flatten()
@@ -140,10 +146,14 @@ impl HiddenRectangle {
     }
 }
 impl Solver for HiddenRectangle {
-    fn solve(&self, game_board: &GameBoard) -> Option<crate::solvers::solution::Solution> {
+    fn solve(&self, game_board: &GameBoard) -> Option<Solution> {
         iter_valid_bi_value(game_board)
             .flat_map(|bi_value_cell| Self::iter_q(bi_value_cell, game_board))
             .flat_map(|row| Self::iter_r(row, game_board))
             .find_map(|ur| self.get_solution(ur, game_board))
+    }
+
+    fn solver_id(&self) -> SolverIdentifier {
+        SolverIdentifier::HiddenRectangle
     }
 }

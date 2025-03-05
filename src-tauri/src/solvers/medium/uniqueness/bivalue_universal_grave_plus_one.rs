@@ -2,7 +2,7 @@ use crate::{
     game_board::GameBoard,
     solvers::{
         solution::{Action, ConfirmationDetails, Solution},
-        Solver,
+        Solver, SolverIdentifier,
     },
     utils::{BitMap, Coord},
 };
@@ -114,7 +114,11 @@ impl Solver for BiValueUniversalGravePlusOne {
                 actions: vec![Action::Confirmation(ConfirmationDetails { x, y, target })],
                 house_clues: vec![],
                 candidate_clues: vec![],
-                solver_id: self.id,
+                solver_id: self.solver_id(),
             })
+    }
+
+    fn solver_id(&self) -> SolverIdentifier {
+        SolverIdentifier::BiValueUniversalGravePlusOne
     }
 }

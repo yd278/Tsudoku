@@ -1,7 +1,3 @@
-use crate::impl_with_id;
-
-impl_with_id!(XYWing, XYZWing, WWing);
-
 /// XY-Wing Solver
 /// ## Terminology
 /// - The pivot is denoted by P
@@ -11,9 +7,7 @@ impl_with_id!(XYWing, XYZWing, WWing);
 /// - **Actions**: Contains variable number of elements, representing candidates pinched by two pincers.
 /// - **House Clues**: An empty vector.
 /// - **Candidate Clues**: Contains 6 elements, representing corresponding x in P, x in Q, y in P, y in R, z in Q and z in R.
-pub struct XYWing {
-    id: usize,
-}
+pub struct XYWing;
 
 mod xy_wing;
 
@@ -26,9 +20,7 @@ mod xy_wing;
 /// - **Actions**: Contains variable number of elements, representing candidates pinched by two pincers and seeable by P.
 /// - **House Clues**: An empty vector.
 /// - **Candidate Clues**: Contains 7 elements, representing corresponding x in P, x in Q, y in P, y in R,z in P, z in Q and z in R.
-pub struct XYZWing {
-    id: usize,
-}
+pub struct XYZWing;
 mod xyz_wing;
 /// W-Wing Solver
 /// ## Pre-request
@@ -42,9 +34,7 @@ mod xyz_wing;
 /// - **Actions**: Contains variable number of elements, representing candidates pinched by two pincers and seeable by P.
 /// - **House Clues**: An empty vector.
 /// - **Candidate Clues**: Contains 6 elements, representing corresponding x in P, x in Q, y in P, y in R,z in P, z in Q and z in R.
-pub struct WWing {
-    id: usize,
-}
+pub struct WWing;
 mod w_wing;
 
 #[cfg(test)]
@@ -55,7 +45,7 @@ mod wings_test {
     #[test]
     fn test_xy_wing() {
         test_function_e(
-            XYWing::with_id(1),
+            XYWing,
             [
                 8, 592, 608, 800, 128, 1, 2, 820, 820, 530, 256, 546, 4, 520, 576, 640, 513, 560,
                 517, 517, 640, 802, 770, 528, 8, 800, 64, 515, 552, 16, 64, 515, 4, 256, 552, 640,
@@ -74,7 +64,7 @@ mod wings_test {
     #[test]
     fn test_xyz_wing() {
         test_function_e(
-            XYZWing::with_id(1),
+            XYZWing,
             [
                 4, 793, 593, 872, 2, 777, 625, 569, 128, 592, 913, 849, 808, 992, 4, 2, 569, 536,
                 32, 649, 2, 16, 704, 521, 577, 256, 516, 594, 534, 628, 1, 548, 522, 640, 586, 256,
@@ -93,7 +83,7 @@ mod wings_test {
     #[test]
     fn test_w_wing() {
         test_function_e(
-            WWing::with_id(1),
+            WWing,
             [
                 128, 545, 16, 576, 518, 526, 522, 768, 545, 64, 768, 520, 32, 530, 1, 516, 640,
                 530, 514, 4, 545, 536, 128, 256, 64, 545, 536, 528, 545, 805, 2, 613, 608, 769, 8,

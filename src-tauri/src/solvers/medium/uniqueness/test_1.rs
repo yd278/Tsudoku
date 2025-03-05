@@ -3,7 +3,7 @@ use crate::{
     solvers::{
         medium::uniqueness::iter_valid_bi_value,
         solution::{Action, Candidate, EliminationDetails, Solution},
-        Solver,
+        Solver, SolverIdentifier,
     },
     utils::{BitMap, House},
 };
@@ -69,7 +69,7 @@ impl UR1 {
             Candidate::new(self.sx, self.py, self.bi_value),
         ]
     }
-    pub fn get_solution(&self, solver_id: usize) -> Solution {
+    pub fn get_solution(&self, solver_id: SolverIdentifier) -> Solution {
         Solution {
             actions: vec![Action::Elimination(EliminationDetails {
                 x: self.sx,
@@ -137,7 +137,11 @@ impl Solver for UniquenessTest1 {
         iter_valid_bi_value(game_board)
             .flat_map(|p| Self::iter_valid_base_row(game_board, p))
             .flat_map(|base_row| Self::iter_valid_rectangle(game_board, base_row))
-            .map(|ur| ur.get_solution(self.id))
+            .map(|ur| ur.get_solution(self.solver_id()))
             .next()
+    }
+
+    fn solver_id(&self) -> SolverIdentifier {
+        SolverIdentifier::UniquenessTest1
     }
 }

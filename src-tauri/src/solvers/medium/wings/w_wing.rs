@@ -2,7 +2,7 @@ use crate::{
     game_board::GameBoard,
     solvers::{
         solution::{Action, Candidate, EliminationDetails, Solution},
-        Solver,
+        Solver, SolverIdentifier,
     },
     utils::{BitMap, Coord, HouseType},
 };
@@ -119,7 +119,11 @@ impl WWingPattern {
             })
             .collect()
     }
-    fn try_get_solution(&self, game_board: &GameBoard, solver_id: usize) -> Option<Solution> {
+    fn try_get_solution(
+        &self,
+        game_board: &GameBoard,
+        solver_id: SolverIdentifier,
+    ) -> Option<Solution> {
         let actions = self.get_actions(game_board);
         (!actions.is_empty()).then(|| Solution {
             actions,
@@ -154,6 +158,10 @@ impl Solver for WWing {
         Self::iter_bridge(game_board)
             .flat_map(|bridge| Self::iter_p(game_board, bridge))
             .flat_map(|pincer_p| Self::iter_q(game_board, pincer_p))
-            .find_map(|w_wing| w_wing.try_get_solution(game_board, self.id))
+            .find_map(|w_wing| w_wing.try_get_solution(game_board, self.solver_id()))
+    }
+
+    fn solver_id(&self) -> SolverIdentifier {
+        SolverIdentifier::WWing
     }
 }

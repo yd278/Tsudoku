@@ -2,7 +2,7 @@ use crate::{
     game_board::GameBoard,
     solvers::{
         solution::{Action, Candidate, EliminationDetails, Solution},
-        Solver,
+        Solver, SolverIdentifier,
     },
     utils::{BitMap, Coord, House},
 };
@@ -191,8 +191,12 @@ impl Solver for UniquenessTest5 {
                     actions,
                     house_clues: ur.get_house_clues(),
                     candidate_clues: ur.get_candi_clues(),
-                    solver_id: self.id,
+                    solver_id: self.solver_id(),
                 })
             })
+    }
+
+    fn solver_id(&self) -> SolverIdentifier {
+        SolverIdentifier::UniquenessTest5
     }
 }

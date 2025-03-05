@@ -2,7 +2,7 @@ use crate::{
     game_board::GameBoard,
     solvers::{
         solution::{Action, Candidate, EliminationDetails, Solution},
-        Solver,
+        Solver, SolverIdentifier,
     },
     utils::{BitMap, Coord, House, HouseType},
 };
@@ -109,7 +109,11 @@ impl AR2 {
         ]
     }
 
-    pub fn try_get_solution(&self, game_board: &GameBoard, solver_id: usize) -> Option<Solution> {
+    pub fn try_get_solution(
+        &self,
+        game_board: &GameBoard,
+        solver_id: SolverIdentifier,
+    ) -> Option<Solution> {
         let actions = self.get_actions(game_board);
         (!actions.is_empty()).then(|| Solution {
             actions,
@@ -173,6 +177,10 @@ impl Solver for AvoidableRectangle2 {
         iter_pen_cell(game_board)
             .flat_map(|p| Self::iter_q(game_board, p))
             .flat_map(|house| Self::iter_ar(game_board, house))
-            .find_map(|ar| ar.try_get_solution(game_board, self.id))
+            .find_map(|ar| ar.try_get_solution(game_board, self.solver_id()))
+    }
+
+    fn solver_id(&self) -> SolverIdentifier {
+        SolverIdentifier::AvoidableRectangle2
     }
 }

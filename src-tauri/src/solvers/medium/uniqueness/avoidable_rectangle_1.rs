@@ -6,7 +6,7 @@ use crate::{
     game_board::GameBoard,
     solvers::{
         solution::{Action, EliminationDetails, Solution},
-        Solver,
+        Solver, SolverIdentifier,
     },
     utils::{BitMap, House},
 };
@@ -68,7 +68,7 @@ impl AR1 {
             target: BitMap::from(self.target),
         })]
     }
-    fn get_solution(&self, solver_id: usize) -> Solution {
+    fn get_solution(&self, solver_id: SolverIdentifier) -> Solution {
         Solution {
             actions: self.get_actions(),
             house_clues: self.get_house_clues(),
@@ -106,7 +106,11 @@ impl Solver for AvoidableRectangle1 {
             .find_map(|ar| {
                 game_board
                     .contains_candidate(ar.sx, ar.sy, ar.target)
-                    .then(|| ar.get_solution(self.id))
+                    .then(|| ar.get_solution(self.solver_id()))
             })
+    }
+
+    fn solver_id(&self) -> SolverIdentifier {
+        SolverIdentifier::AvoidableRectangle1
     }
 }

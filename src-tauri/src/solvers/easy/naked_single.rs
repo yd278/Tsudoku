@@ -1,11 +1,8 @@
 use crate::game_board::{Cell, GameBoard};
-use crate::impl_with_id;
-use crate::solvers::solution::*;
+
 use crate::solvers::traits::Solver;
-pub struct NakedSingle {
-    id: usize,
-}
-impl_with_id!(NakedSingle);
+use crate::solvers::{solution::*, SolverIdentifier};
+pub struct NakedSingle;
 impl Solver for NakedSingle {
     fn solve(&self, game_board: &GameBoard) -> Option<Solution> {
         for row in 0..9 {
@@ -26,7 +23,7 @@ impl Solver for NakedSingle {
                                     y: col,
                                     candidates: *candidates,
                                 }],
-                                solver_id: self.id,
+                                solver_id: self.solver_id(),
                             });
                         }
                     }
@@ -35,6 +32,10 @@ impl Solver for NakedSingle {
         }
 
         None
+    }
+
+    fn solver_id(&self) -> SolverIdentifier {
+        SolverIdentifier::NakedSingle
     }
 }
 
@@ -47,7 +48,7 @@ mod naked_single_test {
         let board = GameBoard::from_string(
             "..24...5...92..7.334..8.....3.1....495.....378....3.1.....7..616.5..23...9...84..",
         );
-        let naked_single_solver = NakedSingle { id: 0 };
+        let naked_single_solver = NakedSingle;
         let res = naked_single_solver.solve(&board).unwrap();
         let actions = res.actions;
         assert_eq!(actions.len(), 1);
@@ -75,7 +76,7 @@ mod naked_single_test {
             ".7.9..8633..78.294..9...1754...........637...........17.....4....1.49..7624..8.19",
         );
 
-        let naked_single_solver = NakedSingle { id: 0 };
+        let naked_single_solver = NakedSingle;
         let res = naked_single_solver.solve(&board);
         assert!(res.is_none());
     }

@@ -3,7 +3,7 @@ use crate::{
     solvers::{
         medium::{iter_valid_bi_value, BiValueCell},
         solution::{Action, Candidate, EliminationDetails, Solution},
-        Solver,
+        Solver, SolverIdentifier,
     },
     utils::{BitMap, Coord},
 };
@@ -81,7 +81,11 @@ impl XYPincers {
             })
             .collect()
     }
-    fn try_get_solution(&self, game_board: &GameBoard, solver_id: usize) -> Option<Solution> {
+    fn try_get_solution(
+        &self,
+        game_board: &GameBoard,
+        solver_id: SolverIdentifier,
+    ) -> Option<Solution> {
         let actions = self.get_actions(game_board);
         (!actions.is_empty()).then(|| Solution {
             actions,
@@ -126,6 +130,10 @@ impl Solver for XYWing {
         iter_valid_bi_value(game_board)
             .flat_map(|p| Self::iter_x_pincer(game_board, p))
             .flat_map(|pq| Self::iter_xy_pincer(game_board, pq))
-            .find_map(|xy_wing| xy_wing.try_get_solution(game_board, self.id))
+            .find_map(|xy_wing| xy_wing.try_get_solution(game_board, self.solver_id()))
+    }
+
+    fn solver_id(&self) -> SolverIdentifier {
+        SolverIdentifier::XYWing
     }
 }

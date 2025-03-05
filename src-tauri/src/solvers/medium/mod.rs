@@ -22,32 +22,32 @@ use uniqueness::{
 mod wings;
 use finned::FinnedXWing;
 use fish::{Jellyfish, Swordfish, XWing};
-use wings::{WWing, XYWing,XYZWing};
+use wings::{WWing, XYWing, XYZWing};
 #[rustfmt::skip]
 pub fn get_medium_solvers() -> Vec<Box<dyn Solver>> {
     vec![
-        Box::new(XWing                       ::with_id(8)), 
-        Box::new(Swordfish                   ::with_id(9)), 
-        Box::new(Skyscraper                  ::with_id(10)), 
-        Box::new(TwoStringKite               ::with_id(11)),
-        Box::new(TurbotFish                  ::with_id(12)),
-        Box::new(EmptyRectangle              ::with_id(13)),
-        Box::new(BiValueUniversalGravePlusOne::with_id(14)),
-        Box::new(UniquenessTest1             ::with_id(15)),
-        Box::new(UniquenessTest2             ::with_id(16)),
-        Box::new(UniquenessTest3             ::with_id(17)),
-        Box::new(UniquenessTest4             ::with_id(18)),
-        Box::new(UniquenessTest5             ::with_id(19)),
-        Box::new(UniquenessTest6             ::with_id(20)),
-        Box::new(FinnedXWing                 ::with_id(21)),
-        Box::new(AvoidableRectangle1         ::with_id(22)),
-        Box::new(AvoidableRectangle2         ::with_id(23)),
-        Box::new(NakedQuadruple              ::with_id(24)), 
-        Box::new(HiddenQuadruple             ::with_id(25)), 
-        Box::new(Jellyfish                   ::with_id(26)),
-        Box::new(XYWing                      ::with_id(27)),
-        Box::new(XYZWing                     ::with_id(28)),
-        Box::new(WWing                       ::with_id(29)),
+        Box::new(XWing                       ), 
+        Box::new(Swordfish                   ), 
+        Box::new(Skyscraper                  ), 
+        Box::new(TwoStringKite               ),
+        Box::new(TurbotFish                  ),
+        Box::new(EmptyRectangle              ),
+        Box::new(BiValueUniversalGravePlusOne),
+        Box::new(UniquenessTest1             ),
+        Box::new(UniquenessTest2             ),
+        Box::new(UniquenessTest3             ),
+        Box::new(UniquenessTest4             ),
+        Box::new(UniquenessTest5             ),
+        Box::new(UniquenessTest6             ),
+        Box::new(FinnedXWing                 ),
+        Box::new(AvoidableRectangle1         ),
+        Box::new(AvoidableRectangle2         ),
+        Box::new(NakedQuadruple              ), 
+        Box::new(HiddenQuadruple             ), 
+        Box::new(Jellyfish                   ),
+        Box::new(XYWing                      ),
+        Box::new(XYZWing                     ),
+        Box::new(WWing                       ),
     ]
 }
 #[derive(Copy, Clone)]

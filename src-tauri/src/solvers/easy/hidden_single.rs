@@ -1,13 +1,10 @@
 use crate::game_board::{Cell, GameBoard};
-use crate::impl_with_id;
+
 use crate::solvers::solution::{Action::Confirmation, Candidate, ConfirmationDetails, Solution};
-use crate::solvers::Solver;
+use crate::solvers::{Solver, SolverIdentifier};
 use crate::utils::{BitMap, Coord, House};
 
-pub struct HiddenSingle {
-    id: usize,
-}
-impl_with_id!(HiddenSingle);
+pub struct HiddenSingle;
 
 impl Solver for HiddenSingle {
     fn solve(&self, game_board: &GameBoard) -> Option<Solution> {
@@ -24,7 +21,7 @@ impl Solver for HiddenSingle {
                     actions,
                     house_clues,
                     candidate_clues,
-                    solver_id: self.id,
+                    solver_id: self.solver_id(),
                 }
             };
         for target in 0..9 {
@@ -60,6 +57,10 @@ impl Solver for HiddenSingle {
         }
         None
     }
+
+    fn solver_id(&self) -> SolverIdentifier {
+        SolverIdentifier::HiddenSingle
+    }
 }
 
 #[cfg(test)]
@@ -71,7 +72,7 @@ mod hidden_single_test {
         let board = GameBoard::from_string(
             ".7.9..8633..78.294..9...1754...........637...........17.....4....1.49..7624..8.19",
         );
-        let hidden_single_solver = HiddenSingle::with_id(3);
+        let hidden_single_solver = HiddenSingle;
         let res = hidden_single_solver.solve(&board).unwrap();
         let actions = res.actions;
         assert_eq!(actions.len(), 1);
@@ -105,7 +106,7 @@ mod hidden_single_test {
             "95..62.8....51..........25416..7.5.2295...7.88.7.25.695.9..........57....8.39...5",
         );
 
-        let hidden_single_solver = HiddenSingle::with_id(3);
+        let hidden_single_solver = HiddenSingle;
         let res = hidden_single_solver.solve(&board);
         assert!(res.is_none());
     }

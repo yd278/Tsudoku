@@ -5,6 +5,8 @@ use crate::utils::House;
 pub use candidate::Candidate;
 pub use confirmation_details::ConfirmationDetails;
 pub use elimination_details::EliminationDetails;
+
+use super::SolverIdentifier;
 #[derive(Debug)]
 pub enum Action {
     Confirmation(ConfirmationDetails),
@@ -14,5 +16,5 @@ pub struct Solution {
     pub actions: Vec<Action>,
     pub house_clues: Vec<House>,
     pub candidate_clues: Vec<Candidate>,
-    pub solver_id: usize,
+    pub solver_id: SolverIdentifier,
 }

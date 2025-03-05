@@ -1,14 +1,12 @@
 use crate::{
     game_board::GameBoard,
-    impl_with_id,
     solvers::{
         solution::{Action, Candidate, EliminationDetails, Solution},
-        Solver,
+        Solver, SolverIdentifier,
     },
     utils::{AllEqualValue, BitMap, Coord, HouseType},
 };
 
-impl_with_id!(FinnedXWing, FinnedSwordfish, FinnedJellyfish);
 fn get_coords_with_target_by_masks<'a>(
     game_board: &'a GameBoard,
     first: &'a BitMap,
@@ -30,7 +28,7 @@ fn find_finned_fish(
     game_board: &GameBoard,
     base_dim: &HouseType,
     n: usize,
-    solver_id: usize,
+    solver_id: SolverIdentifier,
 ) -> Option<Solution> {
     for target in 0..9 {
         for base in BitMap::get_masked_combo(n, *game_board.house_occupied_by(base_dim, target)) {
@@ -119,41 +117,44 @@ fn find_finned_fish(
     None
 }
 
-pub struct FinnedXWing {
-    id: usize,
-}
+pub struct FinnedXWing;
 
 impl Solver for FinnedXWing {
     fn solve(&self, game_board: &GameBoard) -> Option<Solution> {
-        let solver_id = self.id;
         [HouseType::Row, HouseType::Col]
             .into_iter()
-            .find_map(|base_dim| find_finned_fish(game_board, &base_dim, 2, solver_id))
+            .find_map(|base_dim| find_finned_fish(game_board, &base_dim, 2, self.solver_id()))
+    }
+
+    fn solver_id(&self) -> SolverIdentifier {
+        SolverIdentifier::FinnedXWing
     }
 }
-pub struct FinnedSwordfish {
-    id: usize,
-}
+pub struct FinnedSwordfish;
 
 impl Solver for FinnedSwordfish {
     fn solve(&self, game_board: &GameBoard) -> Option<Solution> {
-        let solver_id = self.id;
         [HouseType::Row, HouseType::Col]
             .into_iter()
-            .find_map(|base_dim| find_finned_fish(game_board, &base_dim, 3, solver_id))
+            .find_map(|base_dim| find_finned_fish(game_board, &base_dim, 3, self.solver_id()))
+    }
+
+    fn solver_id(&self) -> SolverIdentifier {
+        SolverIdentifier::FinnedSwordFish
     }
 }
 
-pub struct FinnedJellyfish {
-    id: usize,
-}
+pub struct FinnedJellyfish;
 
 impl Solver for FinnedJellyfish {
     fn solve(&self, game_board: &GameBoard) -> Option<Solution> {
-        let solver_id = self.id;
         [HouseType::Row, HouseType::Col]
             .into_iter()
-            .find_map(|base_dim| find_finned_fish(game_board, &base_dim, 4, solver_id))
+            .find_map(|base_dim| find_finned_fish(game_board, &base_dim, 4, self.solver_id()))
+    }
+
+    fn solver_id(&self) -> SolverIdentifier {
+        SolverIdentifier::FinnedJellyfish
     }
 }
 
@@ -229,7 +230,7 @@ mod finned_test {
     #[test]
     fn test_f2() {
         test_function(
-            FinnedXWing::with_id(1),
+            FinnedXWing,
             [
                 64, 273, 257, 128, 280, 32, 28, 276, 2, 384, 32, 8, 4, 336, 2, 208, 1, 192, 4, 400,
                 2, 1, 344, 272, 216, 336, 32, 129, 140, 196, 74, 33, 132, 256, 102, 16, 257, 2,
@@ -246,7 +247,7 @@ mod finned_test {
     #[test]
     fn test_f3() {
         test_function(
-            FinnedSwordfish::with_id(1),
+            FinnedSwordfish,
             [
                 2, 325, 276, 8, 337, 32, 17, 193, 208, 336, 128, 32, 337, 4, 337, 27, 73, 82, 80,
                 89, 24, 211, 211, 211, 32, 256, 4, 336, 32, 2, 337, 81, 4, 128, 65, 8, 128, 84, 20,
@@ -273,7 +274,7 @@ mod finned_test {
     #[test]
     fn test_f4() {
         test_function(
-            FinnedJellyfish::with_id(1),
+            FinnedJellyfish,
             [
                 328, 17, 328, 72, 17, 128, 4, 2, 32, 128, 2, 17, 32, 256, 4, 64, 8, 17, 72, 32, 4,
                 2, 17, 72, 145, 256, 144, 265, 64, 128, 16, 38, 34, 9, 36, 265, 2, 21, 273, 69, 8,
@@ -310,7 +311,7 @@ mod finned_test {
     #[test]
     fn test_s2() {
         test_function(
-            FinnedXWing::with_id(1),
+            FinnedXWing,
             [
                 1, 32, 260, 64, 18, 128, 274, 20, 8, 336, 2, 8, 48, 49, 4, 336, 128, 289, 128, 80,
                 68, 256, 59, 41, 82, 85, 55, 66, 320, 128, 8, 324, 16, 1, 32, 262, 90, 280, 32,
@@ -328,7 +329,7 @@ mod finned_test {
     #[test]
     fn test_s3() {
         test_function(
-            FinnedSwordfish::with_id(1),
+            FinnedSwordfish,
             [
                 34, 42, 256, 64, 128, 36, 16, 5, 9, 128, 16, 64, 265, 257, 12, 32, 268, 2, 40, 4,
                 1, 312, 304, 2, 128, 328, 320, 96, 96, 2, 128, 8, 1, 4, 272, 272, 5, 256, 12, 48,
@@ -344,7 +345,7 @@ mod finned_test {
     #[test]
     fn test_s4() {
         test_function(
-            FinnedJellyfish::with_id(1),
+            FinnedJellyfish,
             [
                 14, 32, 256, 68, 70, 1, 128, 72, 16, 1, 136, 64, 136, 16, 256, 32, 2, 4, 16, 132,
                 14, 196, 10, 32, 73, 256, 65, 12, 64, 44, 44, 256, 128, 16, 1, 2, 14, 1, 128, 16,
