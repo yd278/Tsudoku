@@ -118,6 +118,13 @@ impl GameBoard {
     ) -> Option<(usize, usize)> {
         self.hard_links[dim.as_dim()][x][y][target]
     }
+
+    pub fn hard_linked(&self, x: usize, y: usize, target: usize) -> bool {
+        (0..2).any(|dim| {
+            self.get_hard_link(x, y, target, HouseType::from_dim(dim))
+                .is_some()
+        })
+    }
 }
 
 ///  This section contains game board operation sanity checks

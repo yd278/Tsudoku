@@ -23,6 +23,8 @@ mod wings;
 use finned::FinnedXWing;
 use fish::{Jellyfish, Swordfish, XWing};
 use wings::{WWing, XYWing, XYZWing};
+mod color;
+use color::Coloring;
 #[rustfmt::skip]
 pub fn get_medium_solvers() -> Vec<Box<dyn Solver>> {
     vec![
@@ -48,6 +50,7 @@ pub fn get_medium_solvers() -> Vec<Box<dyn Solver>> {
         Box::new(XYWing                      ),
         Box::new(XYZWing                     ),
         Box::new(WWing                       ),
+        Box::new(Coloring                    ),
     ]
 }
 #[derive(Copy, Clone)]
