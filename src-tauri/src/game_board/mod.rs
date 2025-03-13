@@ -1,3 +1,5 @@
+use std::cell::OnceCell;
+
 use crate::solvers::solution::Action::{self, Confirmation, Elimination};
 use crate::solvers::solution::{ConfirmationDetails, EliminationDetails, Solution};
 use crate::solvers::Solver;
@@ -15,11 +17,11 @@ pub enum Cell {
 type CellHardLink = [Option<(usize, usize)>; 9];
 pub struct GameBoard {
     grid: [[Cell; 9]; 9],
-    hard_links: [[[CellHardLink; 9]; 9]; 3],
-    occupied: [[BitMap; 9]; 3], // row_occupied[i] .contains(j) : row-j is occupied by number i
+    hard_links: OnceCell<[[[CellHardLink; 9]; 9]; 3]>,
+    occupied: OnceCell<[[BitMap; 9]; 3]>, // row_occupied[i] .contains(j) : row-j is occupied by number i
 }
 
-///  This section contains game board information
+///  This section contains getters of game board information
 impl GameBoard {
     /// Get the cell
     pub fn get_cell(&self, x: usize, y: usize) -> &Cell {
@@ -96,11 +98,14 @@ impl GameBoard {
 
     /// Returns a bitmap indicating which line are occupied by the target
     pub fn house_occupied_by(&self, dim: &HouseType, house_id: usize) -> &BitMap {
-        &self.occupied[dim.as_dim()][house_id]
+        &self.occupied()[dim.as_dim()][house_id]
     }
 
     pub fn occupied(&self) -> &[[BitMap; 9]; 3] {
-        &self.occupied
+        self.occupied.get_or_init(|| self.calculate_occupied())
+    }
+    pub fn hard_links(&self) -> &[[[CellHardLink; 9]; 9]; 3]{
+        self.hard_links.get_or_init(||self.calculate_hard_link())
     }
     /// For a given cell and candidate, returns the coordinate of the hard-linked cell in the given dimension
     ///
@@ -116,7 +121,7 @@ impl GameBoard {
         target: usize,
         dim: HouseType,
     ) -> Option<(usize, usize)> {
-        self.hard_links[dim.as_dim()][x][y][target]
+        self.hard_links()[dim.as_dim()][x][y][target]
     }
 
     pub fn hard_linked(&self, x: usize, y: usize, target: usize) -> bool {
@@ -184,6 +189,7 @@ impl GameBoard {
     /// - doesn't contains the target candidate
     pub fn erase_pencil_mark(&mut self, x: usize, y: usize, target: usize) {
         self.delete_candidate(x, y, target, true);
+        self.flush();
     }
 
     /// Add an pencil mark in given cell by user
@@ -204,6 +210,7 @@ impl GameBoard {
                 });
             }
         }
+        self.flush();
     }
 
     /// Set a cell to pen mark and removes corresponding candidate in all seeable cells.
@@ -217,13 +224,9 @@ impl GameBoard {
             }
             cell.set_pen_mark(target);
 
-            let components = Coord::components_array(x, y);
-            for (i, component) in components.iter().enumerate() {
-                self.occupied[i][target].insert(*component);
-            }
-
             Coord::seeable_cells(x, y)
                 .for_each(|(xi, yi)| self.delete_candidate(xi, yi, target, false));
+            self.flush();
         }
     }
     /// Erase the pen mark in cell (x,y)
@@ -243,18 +246,6 @@ impl GameBoard {
                 }
                 if let Some(target) = cell.get_pen_mark() {
                     cell.erase_pen_mark();
-                    let components = Coord::components_array(x, y);
-                    for (i, component) in components.iter().enumerate() {
-                        if HouseType::from_dim(i)
-                            .house(*component)
-                            .as_iter()
-                            .filter(|&(x, y)| self.is_clue(x, y, target))
-                            .count()
-                            == 0
-                        {
-                            self.occupied[i][target].remove(x);
-                        }
-                    }
                     Some(target)
                 } else {
                     None
@@ -288,6 +279,7 @@ impl GameBoard {
         if let Cell::Blank(ref mut cell) = self.grid[x][y] {
             cell.update_candidates(&possible_candidates);
         }
+        self.flush();
     }
 }
 
@@ -332,7 +324,6 @@ impl GameBoard {
 
     /// Find the next possible step
     pub fn next_step(&mut self) -> Option<Solution> {
-        self.update_hard_link();
         // gather all possible solvers
         let solvers: Vec<Box<dyn Solver>> = crate::solvers::easy::get_easy_solvers();
 
@@ -343,9 +334,34 @@ impl GameBoard {
 
 /// This section contains some private APIs for internal use
 impl GameBoard {
-    fn update_hard_link(&mut self) {
-        self.hard_links = [[[[None; 9]; 9]; 9]; 3];
-        for dim in 0..3 {
+    fn flush(&mut self) {
+        self.occupied.take();
+        self.hard_links.take();
+    }
+    fn calculate_occupied(&self) -> [[BitMap; 9]; 3] {
+        let mut res = [[BitMap::new(); 9]; 3];
+        for (x, y) in Coord::all_cells() {
+            match self.grid[x][y] {
+                Cell::Printed(num) => {
+                    res[0][num].insert(x);
+                    res[1][num].insert(y);
+                    res[2][num].insert(Coord::get_box_id(x, y));
+                }
+                Cell::Blank(blank_cell) => {
+                    if let Some(num) = blank_cell.get_pen_mark() {
+                        res[0][num].insert(x);
+                        res[1][num].insert(y);
+                        res[2][num].insert(Coord::get_box_id(x, y));
+                    }
+                }
+            }
+        }
+        res
+    }
+    fn calculate_hard_link(&self) -> [[[CellHardLink; 9]; 9]; 3] {
+        
+        let mut hard_links = [[[[None; 9]; 9]; 9]; 3];
+        for (dim,h_links) in hard_links.iter_mut().enumerate() {
             for house_index in 0..9 {
                 for target in 0..9 {
                     let appearance: Vec<_> = HouseType::from_dim(dim)
@@ -357,12 +373,13 @@ impl GameBoard {
                     if appearance.len() == 2 {
                         let (x1, y1) = appearance[0];
                         let (x2, y2) = appearance[1];
-                        self.hard_links[dim][x1][y1][target] = Some((x2, y2));
-                        self.hard_links[dim][x2][y2][target] = Some((x1, y1));
+                        h_links[x1][y1][target] = Some((x2, y2));
+                        h_links[x2][y2][target] = Some((x1, y1));
                     }
                 }
             }
         }
+        hard_links
     }
 
     // delete target in a cell's candidate list
@@ -407,18 +424,12 @@ pub mod game_board_test {
     impl GameBoard {
         pub fn from_string(input: &str) -> Self {
             let mut grid = [[Cell::Blank(BlankCell::new_empty_cell()); 9]; 9];
-            let mut row_occupied = [BitMap::new(); 9];
-            let mut col_occupied = [BitMap::new(); 9];
-            let mut box_occupied = [BitMap::new(); 9];
             for (index, c) in input.chars().enumerate() {
                 let i = index / 9;
                 let j = index % 9;
                 if c.is_digit(10) {
                     let num = c.to_digit(10).unwrap() as usize - 1;
                     grid[i][j] = Cell::Printed(num);
-                    row_occupied[num].insert(i);
-                    col_occupied[num].insert(j);
-                    box_occupied[num].insert(Coord::get_box_id(i, j));
                 }
             }
             for (index, c) in input.chars().enumerate() {
@@ -438,8 +449,8 @@ pub mod game_board_test {
             }
             GameBoard {
                 grid,
-                occupied: [row_occupied, col_occupied, box_occupied],
-                hard_links: [[[[None; 9]; 9]; 9]; 3],
+                occupied: OnceCell::new(),
+                hard_links: OnceCell::new(),
             }
         }
 
@@ -447,9 +458,6 @@ pub mod game_board_test {
             let mut i = 0;
             let mut j = 0;
             let mut grid = [[Cell::Blank(BlankCell::new_empty_cell()); 9]; 9];
-            let mut row_occupied = [BitMap::new(); 9];
-            let mut col_occupied = [BitMap::new(); 9];
-            let mut box_occupied = [BitMap::new(); 9];
             for raw in arr {
                 let printed = (raw & (1 << 9)) == 0;
                 let raw = raw & 0xFDFF;
@@ -464,9 +472,6 @@ pub mod game_board_test {
                             cell.set_pen_mark(num);
                         }
                     }
-                    row_occupied[num].insert(i);
-                    col_occupied[num].insert(j);
-                    box_occupied[num].insert(Coord::get_box_id(i, j));
                 } else {
                     if let Cell::Blank(ref mut cell) = grid[i][j] {
                         cell.set_candidates(candidates);
@@ -478,12 +483,11 @@ pub mod game_board_test {
                     i += 1;
                 }
             }
-            let mut res = GameBoard {
+            let res = GameBoard {
                 grid,
-                occupied: [row_occupied, col_occupied, box_occupied],
-                hard_links: [[[[None; 9]; 9]; 9]; 3],
+                occupied: OnceCell::new(),
+                hard_links:  OnceCell::new(),
             };
-            res.update_hard_link();
             res
         }
     }
