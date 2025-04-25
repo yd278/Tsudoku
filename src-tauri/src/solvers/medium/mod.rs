@@ -6,11 +6,7 @@ use crate::{
 
 use super::Solver;
 
-// remote pair
-
-// simple colors
-//multi colors
-mod finned;
+pub mod finned;
 mod fish;
 mod single_digit_patterns;
 mod uniqueness;
