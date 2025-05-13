@@ -1,12 +1,13 @@
-use std::cell::OnceCell;
-
 use crate::solvers::solution::Action::{self, Confirmation, Elimination};
 use crate::solvers::solution::{ConfirmationDetails, EliminationDetails, Solution};
 use crate::solvers::Solver;
-use crate::utils::Coord;
 use crate::utils::{BitMap, HouseType};
+use crate::utils::{Coord, House};
+use std::cell::OnceCell;
+pub mod als;
 pub mod blank_cell;
 pub mod dlx_solver;
+use als::ALS;
 use blank_cell::BlankCell;
 
 #[derive(Clone, Copy)]
@@ -18,7 +19,10 @@ type CellHardLink = [Option<(usize, usize)>; 9];
 pub struct GameBoard {
     grid: [[Cell; 9]; 9],
     hard_links: OnceCell<[[[CellHardLink; 9]; 9]; 3]>,
-    occupied: OnceCell<[[BitMap; 9]; 3]>, // row_occupied[i] .contains(j) : row-j is occupied by number i
+    // occupied[house_type][num] : BitMap indicates that these rows(cols/boxes) occupied by the num
+    occupied: OnceCell<[[BitMap; 9]; 3]>,
+    // als_lists[house_type][house_index] : Vector of ALSs in this house
+    als_lists: OnceCell<[[Vec<ALS>; 9]; 3]>,
 }
 
 ///  This section contains getters of game board information
@@ -104,8 +108,15 @@ impl GameBoard {
     pub fn occupied(&self) -> &[[BitMap; 9]; 3] {
         self.occupied.get_or_init(|| self.calculate_occupied())
     }
-    pub fn hard_links(&self) -> &[[[CellHardLink; 9]; 9]; 3]{
-        self.hard_links.get_or_init(||self.calculate_hard_link())
+    pub fn hard_links(&self) -> &[[[CellHardLink; 9]; 9]; 3] {
+        self.hard_links.get_or_init(|| self.calculate_hard_link())
+    }
+
+    pub fn als(&self) -> &[[Vec<ALS>; 9]; 3] {
+        self.als_lists.get_or_init(|| self.calculate_als())
+    }
+    pub fn get_als_by_house(&self, house_type: usize, house_id: usize) -> &[ALS] {
+        &self.als()[house_type][house_id]
     }
     /// For a given cell and candidate, returns the coordinate of the hard-linked cell in the given dimension
     ///
@@ -337,6 +348,7 @@ impl GameBoard {
     fn flush(&mut self) {
         self.occupied.take();
         self.hard_links.take();
+        self.als_lists.take();
     }
     fn calculate_occupied(&self) -> [[BitMap; 9]; 3] {
         let mut res = [[BitMap::new(); 9]; 3];
@@ -359,9 +371,8 @@ impl GameBoard {
         res
     }
     fn calculate_hard_link(&self) -> [[[CellHardLink; 9]; 9]; 3] {
-        
         let mut hard_links = [[[[None; 9]; 9]; 9]; 3];
-        for (dim,h_links) in hard_links.iter_mut().enumerate() {
+        for (dim, h_links) in hard_links.iter_mut().enumerate() {
             for house_index in 0..9 {
                 for target in 0..9 {
                     let appearance: Vec<_> = HouseType::from_dim(dim)
@@ -381,7 +392,33 @@ impl GameBoard {
         }
         hard_links
     }
-
+    fn calculate_unsolved_mask(&self, house_type: usize, house_id: usize) -> BitMap {
+        let house = House::from_dim_id(house_type, house_id);
+        let mut res = BitMap::new();
+        for cell_id in 0..9 {
+            let (x, y) =
+                Coord::from_house_and_index(&House::from_dim_id(house_type, house_id), cell_id);
+            if self.not_filled(x, y) {
+                res.insert(cell_id);
+            }
+        }
+        res
+    }
+    fn calculate_als(&self) -> [[Vec<ALS>; 9]; 3] {
+        std::array::from_fn(|house_type| {
+            std::array::from_fn(|house_id| {
+                let unsolved_mask = self.calculate_unsolved_mask(house_type, house_id);
+                let num_unsolved_cells = unsolved_mask.count();
+                (1..=num_unsolved_cells - 1)
+                    .flat_map(|subset_size| {
+                        BitMap::get_masked_combo(subset_size, unsolved_mask).filter_map(
+                            |als_indices| ALS::try_new(self, als_indices, house_type, house_id),
+                        )
+                    })
+                    .collect()
+            })
+        })
+    }
     // delete target in a cell's candidate list
     // and mark it as user deleted if user_deleted_flag is true
     fn delete_candidate(&mut self, x: usize, y: usize, target: usize, user_deleted_flag: bool) {
@@ -451,6 +488,7 @@ pub mod game_board_test {
                 grid,
                 occupied: OnceCell::new(),
                 hard_links: OnceCell::new(),
+                als_lists: OnceCell::new(),
             }
         }
 
@@ -486,7 +524,8 @@ pub mod game_board_test {
             let res = GameBoard {
                 grid,
                 occupied: OnceCell::new(),
-                hard_links:  OnceCell::new(),
+                hard_links: OnceCell::new(),
+                als_lists: OnceCell::new(),
             };
             res
         }
