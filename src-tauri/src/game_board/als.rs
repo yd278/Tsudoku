@@ -3,14 +3,14 @@ use crate::utils::{BitMap, Coord, House};
 use super::GameBoard;
 
 
-pub struct ALS{
+pub struct Als{
     house_type: usize,
     house_id: usize,
     indices: BitMap,
     candidates: BitMap,
 }
 
-impl ALS {
+impl Als {
     
     pub fn new(house_type: usize, house_id: usize, indices: BitMap, candidates: BitMap) -> Self {
         Self { house_type, house_id, indices, candidates }

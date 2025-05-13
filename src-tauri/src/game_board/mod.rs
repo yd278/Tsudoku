@@ -7,7 +7,7 @@ use std::cell::OnceCell;
 pub mod als;
 pub mod blank_cell;
 pub mod dlx_solver;
-use als::ALS;
+use als::Als;
 use blank_cell::BlankCell;
 
 #[derive(Clone, Copy)]
@@ -22,7 +22,7 @@ pub struct GameBoard {
     // occupied[house_type][num] : BitMap indicates that these rows(cols/boxes) occupied by the num
     occupied: OnceCell<[[BitMap; 9]; 3]>,
     // als_lists[house_type][house_index] : Vector of ALSs in this house
-    als_lists: OnceCell<[[Vec<ALS>; 9]; 3]>,
+    als_lists: OnceCell<[[Vec<Als>; 9]; 3]>,
 }
 
 ///  This section contains getters of game board information
@@ -112,10 +112,10 @@ impl GameBoard {
         self.hard_links.get_or_init(|| self.calculate_hard_link())
     }
 
-    pub fn als(&self) -> &[[Vec<ALS>; 9]; 3] {
+    pub fn als(&self) -> &[[Vec<Als>; 9]; 3] {
         self.als_lists.get_or_init(|| self.calculate_als())
     }
-    pub fn get_als_by_house(&self, house_type: usize, house_id: usize) -> &[ALS] {
+    pub fn get_als_by_house(&self, house_type: usize, house_id: usize) -> &[Als] {
         &self.als()[house_type][house_id]
     }
     /// For a given cell and candidate, returns the coordinate of the hard-linked cell in the given dimension
@@ -404,7 +404,7 @@ impl GameBoard {
         }
         res
     }
-    fn calculate_als(&self) -> [[Vec<ALS>; 9]; 3] {
+    fn calculate_als(&self) -> [[Vec<Als>; 9]; 3] {
         std::array::from_fn(|house_type| {
             std::array::from_fn(|house_id| {
                 let unsolved_mask = self.calculate_unsolved_mask(house_type, house_id);
@@ -412,7 +412,7 @@ impl GameBoard {
                 (1..=num_unsolved_cells - 1)
                     .flat_map(|subset_size| {
                         BitMap::get_masked_combo(subset_size, unsolved_mask).filter_map(
-                            |als_indices| ALS::try_new(self, als_indices, house_type, house_id),
+                            |als_indices| Als::try_new(self, als_indices, house_type, house_id),
                         )
                     })
                     .collect()

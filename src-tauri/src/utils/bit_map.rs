@@ -65,7 +65,7 @@ impl BitMap {
     }
     
     pub fn insert_set(&mut self, other: Self){
-        self.0 = self.0 | other.0
+        self.0 |= other.0
     }
     pub fn remove(&mut self, num: usize) {
         self.0 &= !(1 << num);
