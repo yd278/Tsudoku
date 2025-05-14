@@ -34,4 +34,5 @@ pub enum SolverIdentifier {
     FinnedJellyfish,
     HiddenRectangle,
     Coloring,
+    SueDeCoq,
 }
