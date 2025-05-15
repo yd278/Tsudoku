@@ -1,8 +1,8 @@
 use crate::{
     game_board::GameBoard,
     solvers::{
-        solution::{Action, Candidate, EliminationDetails, Solution},
         Solver, SolverIdentifier,
+        solution::{Action, Candidate, EliminationDetails, Solution},
     },
     utils::{BitMap, Coord, House, HouseType},
 };
@@ -168,8 +168,11 @@ impl Solver for Jellyfish {
 #[cfg(test)]
 mod fish_test {
     use super::*;
-    use crate::solvers::solution::Action::Elimination;
-    use crate::utils::House::{Col, Row};
+    use crate::{
+        solvers::solution::Action::Elimination,
+        utils::House::{Col, Row},
+    };
+    use assert_matches::assert_matches;
     #[test]
     fn x_wing_test() {
         let raws = [

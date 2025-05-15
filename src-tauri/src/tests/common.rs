@@ -1,8 +1,9 @@
+use crate::solvers::Solver;
 use crate::solvers::solution::Action::Confirmation;
 use crate::solvers::solution::Action::Elimination;
 use crate::solvers::solution::{Candidate, ConfirmationDetails, EliminationDetails, Solution};
-use crate::solvers::Solver;
 use crate::{game_board::GameBoard, utils::House};
+use assert_matches::assert_matches;
 pub fn test_function_e(
     solver: impl Solver,
     raws: [u16; 81],

@@ -122,6 +122,7 @@ impl Solver for HiddenQuadruple {
 mod hidden_subset_test {
     use super::*;
     use crate::{solvers::solution::Action::Elimination, utils::House};
+    use assert_matches::assert_matches;
     #[test]
     fn test_hidden_pair_sol() {
         let raws = [

@@ -1,8 +1,8 @@
 use crate::{
     game_board::GameBoard,
     solvers::{
-        solution::{Action, Candidate, EliminationDetails, Solution},
         Solver, SolverIdentifier,
+        solution::{Action, Candidate, EliminationDetails, Solution},
     },
     utils::{AllEqualValue, BitMap, Coord, HouseType},
 };
@@ -164,6 +164,7 @@ mod finned_test {
     use crate::solvers::solution::Action::Elimination;
     use crate::utils::House::{Col, Row};
     use crate::{game_board::GameBoard, utils::House};
+    use assert_matches::assert_matches;
     fn test_function(
         solver: impl Solver,
         raws: [u16; 81],

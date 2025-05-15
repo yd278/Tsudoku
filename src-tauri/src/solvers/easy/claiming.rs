@@ -65,8 +65,8 @@ impl Solver for Claiming {
 
 #[cfg(test)]
 mod claiming_test {
-
     use super::*;
+    use assert_matches::assert_matches;
     #[test]
     fn test_claiming_sol() {
         let raws = [
