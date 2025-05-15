@@ -464,7 +464,7 @@ pub mod game_board_test {
             for (index, c) in input.chars().enumerate() {
                 let i = index / 9;
                 let j = index % 9;
-                if c.is_digit(10) {
+                if c.is_ascii_digit() {
                     let num = c.to_digit(10).unwrap() as usize - 1;
                     grid[i][j] = Cell::Printed(num);
                 }
@@ -472,7 +472,7 @@ pub mod game_board_test {
             for (index, c) in input.chars().enumerate() {
                 let i = index / 9;
                 let j = index % 9;
-                if !c.is_digit(10) {
+                if !c.is_ascii_digit() {
                     let mut possible_candidates = BitMap::all();
                     for (x, y) in Coord::seeable_cells(i, j) {
                         if let Cell::Printed(num) = grid[x][y] {
@@ -505,15 +505,11 @@ pub mod game_board_test {
 
                     if printed {
                         grid[i][j] = Cell::Printed(num);
-                    } else {
-                        if let Cell::Blank(ref mut cell) = grid[i][j] {
-                            cell.set_pen_mark(num);
-                        }
+                    } else if let Cell::Blank(ref mut cell) = grid[i][j] {
+                        cell.set_pen_mark(num);
                     }
-                } else {
-                    if let Cell::Blank(ref mut cell) = grid[i][j] {
-                        cell.set_candidates(candidates);
-                    }
+                } else if let Cell::Blank(ref mut cell) = grid[i][j] {
+                    cell.set_candidates(candidates);
                 }
                 j += 1;
                 if j == 9 {
@@ -521,13 +517,12 @@ pub mod game_board_test {
                     i += 1;
                 }
             }
-            let res = GameBoard {
+            GameBoard {
                 grid,
                 occupied: OnceCell::new(),
                 hard_links: OnceCell::new(),
                 als_lists: OnceCell::new(),
-            };
-            res
+            }
         }
     }
 
@@ -576,9 +571,8 @@ pub mod game_board_test {
         );
         let res = dlx_solver::DLXSolver::solve_sudoku(&mut game_board);
         if let Err(dlx_solver::dlx_solution::DLXSolution::NoSolution) = res {
-            assert!(true);
         } else {
-            assert!(false);
+            panic!()
         }
     }
     #[test]
@@ -589,9 +583,8 @@ pub mod game_board_test {
         );
         let res = dlx_solver::DLXSolver::solve_sudoku(&mut game_board);
         if let Err(dlx_solver::dlx_solution::DLXSolution::MultipleSolutions) = res {
-            assert!(true);
         } else {
-            assert!(false);
+            panic!()
         }
     }
     #[test]

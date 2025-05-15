@@ -1,6 +1,11 @@
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct BitMap(u16);
 
+impl Default for BitMap {
+    fn default() -> Self {
+        Self::new()
+    }
+}
 impl BitMap {
     pub fn all() -> Self {
         BitMap(0b111111111)
@@ -63,8 +68,8 @@ impl BitMap {
     pub fn insert(&mut self, num: usize) {
         self.0 |= 1 << num;
     }
-    
-    pub fn insert_set(&mut self, other: Self){
+
+    pub fn insert_set(&mut self, other: Self) {
         self.0 |= other.0
     }
     pub fn remove(&mut self, num: usize) {

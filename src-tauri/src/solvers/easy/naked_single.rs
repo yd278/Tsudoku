@@ -58,7 +58,7 @@ mod naked_single_test {
             assert_eq!(*y, 3);
             assert_eq!(*target, 8);
         } else {
-            assert!(false);
+            panic!()
         }
         let house_clues = res.house_clues;
         assert!(house_clues.is_empty());

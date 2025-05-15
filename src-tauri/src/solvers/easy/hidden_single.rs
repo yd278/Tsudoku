@@ -82,7 +82,7 @@ mod hidden_single_test {
             assert_eq!(*y, 5);
             assert_eq!(*target, 3);
         } else {
-            assert!(false);
+            panic!()
         }
         let house_clues = res.house_clues;
         assert_eq!(house_clues.len(), 1);

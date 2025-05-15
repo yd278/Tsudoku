@@ -50,8 +50,7 @@ impl SueDeCoq {
             .get_als_by_house(yoke.line_dim(), yoke.line_id())
             .iter()
             .filter_map(move |als| {
-                Scorpius::try_new(yoke, orion, als)
-                    .and_then(|scorpius| Some((yoke, orion, scorpius)))
+                Scorpius::try_new(yoke, orion, als).map(|scorpius| (yoke, orion, scorpius))
             })
     }
 
