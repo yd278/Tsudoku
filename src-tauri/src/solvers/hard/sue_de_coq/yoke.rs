@@ -4,6 +4,34 @@ use crate::{
 };
 
 #[derive(Copy, Clone)]
+struct CellInfo {
+    candidate: BitMap,
+    index_in_line: BitMap,
+    index_in_box: BitMap,
+}
+
+impl CellInfo {
+    fn from_cell(
+        game_board: &GameBoard,
+        x: usize,
+        y: usize,
+        line_dim: usize,
+        line_id: usize,
+        box_id: usize,
+    ) -> Option<Self> {
+        Some(Self {
+            candidate: game_board.get_candidates(x, y)?,
+            index_in_line: BitMap::from(Coord::get_index_from_house(
+                &House::from_dim_id(line_dim, line_id),
+                x,
+                y,
+            )),
+            index_in_box: BitMap::from(Coord::get_index_from_house(&House::Box(box_id), x, y)),
+        })
+    }
+}
+
+#[derive(Copy, Clone)]
 pub(super) struct Yoke {
     line_dim: usize,
     line_id: usize,
@@ -31,39 +59,52 @@ impl Yoke {
             indices_in_box,
         }
     }
-    pub(super) fn try_new(
+
+    fn accumulate_cells(
+        cells: &[CellInfo],
+        line_dim: usize,
+        line_id: usize,
+        box_id: usize,
+    ) -> Self {
+        let mut candidates: BitMap = BitMap::new();
+        let mut indices_in_line: BitMap = BitMap::new();
+        let mut indices_in_box: BitMap = BitMap::new();
+        for cell_info in cells {
+            candidates.insert_set(cell_info.candidate);
+            indices_in_line.insert_set(cell_info.index_in_line);
+            indices_in_box.insert_set(cell_info.index_in_box);
+        }
+        Self::new(
+            line_dim,
+            line_id,
+            box_id,
+            candidates,
+            indices_in_line,
+            indices_in_box,
+        )
+    }
+    pub(super) fn get_all_yokes(
         game_board: &GameBoard,
         line_dim: usize,
         line_id: usize,
         box_id: usize,
-    ) -> Option<Self> {
-        let cells: Vec<(usize, usize)> =
+    ) -> impl Iterator<Item = Self> + '_ {
+        let cells: Vec<CellInfo> =
             Coord::intersect(House::from_dim_id(line_dim, line_id), House::Box(box_id))
-                .filter(|&(x, y)| game_board.not_filled(x, y))
+                .filter_map(|(x, y)| {
+                    CellInfo::from_cell(game_board, x, y, line_dim, line_id, box_id)
+                })
                 .collect();
-        if cells.len() >= 2 {
-            let mut candidates: BitMap = BitMap::new();
-            let mut indices_in_line: BitMap = BitMap::new();
-            let mut indices_in_box: BitMap = BitMap::new();
-            for (x, y) in cells {
-                candidates.insert_set(game_board.get_candidates(x, y)?);
-                indices_in_line.insert(Coord::get_index_from_house(
-                    &House::from_dim_id(line_dim, line_id),
-                    x,
-                    y,
-                ));
-                indices_in_box.insert(Coord::get_index_from_house(&House::Box(box_id), x, y));
-            }
-            Some(Self::new(
-                line_dim,
-                line_id,
-                box_id,
-                candidates,
-                indices_in_line,
-                indices_in_box,
-            ))
-        } else {
-            None
+        match cells.len() {
+            2 => vec![Self::accumulate_cells(&cells, line_dim, line_id, box_id)].into_iter(),
+            3 => vec![
+                Self::accumulate_cells(&cells[0..3], line_dim, line_id, box_id),
+                Self::accumulate_cells(&cells[0..2], line_dim, line_id, box_id),
+                Self::accumulate_cells(&cells[1..3], line_dim, line_id, box_id),
+                Self::accumulate_cells(&[cells[0], cells[2]], line_dim, line_id, box_id),
+            ]
+            .into_iter(),
+            _ => vec![].into_iter(),
         }
     }
 
@@ -86,5 +127,8 @@ impl Yoke {
     pub(super) fn indices_in_box(&self) -> BitMap {
         self.indices_in_box
     }
-}
 
+    pub(super) fn indices_in_line(&self) -> BitMap {
+        self.indices_in_line
+    }
+}

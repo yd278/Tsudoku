@@ -30,8 +30,9 @@ impl SueDeCoq {
     fn iter_possible_yokes(game_board: &GameBoard) -> impl Iterator<Item = Yoke> + '_ {
         (0..2).flat_map(move |line_dim| {
             (0..9).flat_map(move |line_id| {
-                (0..9)
-                    .filter_map(move |box_id| Yoke::try_new(game_board, line_dim, line_id, box_id))
+                (0..9).flat_map(move |box_id| {
+                    Yoke::get_all_yokes(game_board, line_dim, line_id, box_id)
+                })
             })
         })
     }
@@ -69,6 +70,7 @@ impl SueDeCoq {
         //1. find all the candidates in the Box which locks Orion
         //2. find all the candidates in the line which locks Scorpius
         //3. check the occourence of rotten yoke.
+
         todo!()
     }
 }
