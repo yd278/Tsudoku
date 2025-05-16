@@ -7,6 +7,8 @@ impl Default for BitMap {
     }
 }
 impl BitMap {
+    //This is a special value and should not used in set operations.
+    pub const NAN: Self = Self(0xFFFF);
     pub fn all() -> Self {
         BitMap(0b111111111)
     }

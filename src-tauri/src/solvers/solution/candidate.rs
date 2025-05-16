@@ -5,7 +5,14 @@ pub struct Candidate {
     pub y: usize,
     pub candidates: BitMap,
 }
+
 impl Candidate {
+    pub const SEPARATOR: Self = Self {
+        x: 0,
+        y: 0,
+        candidates: BitMap::NAN,
+    };
+
     pub fn new_single(x: usize, y: usize, target: usize) -> Self {
         Self {
             x,
