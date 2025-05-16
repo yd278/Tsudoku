@@ -1,6 +1,6 @@
 use crate::{
     game_board::GameBoard,
-    solvers::{solution::Solution, Solver, SolverIdentifier},
+    solvers::{Solver, SolverIdentifier, solution::Solution},
     utils::HouseType,
 };
 
@@ -13,7 +13,12 @@ use orion::Orion;
 mod scorpius;
 impl Solver for SueDeCoq {
     fn solve(&self, game_board: &GameBoard) -> Option<Solution> {
-        todo!()
+        Self::iter_possible_yokes(game_board)
+            .flat_map(|yoke| Self::iter_valid_orion(game_board, yoke))
+            .flat_map(|(orion, yoke)| Self::iter_valid_scorpius(game_board, yoke, orion))
+            .find_map(|(yoke, orion, scorpius)| {
+                Self::generate_solution(game_board, yoke, orion, scorpius)
+            })
     }
 
     fn solver_id(&self) -> crate::solvers::SolverIdentifier {
@@ -60,6 +65,10 @@ impl SueDeCoq {
         orion: Orion,
         scorpius: Scorpius,
     ) -> Option<Solution> {
+        //TODO:
+        //1. find all the candidates in the Box which locks Orion
+        //2. find all the candidates in the line which locks Scorpius
+        //3. check the occourence of rotten yoke.
         todo!()
     }
 }
