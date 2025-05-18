@@ -20,5 +20,12 @@ impl Orion {
             && (als.candidates().intersect(yoke.candidates()).count() >= 2))
             .then_some(Self::new(als.candidates(), als.indices()))
     }
-}
 
+    pub(super) fn candidates(&self) -> BitMap {
+        self.candidates
+    }
+
+    pub(super) fn indices(&self) -> BitMap {
+        self.indices
+    }
+}

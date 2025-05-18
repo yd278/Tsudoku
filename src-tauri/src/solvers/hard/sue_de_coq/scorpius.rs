@@ -1,7 +1,7 @@
 use crate::{game_board::als::Als, utils::BitMap};
 
 use super::{Orion, Yoke};
-
+#[derive(Clone, Copy)]
 pub(super) struct Scorpius {
     indices: BitMap,
     candidates: BitMap,
@@ -14,14 +14,26 @@ impl Scorpius {
             candidates,
         }
     }
+    fn yoke_compatible_check(yoke: Yoke, als: &Als) -> bool {
+        yoke.indices_in_line().intersect(als.indices()).count() == 0
+            && yoke.candidates().intersect(als.candidates()).count() >= 2
+    }
+    fn orion_conjugate_checck(yoke: Yoke, orion: Orion, als: &Als) -> bool {
+        let line_remain = yoke.candidates().difference(orion.candidates());
+        let box_remain = yoke.candidates().difference(als.candidates());
+        line_remain.count() < als.indices().count() + yoke.indices_in_line().count()
+            && box_remain.count() < orion.indices().count() + yoke.indices_in_box().count()
+    }
     pub(super) fn try_new(yoke: Yoke, orion: Orion, als: &Als) -> Option<Self> {
-        // TODO: check if als has no intersection with yoke in cell and has at least 2 mutual
-        // candidates with yoke and
-        //  1. pulling out orion's candidates leads to insufficient candidates in yoke union
-        //     Scorpius
-        //  2. pulling out Scorpius's candidates leads to insufficient candidates in yoke union
-        //     Orion
-        todo!()
+        (Self::yoke_compatible_check(yoke, als) && Self::orion_conjugate_checck(yoke, orion, als))
+            .then_some(Self::new(als.indices(), als.candidates()))
+    }
+
+    pub(super) fn indices(&self) -> BitMap {
+        self.indices
+    }
+
+    pub(super) fn candidates(&self) -> BitMap {
+        self.candidates
     }
 }
-
