@@ -409,9 +409,9 @@ impl GameBoard {
             std::array::from_fn(|house_id| {
                 let unsolved_mask = self.calculate_unsolved_mask(house_type, house_id);
                 let num_unsolved_cells = unsolved_mask.count();
-                (1..=num_unsolved_cells - 1)
+                (1..num_unsolved_cells)
                     .flat_map(|subset_size| {
-                        BitMap::get_masked_combo(subset_size, unsolved_mask).filter_map(
+                        BitMap::get_combos_in_subset(subset_size, unsolved_mask).filter_map(
                             |als_indices| Als::try_new(self, als_indices, house_type, house_id),
                         )
                     })
@@ -615,6 +615,28 @@ pub mod game_board_test {
                     }
                     break;
                 }
+            }
+        }
+    }
+
+    #[test]
+    fn test_als() {
+        let game_board = GameBoard::from_array([
+            1, 8, 128, 4, 2, 64, 48, 48, 256, 2, 32, 64, 16, 256, 8, 4, 128, 1, 272, 4, 272, 128,
+            32, 1, 64, 8, 2, 4, 256, 32, 8, 16, 2, 1, 64, 128, 64, 1, 8, 32, 4, 128, 256, 2, 16,
+            128, 16, 2, 65, 65, 256, 40, 36, 44, 280, 128, 276, 2, 9, 32, 24, 277, 64, 296, 64,
+            260, 257, 128, 16, 2, 293, 44, 312, 2, 1, 320, 72, 4, 128, 304, 40,
+        ]);
+        for i in 0..3 {
+            let house_type = match i {
+                0 => "row",
+                1 => "col",
+                2 => "box",
+                _ => unreachable!(),
+            };
+            for j in 0..9 {
+                let als = game_board.get_als_by_house(i, j);
+                println!("in {} {} , there are {} als_s", house_type, j, als.len())
             }
         }
     }

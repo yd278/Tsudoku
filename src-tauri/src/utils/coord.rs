@@ -72,8 +72,8 @@ impl Coord {
             House::Col(c) => x,
             House::Row(r) => y,
             House::Box(b) => {
-                let x_offset = x / 3;
-                let y_offset = y / 3;
+                let x_offset = x % 3;
+                let y_offset = y % 3;
                 x_offset * 3 + y_offset
             }
         }
