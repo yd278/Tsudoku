@@ -1,9 +1,27 @@
-#[derive(Clone, Copy, Debug, PartialEq)]
+use std::fmt;
+
+#[derive(Clone, Copy, PartialEq)]
 pub struct BitMap(u16);
 
 impl Default for BitMap {
     fn default() -> Self {
         Self::new()
+    }
+}
+impl fmt::Debug for BitMap {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let mut first = true;
+        write!(f, "{{")?;
+        for i in 0..9 {
+            if (self.0 & (1 << i)) != 0 {
+                if !first {
+                    write!(f, ", ")?;
+                }
+                write!(f, "{}", i + 1)?;
+                first = false;
+            }
+        }
+        write!(f, "}}")
     }
 }
 impl BitMap {

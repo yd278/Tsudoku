@@ -67,15 +67,15 @@ impl Coord {
         }
     }
 
-    pub fn get_index_from_house(h: &House, x: usize, y: usize) -> usize {
+    pub fn get_index_from_house(h: &House, x: usize, y: usize) -> Option<usize> {
         match *h {
-            House::Col(c) => x,
-            House::Row(r) => y,
-            House::Box(b) => {
+            House::Col(c) => (y == c).then_some(x),
+            House::Row(r) => (x == r).then_some(y),
+            House::Box(b) => (Self::get_box_id(x, y) == b).then(|| {
                 let x_offset = x % 3;
                 let y_offset = y % 3;
                 x_offset * 3 + y_offset
-            }
+            }),
         }
     }
 

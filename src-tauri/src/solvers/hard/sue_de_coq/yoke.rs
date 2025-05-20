@@ -25,8 +25,8 @@ impl CellInfo {
                 &House::from_dim_id(line_dim, line_id),
                 x,
                 y,
-            )),
-            index_in_box: BitMap::from(Coord::get_index_from_house(&House::Box(box_id), x, y)),
+            )?),
+            index_in_box: BitMap::from(Coord::get_index_from_house(&House::Box(box_id), x, y)?),
         })
     }
 }

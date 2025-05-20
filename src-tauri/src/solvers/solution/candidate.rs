@@ -1,11 +1,27 @@
+use std::fmt;
+
 use crate::utils::BitMap;
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct Candidate {
     pub x: usize,
     pub y: usize,
     pub candidates: BitMap,
 }
-
+impl fmt::Debug for Candidate {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        if self.candidates == BitMap::NAN {
+            write!(f, "SEP")
+        } else {
+            write!(
+                f,
+                "Candidates {:?} in Cell ({}, {})",
+                self.candidates,
+                self.x + 1,
+                self.y + 1
+            )
+        }
+    }
+}
 impl Candidate {
     pub const SEPARATOR: Self = Self {
         x: 0,
