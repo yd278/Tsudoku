@@ -1,27 +1,28 @@
-use super::Solver;
+use crate::solvers::solver_enum::SolverEnum;
+
 mod claiming;
 mod hidden_single;
 pub mod hidden_subset;
 mod naked_single;
 pub mod naked_subset;
 mod pointing;
-use claiming::Claiming;
-use hidden_single::HiddenSingle;
-use hidden_subset::{HiddenPair, HiddenTriple};
-use naked_single::NakedSingle;
-use naked_subset::{NakedPair, NakedTriple};
-use pointing::Pointing;
+pub(super) use claiming::Claiming;
+pub(super) use hidden_single::HiddenSingle;
+pub(super) use hidden_subset::{HiddenPair, HiddenTriple};
+pub(super) use naked_single::NakedSingle;
+pub(super) use naked_subset::{NakedPair, NakedTriple};
+pub(super) use pointing::Pointing;
 
 #[rustfmt::skip]
-pub fn get_easy_solvers() -> Vec<Box<dyn Solver>> {
+pub fn get_easy_solvers() -> Vec<SolverEnum> {
     vec![
-        Box::new(NakedSingle ),
-        Box::new(HiddenSingle),
-        Box::new(Pointing    ),
-        Box::new(Claiming    ),
-        Box::new(NakedPair   ),
-        Box::new(HiddenPair  ),
-        Box::new(NakedTriple ),
-        Box::new(HiddenTriple),
+        SolverEnum::from(NakedSingle),
+        SolverEnum::from(HiddenSingle),
+        SolverEnum::from(Pointing    ),
+        SolverEnum::from(Claiming    ),
+        SolverEnum::from(NakedPair   ),
+        SolverEnum::from(HiddenPair  ),
+        SolverEnum::from(NakedTriple ),
+        SolverEnum::from(HiddenTriple),
     ]
 }

@@ -1,6 +1,7 @@
 use crate::solvers::Solver;
 use crate::solvers::solution::Action::{self, Confirmation, Elimination};
 use crate::solvers::solution::{ConfirmationDetails, EliminationDetails, Solution};
+use crate::solvers::solver_enum::SolverEnum;
 use crate::utils::{BitMap, HouseType};
 use crate::utils::{Coord, House};
 use std::cell::OnceCell;
@@ -336,7 +337,7 @@ impl GameBoard {
     /// Find the next possible step
     pub fn next_step(&mut self) -> Option<Solution> {
         // gather all possible solvers
-        let solvers: Vec<Box<dyn Solver>> = crate::solvers::easy::get_easy_solvers();
+        let solvers: Vec<SolverEnum> = crate::solvers::easy::get_easy_solvers();
 
         // try it one-by one until one of them give an answer
         solvers.into_iter().find_map(|solver| solver.solve(self))

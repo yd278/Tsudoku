@@ -1,5 +1,9 @@
-#[derive(Clone, Copy)]
-pub enum SolverIdentifier {
+use super::easy::*;
+use super::hard::*;
+use super::medium::*;
+use enum_dispatch::enum_dispatch;
+#[enum_dispatch(Solver)]
+pub(crate) enum SolverEnum {
     NakedSingle,
     HiddenSingle,
     Pointing,
@@ -32,7 +36,6 @@ pub enum SolverIdentifier {
     WWing,
     FinnedSwordfish,
     FinnedJellyfish,
-    HiddenRectangle,
     Coloring,
     SueDeCoq,
 }

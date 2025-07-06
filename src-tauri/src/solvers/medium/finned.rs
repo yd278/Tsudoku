@@ -140,7 +140,7 @@ impl Solver for FinnedSwordfish {
     }
 
     fn solver_id(&self) -> SolverIdentifier {
-        SolverIdentifier::FinnedSwordFish
+        SolverIdentifier::FinnedSwordfish
     }
 }
 

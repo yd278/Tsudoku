@@ -1,52 +1,52 @@
 use crate::{
     game_board::GameBoard,
-    solvers::easy::{hidden_subset::HiddenQuadruple, naked_subset::NakedQuadruple},
+    solvers::solver_enum::SolverEnum,
     utils::{BitMap, Coord},
 };
-
-use super::Solver;
 
 pub mod finned;
 mod fish;
 mod single_digit_patterns;
 mod uniqueness;
-use single_digit_patterns::{EmptyRectangle, Skyscraper, TurbotFish, TwoStringKite};
-use uniqueness::{
+pub(super) use single_digit_patterns::{EmptyRectangle, Skyscraper, TurbotFish, TwoStringKite};
+pub(super) use uniqueness::{
     AvoidableRectangle1, AvoidableRectangle2, BiValueUniversalGravePlusOne, UniquenessTest1,
     UniquenessTest2, UniquenessTest3, UniquenessTest4, UniquenessTest5, UniquenessTest6,
 };
 mod wings;
-use finned::FinnedXWing;
-use fish::{Jellyfish, Swordfish, XWing};
-use wings::{WWing, XYWing, XYZWing};
+pub(super) use super::easy::hidden_subset::HiddenQuadruple;
+pub(super) use super::easy::naked_subset::NakedQuadruple;
+pub(super) use finned::FinnedXWing;
+pub(super) use fish::{Jellyfish, Swordfish, XWing};
+pub(super) use wings::{WWing, XYWing, XYZWing};
 mod color;
-use color::Coloring;
+pub(super) use color::Coloring;
 #[rustfmt::skip]
-pub fn get_medium_solvers() -> Vec<Box<dyn Solver>> {
+pub fn get_medium_solvers() -> Vec<SolverEnum> {
     vec![
-        Box::new(XWing                       ), 
-        Box::new(Swordfish                   ), 
-        Box::new(Skyscraper                  ), 
-        Box::new(TwoStringKite               ),
-        Box::new(TurbotFish                  ),
-        Box::new(EmptyRectangle              ),
-        Box::new(BiValueUniversalGravePlusOne),
-        Box::new(UniquenessTest1             ),
-        Box::new(UniquenessTest2             ),
-        Box::new(UniquenessTest3             ),
-        Box::new(UniquenessTest4             ),
-        Box::new(UniquenessTest5             ),
-        Box::new(UniquenessTest6             ),
-        Box::new(FinnedXWing                 ),
-        Box::new(AvoidableRectangle1         ),
-        Box::new(AvoidableRectangle2         ),
-        Box::new(NakedQuadruple              ), 
-        Box::new(HiddenQuadruple             ), 
-        Box::new(Jellyfish                   ),
-        Box::new(XYWing                      ),
-        Box::new(XYZWing                     ),
-        Box::new(WWing                       ),
-        Box::new(Coloring                    ),
+        SolverEnum::from(XWing                       ), 
+        SolverEnum::from(Swordfish                   ), 
+        SolverEnum::from(Skyscraper                  ), 
+        SolverEnum::from(TwoStringKite               ),
+        SolverEnum::from(TurbotFish                  ),
+        SolverEnum::from(EmptyRectangle              ),
+        SolverEnum::from(BiValueUniversalGravePlusOne),
+        SolverEnum::from(UniquenessTest1             ),
+        SolverEnum::from(UniquenessTest2             ),
+        SolverEnum::from(UniquenessTest3             ),
+        SolverEnum::from(UniquenessTest4             ),
+        SolverEnum::from(UniquenessTest5             ),
+        SolverEnum::from(UniquenessTest6             ),
+        SolverEnum::from(FinnedXWing                 ),
+        SolverEnum::from(AvoidableRectangle1         ),
+        SolverEnum::from(AvoidableRectangle2         ),
+        SolverEnum::from(NakedQuadruple              ), 
+        SolverEnum::from(HiddenQuadruple             ), 
+        SolverEnum::from(Jellyfish                   ),
+        SolverEnum::from(XYWing                      ),
+        SolverEnum::from(XYZWing                     ),
+        SolverEnum::from(WWing                       ),
+        SolverEnum::from(Coloring                    ),
     ]
 }
 #[derive(Copy, Clone)]

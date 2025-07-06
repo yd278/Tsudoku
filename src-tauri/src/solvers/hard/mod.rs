@@ -3,15 +3,15 @@
 // XY-Chain
 // Nice Loop
 
-use super::Solver;
-use crate::solvers::medium::finned::{FinnedJellyfish, FinnedSwordfish};
+pub(super) use crate::solvers::medium::finned::{FinnedJellyfish, FinnedSwordfish};
+use crate::solvers::solver_enum::SolverEnum;
 mod sue_de_coq;
-use sue_de_coq::SueDeCoq;
+pub(super) use sue_de_coq::SueDeCoq;
 #[rustfmt::skip]
-pub fn get_hard_solvers() -> Vec<Box<dyn Solver>> {
+pub fn get_hard_solvers() -> Vec<SolverEnum> {
     vec![
-        Box::new(FinnedSwordfish),
-        Box::new(FinnedJellyfish),
-        Box::new(SueDeCoq)
+        SolverEnum::from(FinnedSwordfish),
+        SolverEnum::from(FinnedJellyfish),
+        SolverEnum::from(SueDeCoq)
     ]
 }
