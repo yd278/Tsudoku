@@ -25,7 +25,7 @@ pub fn run() {
 #[tauri::command]
 fn generate(difficulty: i32) -> String {
     let cell = game_board::Cell::Printed(3);
-    format!("Generate function called with difficulty {}", difficulty)
+    format!("Generate function called with difficulty {difficulty}")
 }
 
 #[cfg(test)]

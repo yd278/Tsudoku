@@ -25,15 +25,15 @@ pub fn test_function_e(
     } = solver.solve(&game_board).unwrap();
     println!("{} Actions:", &actions.len());
     for action in &actions {
-        println!("{:?}", action);
+        println!("{action:?}");
     }
     println!("Focus in {} Houses:", &house_clues.len());
     for house_clue in &house_clues {
-        println!("{:?}", house_clue);
+        println!("{house_clue:?}");
     }
     println!("{} groups of clues:", &candidate_clues.len());
     for candidate_clue in &candidate_clues {
-        println!("{:?}", candidate_clue);
+        println!("{candidate_clue:?}");
     }
 
     // action data

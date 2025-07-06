@@ -16,8 +16,8 @@ pub enum Action {
 impl fmt::Debug for Action {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Self::Confirmation(cd) => write!(f, "{:?}", cd),
-            Self::Elimination(ed) => write!(f, "{:?}", ed),
+            Self::Confirmation(cd) => write!(f, "{cd:?}"),
+            Self::Elimination(ed) => write!(f, "{ed:?}"),
         }
     }
 }
